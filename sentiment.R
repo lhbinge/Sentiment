@@ -12,12 +12,21 @@ library(stargazer)
 ##====================================##
 ## READING IN THE DATA: MANUFACTURING ##
 ##====================================##
-BER.M <- read.csv("Manufacturing.csv", header=TRUE, sep=";",na.strings = "", skipNul = TRUE)
+#BER.M1 <- read.csv("Manufacturing.csv", header=TRUE, sep=";",na.strings = "", skipNul = TRUE)
+#BER.M2 <- read.csv("Manufacturing_pre2001.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+BER.M <- rbind.fill(read.csv("Manufacturing.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE),
+                     read.csv("Manufacturing_pre2001.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
+BER.M <- BER.M[,1:62]
 colnames(BER.M)[1:7] <- c("region","id","sector","weight","turnover","factor","surveyQ")
+
 
 BER.M$surveyQ <- toupper(BER.M$surveyQ)
 BER.M[nrow(BER.M)+1,1:6] <- BER.M[nrow(BER.M),1:6] 
-BER.M[nrow(BER.M),"surveyQ"] <- "05Q4" 
+BER.M[nrow(BER.M),"surveyQ"] <- "2005Q4" 
+BER.M[nrow(BER.M)+1,1:6] <- BER.M[nrow(BER.M),1:6] 
+BER.M[nrow(BER.M),"surveyQ"] <- "1997Q4" 
+BER.M[nrow(BER.M)+1,1:6] <- BER.M[nrow(BER.M),1:6] 
+BER.M[nrow(BER.M),"surveyQ"] <- "2000Q1" 
 
 BER.M$region <- factor(BER.M$region)
 #BER.M$region <- factor(BER.M$region, labels=c("WC","EC","NC","NW","FS","KZN","GP","MP","LP"))
@@ -43,13 +52,17 @@ BER.M$Q20 <- replace(BER.M$Q20, BER.M$Q20==0,-1) # replace 0 (Unsatisfactory) wi
 #fr.decrease <- length(subset(t1,t1==-1))/length(t1)
 #con <- fr.increase-fr.decrease
 
-##IMPUTE 05Q4 with AGGREGATED NUMBERS!
+##IMPUTE 05Q4 with AGGREGATED NUMBERS?
 ## Weight the means and std devs?
 #wt.mean(x, wt)
 #wt.var(x, wt)
 #wt.sd(x, wt)
 #wtd.mean(x, weights=NULL, normwt="ignored", na.rm=TRUE)
 #wtd.var(x, weights=NULL, normwt=FALSE, na.rm=TRUE)
+
+#--------
+#Is die Activity variables 'n som van alle vorige values???????
+#!!!!!!!!!
 
 indicators.M <- aggregate(BER.M$Q20, by=list(BER.M$surveyQ), FUN=mean, na.rm=TRUE)
 colnames(indicators.M) <- c("Date","Conf_cc")
@@ -64,6 +77,10 @@ indicators.M <- cbind(indicators.M, Empl = aggregate(BER.M$Q8A, by=list(BER.M$su
 altBER <- BER.M
 altBER$Q8A <- replace(altBER$Q8A, altBER$Q8A==-1,1) # replace -1 (Down) responses with 1
 indicators.M <- cbind(indicators.M, Empl_turn = aggregate(altBER$Q8A, by=list(altBER$surveyQ), FUN=mean, na.rm=TRUE)[,2])
+
+#check <- subset(BER.M,BER.M$surveyQ=="2001Q2")
+#mean(check$Q2A, na.rm=TRUE)
+#sum(check$Q2A*check$factor, na.rm=TRUE)/sum(check$factor[!is.na(check$Q2A)])
 
 # calculation check    
 #t1 <- na.omit(subset(BER$Q31,BER$survey=="01Q3"))
@@ -89,7 +106,6 @@ errors1 <- indicators.M[,c(1,11)]
 errors2 <- indicators.M[,c(1,11)]
 errors3 <- indicators.M[,c(1,11)]
 tel <- 2
-
 for(i in levels(uniBER.M$id)){
     tel <- tel + 1
     #BER.M$counter <- as.numeric(BER.M$survey)
@@ -111,8 +127,9 @@ for(i in levels(uniBER.M$id)){
     colnames(errors3)[tel] <- as.character(i)
 }
 
-# Kan dit verander na standard error or standard deviation?
+# Kan dit verander na standard error or standard deviation (maar maak geen verskil nie)
 uncert <- transform(errors1, SD=apply(errors1[,c(-1,-2)],1,se))[,c(1,ncol(errors1)+1)]
+#uncert1 <- transform(errors1, SD=apply(errors1[,c(-1,-2)],1,sd,na.rm=TRUE))[,c(1,ncol(errors1)+1)]
 indicators.M <- cbind(indicators.M, Uncert_ee = uncert[,2])    
 uncert <- transform(errors2, SD=apply(errors2[,c(-1,-2)],1,se))[,c(1,ncol(errors2)+1)]
 indicators.M <- cbind(indicators.M, Uncert_ee.prod = uncert[,2])
@@ -120,10 +137,154 @@ uncert <- transform(errors3, SD=apply(errors3[,c(-1,-2)],1,se))[,c(1,ncol(errors
 indicators.M <- cbind(indicators.M, Uncert_ee.GBC = uncert[,2])
 
 
-indicator_plot <- indicators.M[,c(1,2,3,5,7)]
+##Weighted versions--------------------------------------------------------------------------------------------------------------------
+#weeg <- function(x) {sum(x*faktor, na.rm=TRUE)/sum(faktor[!is.na(x)],na.rm=TRUE)}
+#weeg(BER.M$Q20, BER.M$factor)
+#sum(BER.M$Q20*BER.M$factor, na.rm=TRUE)/sum(BER.M$factor[!is.na(BER.M$Q20)], na.rm=TRUE)
+w.Conf_cc <- NULL
+w.Conf_fl <- NULL
+w.Act_prod <- NULL
+w.Conf_prod <- NULL
+w.Act_GBC <- NULL
+w.Conf_GBC <- NULL
+w.Invest <- NULL
+w.Empl <- NULL
+i <- 0
+for(kwartaal in levels(BER.M$surveyQ)) {
+    i <- i+1
+    temp <- subset(BER.M,BER.M$surveyQ==kwartaal)
+    w.Conf_cc[i] <- sum(temp$Q20*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q20)], na.rm=TRUE)
+    w.Conf_fl[i] <- sum(temp$Q31*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q31)], na.rm=TRUE)
+    w.Act_prod[i] <- sum(temp$Q3A*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3A)], na.rm=TRUE)
+    w.Conf_prod[i] <- sum(temp$Q3P*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)], na.rm=TRUE)
+    w.Act_GBC[i] <- sum(temp$Q7A*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q7A)], na.rm=TRUE)
+    w.Conf_GBC[i] <- sum(temp$Q7P*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q7P)], na.rm=TRUE)
+    w.Invest[i] <- sum(temp$Q10A*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q10A)], na.rm=TRUE)
+    w.Empl[i] <- sum(temp$Q8A*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q8A)], na.rm=TRUE)
+}
+w.indicators.M <- as.data.frame(cbind(w.Conf_cc,w.Conf_fl,w.Act_prod,w.Conf_prod,w.Act_GBC,w.Conf_GBC,w.Invest,w.Empl))
+w.indicators.M <- cbind(Date=levels(BER.M$surveyQ),w.indicators.M)
+#---------------------------------------------------------------------------------------------------------------------------------------
+w.Uncert_fl <- NULL
+w.Uncert_fl.prod <- NULL
+w.Uncert_fl.GBC <- NULL
+i <- 0
+for(kwartaal in levels(BER.M$surveyQ)) {
+    i <- i+1
+    temp <- subset(BER.M,BER.M$surveyQ==kwartaal)
+    fr.up <- sum((temp$Q31*temp$factor)[temp$Q31>0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q31)],na.rm=TRUE)
+    fr.down <- sum((temp$Q31*temp$factor)[temp$Q31<0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q31)],na.rm=TRUE)
+    w.Uncert_fl[i] <- sqrt(fr.up-fr.down-(fr.up+fr.down)^2)
+    
+    fr.up <- sum((temp$Q3P*temp$factor)[temp$Q3P>0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)],na.rm=TRUE)
+    fr.down <- sum((temp$Q3P*temp$factor)[temp$Q3P<0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)],na.rm=TRUE)
+    w.Uncert_fl.prod[i] <- sqrt(fr.up-fr.down-(fr.up+fr.down)^2)
+    
+    fr.up <- sum((temp$Q7P*temp$factor)[temp$Q7P>0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q7P)],na.rm=TRUE)
+    fr.down <- sum((temp$Q7P*temp$factor)[temp$Q7P<0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q7P)],na.rm=TRUE)
+    w.Uncert_fl.GBC[i] <- sqrt(fr.up-fr.down-(fr.up+fr.down)^2)
+}
+w.indicators.M <- cbind(w.indicators.M,w.Uncert_fl,w.Uncert_fl.prod,w.Uncert_fl.GBC)
+#---------------------------------------------------------------------------------------------------------------------------------------
+errors1 <- w.indicators.M[,c(1,11)]
+err.fac1 <- w.indicators.M[,c(1,11)]
+w.fact1 <- w.indicators.M[,c(1,11)]
+errors2 <- w.indicators.M[,c(1,11)]
+err.fac2 <- w.indicators.M[,c(1,11)]
+w.fact2 <- w.indicators.M[,c(1,11)]
+errors3 <- w.indicators.M[,c(1,11)]
+err.fac3 <- w.indicators.M[,c(1,11)]
+w.fact3 <- w.indicators.M[,c(1,11)]
+tel <- 2
+for(i in levels(uniBER.M$id)){
+    tel <- tel + 1
+    exp.error <- w.indicators.M[,c(1,11)]
+    data <- subset(uniBER.M, uniBER.M$id==i)
+    exp.error <- merge(exp.error, data, by.x="Date",by.y="surveyQ", all.x = TRUE)
+    for(t in 1:(nrow(exp.error))) {
+        exp.error$error1[t] <- exp.error$Q7A[t+4] - exp.error$Q31[t]
+        exp.error$error2[t] <- exp.error$Q3A[t+1] - exp.error$Q3P[t]
+        exp.error$error3[t] <- exp.error$Q7A[t+1] - exp.error$Q7P[t]
+    }
+    
+    errors1 <- cbind(errors1, exp.error$error1)
+    err.fac1 <- cbind(err.fac1, exp.error$error1*exp.error$factor)
+    w.fact1 <- cbind(w.fact1, exp.error$factor)
+    errors2 <- cbind(errors2, exp.error$error2)
+    err.fac2 <- cbind(err.fac2, exp.error$error2*exp.error$factor)
+    w.fact2 <- cbind(w.fact2, exp.error$factor)
+    errors3 <- cbind(errors3, exp.error$error3)
+    err.fac3 <- cbind(err.fac3, exp.error$error3*exp.error$factor)
+    w.fact3 <- cbind(w.fact3, exp.error$factor)
+    
+    colnames(errors1)[tel] <- as.character(i)
+    colnames(err.fac1)[tel] <- as.character(i)
+    colnames(w.fact1)[tel] <- as.character(i)
+    colnames(errors2)[tel] <- as.character(i)
+    colnames(err.fac2)[tel] <- as.character(i)
+    colnames(w.fact2)[tel] <- as.character(i)
+    colnames(errors3)[tel] <- as.character(i)
+    colnames(err.fac3)[tel] <- as.character(i)
+    colnames(w.fact3)[tel] <- as.character(i)
+}
+
+
+w.Uncert_ee <- NULL
+w.Uncert_ee.prod <- NULL
+w.Uncert_ee.GBC <- NULL
+i <- 0
+for(kwartaal in levels(err.fac1$Date)) {
+    i <- i+1
+    temp1 <- subset(err.fac1,err.fac1$Date==kwartaal)[,c(-1,-2)]
+    temp2 <- subset(errors1,errors1$Date==kwartaal)[,c(-1,-2)]
+    temp3 <- subset(w.fact1,w.fact1$Date==kwartaal)[,c(-1,-2)]
+    temp4 <- replace(temp2, temp2==0,1)
+    temp4 <- replace(temp4, temp4==-2,2)
+    temp4 <- replace(temp4, temp4==-1,1)
+    temp4 <- temp4*temp3
+        
+    fr.2 <- sum(temp1[temp2==2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.1 <- sum(temp1[temp2==1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m1 <- sum(temp1[temp2==-1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m2 <- sum(temp1[temp2==-2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    w.Uncert_ee[i] <- sqrt(4*fr.2+fr.1-fr.m1-4*fr.m2-(2*fr.2+fr.1+fr.m1+2*fr.m2)^2)
+    
+    temp1 <- subset(err.fac2,err.fac2$Date==kwartaal)[,c(-1,-2)]
+    temp2 <- subset(errors2,errors2$Date==kwartaal)[,c(-1,-2)]
+    temp3 <- subset(w.fact2,w.fact2$Date==kwartaal)[,c(-1,-2)]
+    temp4 <- replace(temp2, temp2==0,1)
+    temp4 <- replace(temp4, temp4==-2,2)
+    temp4 <- replace(temp4, temp4==-1,1)
+    temp4 <- temp4*temp3
+    
+    fr.2 <- sum(temp1[temp2==2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.1 <- sum(temp1[temp2==1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m1 <- sum(temp1[temp2==-1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m2 <- sum(temp1[temp2==-2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    w.Uncert_ee.prod[i] <- sqrt(4*fr.2+fr.1-fr.m1-4*fr.m2-(2*fr.2+fr.1+fr.m1+2*fr.m2)^2)
+    
+    temp1 <- subset(err.fac3,err.fac3$Date==kwartaal)[,c(-1,-2)]
+    temp2 <- subset(errors3,errors3$Date==kwartaal)[,c(-1,-2)]
+    temp3 <- subset(w.fact3,w.fact3$Date==kwartaal)[,c(-1,-2)]
+    temp4 <- replace(temp2, temp2==0,1)
+    temp4 <- replace(temp4, temp4==-2,2)
+    temp4 <- replace(temp4, temp4==-1,1)
+    temp4 <- temp4*temp3
+    
+    fr.2 <- sum(temp1[temp2==2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.1 <- sum(temp1[temp2==1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m1 <- sum(temp1[temp2==-1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m2 <- sum(temp1[temp2==-2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    w.Uncert_ee.GBC[i] <- sqrt(4*fr.2+fr.1-fr.m1-4*fr.m2-(2*fr.2+fr.1+fr.m1+2*fr.m2)^2)
+}
+w.indicators.M <- cbind(w.indicators.M,w.Uncert_ee,w.Uncert_ee.prod,w.Uncert_ee.GBC)
+
+#---------------------------------------------------------------------------------------------------------------------------------------
+
+
+indicator_plot <- indicators.M[,c(1,2,5,7)]
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g <- g + geom_point(size = 3) 
 g <- g + geom_line()
 g <- g + ylab("Indicator")
 g <- g + xlab("")
@@ -131,10 +292,9 @@ g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + theme(legend.title=element_blank())
 g
 
-indicator_plot <- indicators.M[,c(1,14,15,16)]
+indicator_plot <- w.indicators.M[,c(1,14,15,16)]
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g <- g + geom_point(size = 3) 
 g <- g + geom_line()
 g <- g + ylab("Indicator")
 g <- g + xlab("")
@@ -145,7 +305,6 @@ g
 indicator_plot <- indicators.M[,c(1,11,12,13)]
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g <- g + geom_point(size = 3) 
 g <- g + geom_line()
 g <- g + ylab("Indicator")
 g <- g + xlab("")
@@ -155,7 +314,8 @@ g
 
 
 # Calculate Response Rates
-countNR <- function(data) { sum(is.na(data))/NROW(data) }
+#countNR <- function(data) { sum(is.na(data))/NROW(data) }
+countNR <- function(data) { sum(is.na(data))/1000 }
 NRR.M <- aggregate(BER.M, by=list(BER.M$surveyQ), FUN=countNR)
 
 #sum(is.na(df$col))
@@ -169,12 +329,22 @@ NRR.M <- aggregate(BER.M, by=list(BER.M$surveyQ), FUN=countNR)
 ##===============================##
 ## READING IN THE DATA: BUILDING ##
 ##===============================##
-BER.B <- read.csv("Building.csv", header=TRUE, sep=";",na.strings = "", skipNul = TRUE)
+#BER.B1 <- read.csv("Building.csv", header=TRUE, sep=";",na.strings = "", skipNul = TRUE)
+#BER.B2 <- read.csv("Building_pre2001.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+BER.B <- rbind.fill(read.csv("Building.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE),
+                    read.csv("Building_pre2001.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
+BER.B <- BER.B[,1:22]
 colnames(BER.B)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
 
 BER.B$surveyQ <- toupper(BER.B$surveyQ)
 BER.B[nrow(BER.B)+1,1:5] <- BER.B[nrow(BER.B),1:5] 
-BER.B[nrow(BER.B),"surveyQ"] <- "05Q4" 
+BER.B[nrow(BER.B),"surveyQ"] <- "2005Q4" 
+BER.B[nrow(BER.B)+1,1:5] <- BER.B[nrow(BER.B),1:5] 
+BER.B[nrow(BER.B),"surveyQ"] <- "1998Q3" 
+BER.B[nrow(BER.B)+1,1:5] <- BER.B[nrow(BER.B),1:5] 
+BER.B[nrow(BER.B),"surveyQ"] <- "1993Q4" 
+BER.B[nrow(BER.B)+1,1:5] <- BER.B[nrow(BER.B),1:5] 
+BER.B[nrow(BER.B),"surveyQ"] <- "2000Q2" 
 
 BER.B$region <- factor(BER.B$region)
 BER.B$sector <- factor(BER.B$sector) #could include labels
@@ -238,6 +408,117 @@ indicators.B <- cbind(indicators.B, Uncert_ee.prod = uncert[,2])
 uncert <- transform(errors2, SD=apply(errors2[,c(-1,-2)],1,se))[,c(1,ncol(errors2)+1)]
 indicators.B <- cbind(indicators.B, Uncert_ee.GBC = uncert[,2])
 
+##Weighted versions--------------------------------------------------------------------------------------------------------------------
+w.Conf_cc <- NULL
+w.Act_prod <- NULL
+w.Conf_prod <- NULL
+w.Act_GBC <- NULL
+w.Conf_GBC <- NULL
+w.Empl <- NULL
+i <- 0
+for(kwartaal in levels(BER.B$surveyQ)) {
+    i <- i+1
+    temp <- subset(BER.B,BER.B$surveyQ==kwartaal)
+    w.Conf_cc[i] <- sum(temp$Q1*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q1)], na.rm=TRUE)
+    w.Act_prod[i] <- sum(temp$Q3A*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3A)], na.rm=TRUE)
+    w.Conf_prod[i] <- sum(temp$Q3P*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)], na.rm=TRUE)
+    w.Act_GBC[i] <- sum(temp$Q2A*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q2A)], na.rm=TRUE)
+    w.Conf_GBC[i] <- sum(temp$Q2P*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q2P)], na.rm=TRUE)
+    w.Empl[i] <- sum(temp$Q4A*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q4A)], na.rm=TRUE)
+}
+w.indicators.B <- as.data.frame(cbind(w.Conf_cc,w.Act_prod,w.Conf_prod,w.Act_GBC,w.Conf_GBC,w.Empl))
+w.indicators.B <- cbind(Date=levels(BER.B$surveyQ),w.indicators.B)
+#---------------------------------------------------------------------------------------------------------------------------------------
+w.Uncert_fl.prod <- NULL
+w.Uncert_fl.GBC <- NULL
+i <- 0
+for(kwartaal in levels(BER.B$surveyQ)) {
+    i <- i+1
+    temp <- subset(BER.B,BER.B$surveyQ==kwartaal)
+    
+    fr.up <- sum((temp$Q3P*temp$factor)[temp$Q3P>0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)],na.rm=TRUE)
+    fr.down <- sum((temp$Q3P*temp$factor)[temp$Q3P<0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)],na.rm=TRUE)
+    w.Uncert_fl.prod[i] <- sqrt(fr.up-fr.down-(fr.up+fr.down)^2)
+    
+    fr.up <- sum((temp$Q2P*temp$factor)[temp$Q2P>0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q2P)],na.rm=TRUE)
+    fr.down <- sum((temp$Q2P*temp$factor)[temp$Q2P<0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q2P)],na.rm=TRUE)
+    w.Uncert_fl.GBC[i] <- sqrt(fr.up-fr.down-(fr.up+fr.down)^2)
+}
+w.indicators.B <- cbind(w.indicators.B,w.Uncert_fl.prod,w.Uncert_fl.GBC)
+
+#---------------------------------------------------------------------------------------------------------------------------------------
+errors1 <- w.indicators.B[,c(1,9)]
+err.fac1 <- w.indicators.B[,c(1,9)]
+w.fact1 <- w.indicators.B[,c(1,9)]
+errors2 <- w.indicators.B[,c(1,9)]
+err.fac2 <- w.indicators.B[,c(1,9)]
+w.fact2 <- w.indicators.B[,c(1,9)]
+tel <- 2
+for(i in levels(uniBER.B$id)){
+    tel <- tel + 1
+    exp.error <- w.indicators.B[,c(1,9)]
+    data <- subset(uniBER.B, uniBER.B$id==i)
+    exp.error <- merge(exp.error, data, by.x="Date",by.y="surveyQ", all.x = TRUE)
+    for(t in 1:(nrow(exp.error))) {
+        exp.error$error1[t] <- exp.error$Q3A[t+1] - exp.error$Q3P[t]
+        exp.error$error2[t] <- exp.error$Q2A[t+1] - exp.error$Q2P[t]
+    }
+    
+    errors1 <- cbind(errors1, exp.error$error1)
+    err.fac1 <- cbind(err.fac1, exp.error$error1*exp.error$factor)
+    w.fact1 <- cbind(w.fact1, exp.error$factor)
+    errors2 <- cbind(errors2, exp.error$error2)
+    err.fac2 <- cbind(err.fac2, exp.error$error2*exp.error$factor)
+    w.fact2 <- cbind(w.fact2, exp.error$factor)
+
+    colnames(errors1)[tel] <- as.character(i)
+    colnames(err.fac1)[tel] <- as.character(i)
+    colnames(w.fact1)[tel] <- as.character(i)
+    colnames(errors2)[tel] <- as.character(i)
+    colnames(err.fac2)[tel] <- as.character(i)
+    colnames(w.fact2)[tel] <- as.character(i)
+}
+
+
+w.Uncert_ee.prod <- NULL
+w.Uncert_ee.GBC <- NULL
+i <- 0
+for(kwartaal in levels(err.fac1$Date)) {
+    i <- i+1
+    temp1 <- subset(err.fac1,err.fac1$Date==kwartaal)[,c(-1,-2)]
+    temp2 <- subset(errors1,errors1$Date==kwartaal)[,c(-1,-2)]
+    temp3 <- subset(w.fact1,w.fact1$Date==kwartaal)[,c(-1,-2)]
+    temp4 <- replace(temp2, temp2==0,1)
+    temp4 <- replace(temp4, temp4==-2,2)
+    temp4 <- replace(temp4, temp4==-1,1)
+    temp4 <- temp4*temp3
+    
+    fr.2 <- sum(temp1[temp2==2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.1 <- sum(temp1[temp2==1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m1 <- sum(temp1[temp2==-1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m2 <- sum(temp1[temp2==-2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    w.Uncert_ee.prod[i] <- sqrt(4*fr.2+fr.1-fr.m1-4*fr.m2-(2*fr.2+fr.1+fr.m1+2*fr.m2)^2)
+    
+    temp1 <- subset(err.fac2,err.fac2$Date==kwartaal)[,c(-1,-2)]
+    temp2 <- subset(errors2,errors2$Date==kwartaal)[,c(-1,-2)]
+    temp3 <- subset(w.fact2,w.fact2$Date==kwartaal)[,c(-1,-2)]
+    temp4 <- replace(temp2, temp2==0,1)
+    temp4 <- replace(temp4, temp4==-2,2)
+    temp4 <- replace(temp4, temp4==-1,1)
+    temp4 <- temp4*temp3
+    
+    fr.2 <- sum(temp1[temp2==2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.1 <- sum(temp1[temp2==1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m1 <- sum(temp1[temp2==-1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m2 <- sum(temp1[temp2==-2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    w.Uncert_ee.GBC[i] <- sqrt(4*fr.2+fr.1-fr.m1-4*fr.m2-(2*fr.2+fr.1+fr.m1+2*fr.m2)^2)
+    
+}
+w.indicators.B <- cbind(w.indicators.B,w.Uncert_ee.prod,w.Uncert_ee.GBC)
+
+#---------------------------------------------------------------------------------------------------------------------------------------
+
+
 indicator_plot <- indicators.B[,c(1,2,4,6)]
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -268,16 +549,21 @@ NRR.B <- aggregate(BER.B, by=list(BER.B$surveyQ), FUN=countNR)
 ##============================##
 ## READING IN THE DATA: TRADE ##
 ##============================##
-BER.R <- read.csv("Retail.csv", header=TRUE, sep=";",na.strings = "", skipNul = TRUE)
-BER.W <- read.csv("Wholesale.csv", header=TRUE, sep=";",na.strings = "", skipNul = TRUE)
+BER.R <- read.csv("Retail.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+BER.W <- read.csv("Wholesale.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
 #BER.V <- read.csv("Motor.csv", header=TRUE, sep=";",na.strings = "", skipNul = TRUE)
-
 BER.T <- rbind(BER.R,BER.W)
+BER.T <- rbind.fill(BER.T,read.csv("Trade_pre2001.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
+BER.T <- BER.T[,1:21]
 colnames(BER.T)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
 
 BER.T$surveyQ <- toupper(BER.T$surveyQ)
 BER.T[nrow(BER.T)+1,1:5] <- BER.T[nrow(BER.T),1:5] 
-BER.T[nrow(BER.T),"surveyQ"] <- "05Q4" 
+BER.T[nrow(BER.T),"surveyQ"] <- "2005Q4" 
+BER.T[nrow(BER.T)+1,1:5] <- BER.T[nrow(BER.T),1:5] 
+BER.T[nrow(BER.T),"surveyQ"] <- "1993Q3"
+BER.T[nrow(BER.T)+1,1:5] <- BER.T[nrow(BER.T),1:5] 
+BER.T[nrow(BER.T),"surveyQ"] <- "1992Q4"
 
 BER.T$region <- factor(BER.T$region)
 BER.T$sector <- factor(BER.T$sector) #could include labels
@@ -341,6 +627,115 @@ indicators.T <- cbind(indicators.T, Uncert_ee.prod = uncert[,2])
 uncert <- transform(errors2, SD=apply(errors2[,c(-1,-2)],1,se))[,c(1,ncol(errors2)+1)]
 indicators.T <- cbind(indicators.T, Uncert_ee.GBC = uncert[,2])
 
+##Weighted versions--------------------------------------------------------------------------------------------------------------------
+w.Conf_cc <- NULL
+w.Act_prod <- NULL
+w.Conf_prod <- NULL
+w.Act_GBC <- NULL
+w.Conf_GBC <- NULL
+w.Empl <- NULL
+i <- 0
+for(kwartaal in levels(BER.T$surveyQ)) {
+    i <- i+1
+    temp <- subset(BER.T,BER.T$surveyQ==kwartaal)
+    w.Conf_cc[i] <- sum(temp$Q1*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q1)], na.rm=TRUE)
+    w.Act_prod[i] <- sum(temp$Q3A*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3A)], na.rm=TRUE)
+    w.Conf_prod[i] <- sum(temp$Q3P*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)], na.rm=TRUE)
+    w.Act_GBC[i] <- sum(temp$Q2A*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q2A)], na.rm=TRUE)
+    w.Conf_GBC[i] <- sum(temp$Q2P*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q2P)], na.rm=TRUE)
+    w.Empl[i] <- sum(temp$Q5A*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q5A)], na.rm=TRUE)
+}
+w.indicators.T <- as.data.frame(cbind(w.Conf_cc,w.Act_prod,w.Conf_prod,w.Act_GBC,w.Conf_GBC,w.Empl))
+w.indicators.T <- cbind(Date=levels(BER.T$surveyQ),w.indicators.T)
+#---------------------------------------------------------------------------------------------------------------------------------------
+w.Uncert_fl.prod <- NULL
+w.Uncert_fl.GBC <- NULL
+i <- 0
+for(kwartaal in levels(BER.T$surveyQ)) {
+    i <- i+1
+    temp <- subset(BER.T,BER.T$surveyQ==kwartaal)
+    
+    fr.up <- sum((temp$Q3P*temp$factor)[temp$Q3P>0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)],na.rm=TRUE)
+    fr.down <- sum((temp$Q3P*temp$factor)[temp$Q3P<0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)],na.rm=TRUE)
+    w.Uncert_fl.prod[i] <- sqrt(fr.up-fr.down-(fr.up+fr.down)^2)
+    
+    fr.up <- sum((temp$Q2P*temp$factor)[temp$Q2P>0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q2P)],na.rm=TRUE)
+    fr.down <- sum((temp$Q2P*temp$factor)[temp$Q2P<0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q2P)],na.rm=TRUE)
+    w.Uncert_fl.GBC[i] <- sqrt(fr.up-fr.down-(fr.up+fr.down)^2)
+}
+w.indicators.T <- cbind(w.indicators.T,w.Uncert_fl.prod,w.Uncert_fl.GBC)
+#---------------------------------------------------------------------------------------------------------------------------------------
+errors1 <- w.indicators.T[,c(1,9)]
+err.fac1 <- w.indicators.T[,c(1,9)]
+w.fact1 <- w.indicators.T[,c(1,9)]
+errors2 <- w.indicators.T[,c(1,9)]
+err.fac2 <- w.indicators.T[,c(1,9)]
+w.fact2 <- w.indicators.T[,c(1,9)]
+tel <- 2
+for(i in levels(uniBER.T$id)){
+    tel <- tel + 1
+    exp.error <- w.indicators.T[,c(1,9)]
+    data <- subset(uniBER.T, uniBER.T$id==i)
+    exp.error <- merge(exp.error, data, by.x="Date",by.y="surveyQ", all.x = TRUE)
+    for(t in 1:(nrow(exp.error))) {
+        exp.error$error1[t] <- exp.error$Q3A[t+1] - exp.error$Q3P[t]
+        exp.error$error2[t] <- exp.error$Q2A[t+1] - exp.error$Q2P[t]
+    }
+    
+    errors1 <- cbind(errors1, exp.error$error1)
+    err.fac1 <- cbind(err.fac1, exp.error$error1*exp.error$factor)
+    w.fact1 <- cbind(w.fact1, exp.error$factor)
+    errors2 <- cbind(errors2, exp.error$error2)
+    err.fac2 <- cbind(err.fac2, exp.error$error2*exp.error$factor)
+    w.fact2 <- cbind(w.fact2, exp.error$factor)
+    
+    colnames(errors1)[tel] <- as.character(i)
+    colnames(err.fac1)[tel] <- as.character(i)
+    colnames(w.fact1)[tel] <- as.character(i)
+    colnames(errors2)[tel] <- as.character(i)
+    colnames(err.fac2)[tel] <- as.character(i)
+    colnames(w.fact2)[tel] <- as.character(i)
+}
+
+
+w.Uncert_ee.prod <- NULL
+w.Uncert_ee.GBC <- NULL
+i <- 0
+for(kwartaal in levels(err.fac1$Date)) {
+    i <- i+1
+    temp1 <- subset(err.fac1,err.fac1$Date==kwartaal)[,c(-1,-2)]
+    temp2 <- subset(errors1,errors1$Date==kwartaal)[,c(-1,-2)]
+    temp3 <- subset(w.fact1,w.fact1$Date==kwartaal)[,c(-1,-2)]
+    temp4 <- replace(temp2, temp2==0,1)
+    temp4 <- replace(temp4, temp4==-2,2)
+    temp4 <- replace(temp4, temp4==-1,1)
+    temp4 <- temp4*temp3
+    
+    fr.2 <- sum(temp1[temp2==2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.1 <- sum(temp1[temp2==1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m1 <- sum(temp1[temp2==-1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m2 <- sum(temp1[temp2==-2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    w.Uncert_ee.prod[i] <- sqrt(4*fr.2+fr.1-fr.m1-4*fr.m2-(2*fr.2+fr.1+fr.m1+2*fr.m2)^2)
+    
+    temp1 <- subset(err.fac2,err.fac2$Date==kwartaal)[,c(-1,-2)]
+    temp2 <- subset(errors2,errors2$Date==kwartaal)[,c(-1,-2)]
+    temp3 <- subset(w.fact2,w.fact2$Date==kwartaal)[,c(-1,-2)]
+    temp4 <- replace(temp2, temp2==0,1)
+    temp4 <- replace(temp4, temp4==-2,2)
+    temp4 <- replace(temp4, temp4==-1,1)
+    temp4 <- temp4*temp3
+    
+    fr.2 <- sum(temp1[temp2==2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.1 <- sum(temp1[temp2==1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m1 <- sum(temp1[temp2==-1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m2 <- sum(temp1[temp2==-2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    w.Uncert_ee.GBC[i] <- sqrt(4*fr.2+fr.1-fr.m1-4*fr.m2-(2*fr.2+fr.1+fr.m1+2*fr.m2)^2)
+    
+}
+w.indicators.T <- cbind(w.indicators.T,w.Uncert_ee.prod,w.Uncert_ee.GBC)
+
+#---------------------------------------------------------------------------------------------------------------------------------------
+
 indicator_plot <- indicators.T[,c(1,2,4,6)]
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -370,12 +765,20 @@ NRR.T <- aggregate(BER.T, by=list(BER.T$surveyQ), FUN=countNR)
 ##=====================================##
 ## READING IN THE DATA: Motor Vehicles ##
 ##=====================================##
-BER.V <- read.csv("Motor.csv", header=TRUE, sep=";",na.strings = "", skipNul = TRUE)
+#BER.V1 <- read.csv("Motor.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+#BER.V2 <- read.csv("Motor_pre2001.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+BER.V <- rbind.fill(read.csv("Motor.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE),
+                    read.csv("Motor_pre2001.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
+BER.V <- BER.V[,1:28]
 colnames(BER.V)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
 
 BER.V$surveyQ <- toupper(BER.V$surveyQ)
 BER.V[nrow(BER.V)+1,1:5] <- BER.V[nrow(BER.V),1:5] 
-BER.V[nrow(BER.V),"surveyQ"] <- "05Q4" 
+BER.V[nrow(BER.V),"surveyQ"] <- "2005Q4"
+BER.V[nrow(BER.V)+1,1:5] <- BER.V[nrow(BER.V),1:5] 
+BER.V[nrow(BER.V),"surveyQ"] <- "1992Q4"
+BER.V[nrow(BER.V)+1,1:5] <- BER.V[nrow(BER.V),1:5] 
+BER.V[nrow(BER.V),"surveyQ"] <- "1993Q3"
 
 BER.V$region <- factor(BER.V$region)
 BER.V$sector <- factor(BER.V$sector) #could include labels
@@ -481,6 +884,114 @@ indicators.V <- cbind(indicators.V, Uncert_ee.prod.spare = uncert[,2])
 uncert <- transform(errors2, SD=apply(errors6[,c(-1,-2)],1,se))[,c(1,ncol(errors6)+1)]
 indicators.V <- cbind(indicators.V, Uncert_ee.GBC.spare = uncert[,2])
 
+##Weighted versions--------------------------------------------------------------------------------------------------------------------
+w.Conf_cc <- NULL
+w.Act_prod <- NULL
+w.Conf_prod <- NULL
+w.Act_GBC <- NULL
+w.Conf_GBC <- NULL
+i <- 0
+for(kwartaal in levels(BER.V$surveyQ)) {
+    i <- i+1
+    temp <- subset(BER.V,BER.V$surveyQ==kwartaal)
+    w.Conf_cc[i] <- sum(temp$Q1*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q1)], na.rm=TRUE)
+    w.Act_prod[i] <- sum(temp$Q3A*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3A)], na.rm=TRUE)
+    w.Conf_prod[i] <- sum(temp$Q3P*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)], na.rm=TRUE)
+    w.Act_GBC[i] <- sum(temp$Q2A*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q2A)], na.rm=TRUE)
+    w.Conf_GBC[i] <- sum(temp$Q2P*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q2P)], na.rm=TRUE)
+}
+w.indicators.V <- as.data.frame(cbind(w.Conf_cc,w.Act_prod,w.Conf_prod,w.Act_GBC,w.Conf_GBC,w.Empl))
+w.indicators.V <- cbind(Date=levels(BER.V$surveyQ),w.indicators.V)
+#---------------------------------------------------------------------------------------------------------------------------------------
+w.Uncert_fl.prod <- NULL
+w.Uncert_fl.GBC <- NULL
+i <- 0
+for(kwartaal in levels(BER.V$surveyQ)) {
+    i <- i+1
+    temp <- subset(BER.V,BER.V$surveyQ==kwartaal)
+    
+    fr.up <- sum((temp$Q3P*temp$factor)[temp$Q3P>0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)],na.rm=TRUE)
+    fr.down <- sum((temp$Q3P*temp$factor)[temp$Q3P<0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)],na.rm=TRUE)
+    w.Uncert_fl.prod[i] <- sqrt(fr.up-fr.down-(fr.up+fr.down)^2)
+    
+    fr.up <- sum((temp$Q2P*temp$factor)[temp$Q2P>0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q2P)],na.rm=TRUE)
+    fr.down <- sum((temp$Q2P*temp$factor)[temp$Q2P<0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q2P)],na.rm=TRUE)
+    w.Uncert_fl.GBC[i] <- sqrt(fr.up-fr.down-(fr.up+fr.down)^2)
+}
+w.indicators.V <- cbind(w.indicators.V,w.Uncert_fl.prod,w.Uncert_fl.GBC)
+
+#---------------------------------------------------------------------------------------------------------------------------------------
+errors1 <- w.indicators.V[,c(1,9)]
+err.fac1 <- w.indicators.V[,c(1,9)]
+w.fact1 <- w.indicators.V[,c(1,9)]
+errors2 <- w.indicators.V[,c(1,9)]
+err.fac2 <- w.indicators.V[,c(1,9)]
+w.fact2 <- w.indicators.V[,c(1,9)]
+tel <- 2
+for(i in levels(uniBER.V$id)){
+    tel <- tel + 1
+    exp.error <- w.indicators.V[,c(1,9)]
+    data <- subset(uniBER.V, uniBER.V$id==i)
+    exp.error <- merge(exp.error, data, by.x="Date",by.y="surveyQ", all.x = TRUE)
+    for(t in 1:(nrow(exp.error))) {
+        exp.error$error1[t] <- exp.error$Q3A[t+1] - exp.error$Q3P[t]
+        exp.error$error2[t] <- exp.error$Q2A[t+1] - exp.error$Q2P[t]
+    }
+    
+    errors1 <- cbind(errors1, exp.error$error1)
+    err.fac1 <- cbind(err.fac1, exp.error$error1*exp.error$factor)
+    w.fact1 <- cbind(w.fact1, exp.error$factor)
+    errors2 <- cbind(errors2, exp.error$error2)
+    err.fac2 <- cbind(err.fac2, exp.error$error2*exp.error$factor)
+    w.fact2 <- cbind(w.fact2, exp.error$factor)
+    
+    colnames(errors1)[tel] <- as.character(i)
+    colnames(err.fac1)[tel] <- as.character(i)
+    colnames(w.fact1)[tel] <- as.character(i)
+    colnames(errors2)[tel] <- as.character(i)
+    colnames(err.fac2)[tel] <- as.character(i)
+    colnames(w.fact2)[tel] <- as.character(i)
+}
+
+
+w.Uncert_ee.prod <- NULL
+w.Uncert_ee.GBC <- NULL
+i <- 0
+for(kwartaal in levels(err.fac1$Date)) {
+    i <- i+1
+    temp1 <- subset(err.fac1,err.fac1$Date==kwartaal)[,c(-1,-2)]
+    temp2 <- subset(errors1,errors1$Date==kwartaal)[,c(-1,-2)]
+    temp3 <- subset(w.fact1,w.fact1$Date==kwartaal)[,c(-1,-2)]
+    temp4 <- replace(temp2, temp2==0,1)
+    temp4 <- replace(temp4, temp4==-2,2)
+    temp4 <- replace(temp4, temp4==-1,1)
+    temp4 <- temp4*temp3
+    
+    fr.2 <- sum(temp1[temp2==2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.1 <- sum(temp1[temp2==1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m1 <- sum(temp1[temp2==-1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m2 <- sum(temp1[temp2==-2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    w.Uncert_ee.prod[i] <- sqrt(4*fr.2+fr.1-fr.m1-4*fr.m2-(2*fr.2+fr.1+fr.m1+2*fr.m2)^2)
+    
+    temp1 <- subset(err.fac2,err.fac2$Date==kwartaal)[,c(-1,-2)]
+    temp2 <- subset(errors2,errors2$Date==kwartaal)[,c(-1,-2)]
+    temp3 <- subset(w.fact2,w.fact2$Date==kwartaal)[,c(-1,-2)]
+    temp4 <- replace(temp2, temp2==0,1)
+    temp4 <- replace(temp4, temp4==-2,2)
+    temp4 <- replace(temp4, temp4==-1,1)
+    temp4 <- temp4*temp3
+    
+    fr.2 <- sum(temp1[temp2==2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.1 <- sum(temp1[temp2==1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m1 <- sum(temp1[temp2==-1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m2 <- sum(temp1[temp2==-2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    w.Uncert_ee.GBC[i] <- sqrt(4*fr.2+fr.1-fr.m1-4*fr.m2-(2*fr.2+fr.1+fr.m1+2*fr.m2)^2)
+    
+}
+w.indicators.V <- cbind(w.indicators.V,w.Uncert_ee.prod,w.Uncert_ee.GBC)
+
+#---------------------------------------------------------------------------------------------------------------------------------------
+
 indicator_plot <- indicators.V[,c(1,2,3,4,8,9,10)]
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -511,12 +1022,12 @@ NRR.V <- aggregate(BER.V, by=list(BER.V$surveyQ), FUN=countNR)
 ##===============================##
 ## READING IN THE DATA: SERVICES ##
 ##===============================##
-BER.S <- read.csv("Services.csv", header=TRUE, sep=";",na.strings = "", skipNul = TRUE)
+BER.S <- read.csv("Services.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
 colnames(BER.S)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
 
 BER.S$surveyQ <- toupper(BER.S$surveyQ)
 BER.S[nrow(BER.S)+1,1:5] <- BER.S[nrow(BER.S),1:5] 
-BER.S[nrow(BER.S),"surveyQ"] <- "05Q4" 
+BER.S[nrow(BER.S),"surveyQ"] <- "2005Q4" 
 
 BER.S$region <- factor(BER.S$region)
 BER.S$sector <- factor(BER.S$sector) #could include labels
@@ -579,6 +1090,115 @@ uncert <- transform(errors1, SD=apply(errors1[,c(-1,-2)],1,se))[,c(1,ncol(errors
 indicators.S <- cbind(indicators.S, Uncert_ee.prod = uncert[,2])    
 uncert <- transform(errors2, SD=apply(errors2[,c(-1,-2)],1,se))[,c(1,ncol(errors2)+1)]
 indicators.S <- cbind(indicators.S, Uncert_ee.GBC = uncert[,2])
+
+##Weighted versions--------------------------------------------------------------------------------------------------------------------
+w.Conf_cc <- NULL
+w.Act_prod <- NULL
+w.Conf_prod <- NULL
+w.Act_GBC <- NULL
+w.Conf_GBC <- NULL
+w.Empl <- NULL
+i <- 0
+for(kwartaal in levels(BER.S$surveyQ)) {
+    i <- i+1
+    temp <- subset(BER.S,BER.S$surveyQ==kwartaal)
+    w.Conf_cc[i] <- sum(temp$Q1*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q1)], na.rm=TRUE)
+    w.Act_prod[i] <- sum(temp$Q3A*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3A)], na.rm=TRUE)
+    w.Conf_prod[i] <- sum(temp$Q3P*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)], na.rm=TRUE)
+    w.Act_GBC[i] <- sum(temp$Q2A*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q2A)], na.rm=TRUE)
+    w.Conf_GBC[i] <- sum(temp$Q2P*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q2P)], na.rm=TRUE)
+    w.Empl[i] <- sum(temp$Q4A*temp$factor, na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q4A)], na.rm=TRUE)
+}
+w.indicators.S <- as.data.frame(cbind(w.Conf_cc,w.Act_prod,w.Conf_prod,w.Act_GBC,w.Conf_GBC,w.Empl))
+w.indicators.S <- cbind(Date=levels(BER.S$surveyQ),w.indicators.S)
+#---------------------------------------------------------------------------------------------------------------------------------------
+w.Uncert_fl.prod <- NULL
+w.Uncert_fl.GBC <- NULL
+i <- 0
+for(kwartaal in levels(BER.S$surveyQ)) {
+    i <- i+1
+    temp <- subset(BER.S,BER.S$surveyQ==kwartaal)
+    
+    fr.up <- sum((temp$Q3P*temp$factor)[temp$Q3P>0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)],na.rm=TRUE)
+    fr.down <- sum((temp$Q3P*temp$factor)[temp$Q3P<0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)],na.rm=TRUE)
+    w.Uncert_fl.prod[i] <- sqrt(fr.up-fr.down-(fr.up+fr.down)^2)
+    
+    fr.up <- sum((temp$Q2P*temp$factor)[temp$Q2P>0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q2P)],na.rm=TRUE)
+    fr.down <- sum((temp$Q2P*temp$factor)[temp$Q2P<0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q2P)],na.rm=TRUE)
+    w.Uncert_fl.GBC[i] <- sqrt(fr.up-fr.down-(fr.up+fr.down)^2)
+}
+w.indicators.S <- cbind(w.indicators.S,w.Uncert_fl.prod,w.Uncert_fl.GBC)
+#---------------------------------------------------------------------------------------------------------------------------------------
+errors1 <- w.indicators.S[,c(1,9)]
+err.fac1 <- w.indicators.S[,c(1,9)]
+w.fact1 <- w.indicators.S[,c(1,9)]
+errors2 <- w.indicators.S[,c(1,9)]
+err.fac2 <- w.indicators.S[,c(1,9)]
+w.fact2 <- w.indicators.S[,c(1,9)]
+tel <- 2
+for(i in levels(uniBER.S$id)){
+    tel <- tel + 1
+    exp.error <- w.indicators.S[,c(1,9)]
+    data <- subset(uniBER.S, uniBER.S$id==i)
+    exp.error <- merge(exp.error, data, by.x="Date",by.y="surveyQ", all.x = TRUE)
+    for(t in 1:(nrow(exp.error))) {
+        exp.error$error1[t] <- exp.error$Q3A[t+1] - exp.error$Q3P[t]
+        exp.error$error2[t] <- exp.error$Q2A[t+1] - exp.error$Q2P[t]
+    }
+    
+    errors1 <- cbind(errors1, exp.error$error1)
+    err.fac1 <- cbind(err.fac1, exp.error$error1*exp.error$factor)
+    w.fact1 <- cbind(w.fact1, exp.error$factor)
+    errors2 <- cbind(errors2, exp.error$error2)
+    err.fac2 <- cbind(err.fac2, exp.error$error2*exp.error$factor)
+    w.fact2 <- cbind(w.fact2, exp.error$factor)
+    
+    colnames(errors1)[tel] <- as.character(i)
+    colnames(err.fac1)[tel] <- as.character(i)
+    colnames(w.fact1)[tel] <- as.character(i)
+    colnames(errors2)[tel] <- as.character(i)
+    colnames(err.fac2)[tel] <- as.character(i)
+    colnames(w.fact2)[tel] <- as.character(i)
+}
+
+
+w.Uncert_ee.prod <- NULL
+w.Uncert_ee.GBC <- NULL
+i <- 0
+for(kwartaal in levels(err.fac1$Date)) {
+    i <- i+1
+    temp1 <- subset(err.fac1,err.fac1$Date==kwartaal)[,c(-1,-2)]
+    temp2 <- subset(errors1,errors1$Date==kwartaal)[,c(-1,-2)]
+    temp3 <- subset(w.fact1,w.fact1$Date==kwartaal)[,c(-1,-2)]
+    temp4 <- replace(temp2, temp2==0,1)
+    temp4 <- replace(temp4, temp4==-2,2)
+    temp4 <- replace(temp4, temp4==-1,1)
+    temp4 <- temp4*temp3
+    
+    fr.2 <- sum(temp1[temp2==2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.1 <- sum(temp1[temp2==1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m1 <- sum(temp1[temp2==-1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m2 <- sum(temp1[temp2==-2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    w.Uncert_ee.prod[i] <- sqrt(4*fr.2+fr.1-fr.m1-4*fr.m2-(2*fr.2+fr.1+fr.m1+2*fr.m2)^2)
+    
+    temp1 <- subset(err.fac2,err.fac2$Date==kwartaal)[,c(-1,-2)]
+    temp2 <- subset(errors2,errors2$Date==kwartaal)[,c(-1,-2)]
+    temp3 <- subset(w.fact2,w.fact2$Date==kwartaal)[,c(-1,-2)]
+    temp4 <- replace(temp2, temp2==0,1)
+    temp4 <- replace(temp4, temp4==-2,2)
+    temp4 <- replace(temp4, temp4==-1,1)
+    temp4 <- temp4*temp3
+    
+    fr.2 <- sum(temp1[temp2==2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.1 <- sum(temp1[temp2==1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m1 <- sum(temp1[temp2==-1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m2 <- sum(temp1[temp2==-2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    w.Uncert_ee.GBC[i] <- sqrt(4*fr.2+fr.1-fr.m1-4*fr.m2-(2*fr.2+fr.1+fr.m1+2*fr.m2)^2)
+    
+}
+w.indicators.S <- cbind(w.indicators.S,w.Uncert_ee.prod,w.Uncert_ee.GBC)
+
+#---------------------------------------------------------------------------------------------------------------------------------------
 
 indicator_plot <- indicators.S[,c(1,2,4,6)]
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -707,6 +1327,129 @@ g <- g + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + theme(legend.title=element_blank())
 g
+
+
+##Weighted versions---------------------------------------------------------------------------------
+#GDP Data
+GDPdata <- read.csv("GDP Data.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+
+weights <- GDPdata[,c(17,12,6)]
+motor <- 0.05*weights[,3]
+weights <- cbind(weights,MotorRGDP_sa=motor)
+weights <- cbind(weights,SerRGDP_sa=GDPdata[,24])
+
+#weights$total <- rowSums(weights,1)
+
+colnames(w.indicators.M) <- c("Date","w.Conf_cc.M","w.Conf_fl.M","w.Act_prod.M","w.Conf_prod.M","w.Act_GBC.M","w.Conf_GBC.M","w.Invest.M","w.Empl.M")
+colnames(w.indicators.B) <- c("Date","w.Conf_cc.B",              "w.Act_prod.B","w.Conf_prod.B","w.Act_GBC.B","w.Conf_GBC.B",             "w.Empl.B")
+colnames(w.indicators.T) <- c("Date","w.Conf_cc.T",              "w.Act_prod.T","w.Conf_prod.T","w.Act_GBC.T","w.Conf_GBC.T",             "w.Empl.T")
+colnames(w.indicators.V) <- c("Date","w.Conf_cc.V",              "w.Act_prod.V","w.Conf_prod.V","w.Act_GBC.V","w.Conf_GBC.V",             "w.Empl.V")
+colnames(w.indicators.S) <- c("Date","w.Conf_cc.S",              "w.Act_prod.S","w.Conf_prod.S","w.Act_GBC.S","w.Conf_GBC.S",             "w.Empl.S")
+
+CC <- merge(w.indicators.M, w.indicators.B, by.x="Date", by.y="Date",all.x=TRUE)
+CC <- merge(CC, w.indicators.T, by.x="Date", by.y="Date",all.x=TRUE)
+CC <- merge(CC, w.indicators.V, by.x="Date", by.y="Date",all.x=TRUE)
+CC <- merge(CC, w.indicators.S, by.x="Date", by.y="Date",all.x=TRUE)
+
+Conf_cc <- cbind(CC$w.Conf_cc.M,CC$w.Conf_cc.B,CC$w.Conf_cc.T,CC$w.Conf_cc.V,CC$w.Conf_cc.S)
+Act_prod <- cbind(CC$w.Act_prod.M,CC$w.Act_prod.B,CC$w.Act_prod.T,CC$w.Act_prod.V,CC$w.Act_prod.S)
+Conf_prod <- cbind(CC$w.Conf_prod.M,CC$w.Conf_prod.B,CC$w.Conf_prod.T,CC$w.Conf_prod.V,CC$w.Conf_prod.S)
+Act_GBC <- cbind(CC$w.Act_GBC.M,CC$w.Act_GBC.B,CC$w.Act_GBC.T,CC$w.Act_GBC.V,CC$w.Act_GBC.S)
+Conf_GBC <- cbind(CC$w.Conf_GBC.M,CC$w.Conf_GBC.B,CC$w.Conf_GBC.T,CC$w.Conf_GBC.V,CC$w.Conf_GBC.S)
+Empl <- cbind(CC$w.Empl.M,CC$w.Empl.B,CC$w.Empl.T,CC$w.Empl.V,CC$w.Empl.S)
+
+w.indicators <- indicators
+for(i in 1:95) {
+    w.indicators$Conf_cc[i] <- weighted.mean(Conf_cc[i,], weights[i,],na.rm=TRUE)
+    w.indicators$Act_prod[i] <- weighted.mean(Act_prod[i,], weights[i,],na.rm=TRUE)
+    w.indicators$Conf_prod[i] <- weighted.mean(Conf_prod[i,], weights[i,],na.rm=TRUE)
+    w.indicators$Act_GBC[i] <- weighted.mean(Act_GBC[i,], weights[i,],na.rm=TRUE)
+    w.indicators$Conf_GBC[i] <- weighted.mean(Conf_GBC[i,], weights[i,],na.rm=TRUE)
+    w.indicators$Empl[i] <- weighted.mean(Empl[i,], weights[i,],na.rm=TRUE)
+}
+
+##------------------------------------------------------------------------------------------
+
+colnames(w.indicators.M)[10:15] <- c("w.Uncert_fl.M","w.Uncert_fl.prod.M","w.Uncert_fl.GBC.M","w.Uncert_ee.M","w.Uncert_ee.prod.M","w.Uncert_ee.GBC.M")
+colnames(w.indicators.B)[8:11] <-  c(                "w.Uncert_fl.prod.B","w.Uncert_fl.GBC.B",                "w.Uncert_ee.prod.B","w.Uncert_ee.GBC.B")
+colnames(w.indicators.T)[8:11] <-  c(                "w.Uncert_fl.prod.T","w.Uncert_fl.GBC.T",                "w.Uncert_ee.prod.T","w.Uncert_ee.GBC.T")
+colnames(w.indicators.V)[8:11] <-  c(                "w.Uncert_fl.prod.V","w.Uncert_fl.GBC.V",                "w.Uncert_ee.prod.V","w.Uncert_ee.GBC.V")
+colnames(w.indicators.S)[8:11] <-  c(                "w.Uncert_fl.prod.S","w.Uncert_fl.GBC.S",                "w.Uncert_ee.prod.S","w.Uncert_ee.GBC.S")
+
+UN <- merge(w.indicators.M[,c(1,10:15)], w.indicators.B[,c(1,8:11)], by.x="Date", by.y="Date",all.x=TRUE)
+UN <- merge(UN, w.indicators.T[,c(1,8:11)], by.x="Date", by.y="Date",all.x=TRUE)
+UN <- merge(UN, w.indicators.V[,c(1,8:11)], by.x="Date", by.y="Date",all.x=TRUE)
+UN <- merge(UN, w.indicators.S[,c(1,8:11)], by.x="Date", by.y="Date",all.x=TRUE)
+
+Uncert_fl.prod <- cbind(UN$w.Uncert_fl.prod.M,UN$w.Uncert_fl.prod.B,UN$w.Uncert_fl.prod.T,UN$w.Uncert_fl.prod.V,UN$w.Uncert_fl.prod.S)
+Uncert_fl.GBC <- cbind(UN$w.Uncert_fl.GBC.M,UN$w.Uncert_fl.GBC.B,UN$w.Uncert_fl.GBC.T,UN$w.Uncert_fl.GBC.V,UN$w.Uncert_fl.GBC.S)
+Uncert_ee.prod <- cbind(UN$w.Uncert_ee.prod.M,UN$w.Uncert_ee.prod.B,UN$w.Uncert_ee.prod.T,UN$w.Uncert_ee.prod.V,UN$w.Uncert_ee.prod.S)
+Uncert_ee.GBC <- cbind(UN$w.Uncert_ee.GBC.M,UN$w.Uncert_ee.GBC.B,UN$w.Uncert_ee.GBC.T,UN$w.Uncert_ee.GBC.V,UN$w.Uncert_ee.GBC.S)
+
+for(i in 1:95) {
+    w.indicators$Uncert_fl.prod[i] <- weighted.mean(Uncert_fl.prod[i,], weights[i,],na.rm=TRUE)
+    w.indicators$Uncert_fl.GBC[i] <- weighted.mean(Uncert_fl.GBC[i,], weights[i,],na.rm=TRUE)
+    w.indicators$Uncert_ee.prod[i] <- weighted.mean(Uncert_ee.prod[i,], weights[i,],na.rm=TRUE)
+    w.indicators$Uncert_ee.GBC[i] <- weighted.mean(Uncert_ee.GBC[i,], weights[i,],na.rm=TRUE)
+}
+
+
+
+##---------------------------------------
+## Main Graphs
+##---------------------------------------
+
+indicator_plot <- w.indicators[,c(1,2,5,6)]
+colnames(indicator_plot) <- c("Date","Current1","Current2","Forward-looking")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Indicator")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank())
+g <- g + theme(legend.position="bottom")
+g
+
+indicator_plot <- cbind(w.indicators[,c(1,2)],(GDPdata$Confidence-50)/50)
+colnames(indicator_plot) <- c("Date","Current1","BER Confidence")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Indicator")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank())
+g <- g + theme(legend.position="bottom")
+g
+
+indicator_plot <- cbind(indicators[,c(1,2)],w.indicators[,2])
+colnames(indicator_plot) <- c("Date","Unweighted","Weighted")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Indicator")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank())
+g <- g + theme(legend.position="bottom")
+g
+
+indicator_plot <- cbind(indicators[,c(1,6)],w.indicators[,6])
+colnames(indicator_plot) <- c("Date","Unweighted","Weighted")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Indicator")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank())
+g <- g + theme(legend.position="bottom")
+g
+
+#-----------------------------------------------------------------------------
+stanndardise <- w.indicators[,9:12]-mean()
+
 
 #====================================================#
 # ------------------ VAR ANALYSIS ------------------ #
