@@ -8,7 +8,11 @@ suppressMessages(library(plyr))
 suppressMessages(library(dplyr))
 suppressMessages(library(reshape2))
 suppressMessages(library(stargazer))
+suppressMessages(library(xtable))
+suppressMessages(library(scales))
 
+GDPdata <- read.csv("GDP Data.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+GDPdata$X <- as.Date(GDPdata$X, format = "%Y/%m/%d")
 
 ##====================================================================================##
 ## -------------------------------- CONFIDENCE ---------------------------------------##
@@ -386,6 +390,8 @@ altBER <- BER
 altBER$Q4A <- replace(altBER$Q4A, altBER$Q4A==-1,1) # replace -1 (Down) responses with 1
 indicators <- cbind(indicators, Empl_turn = aggregate(altBER$Q4A, by=list(altBER$surveyQ), FUN=mean, na.rm=TRUE)[,2])
 
+indicators$Date <- GDPdata[,1]
+
 ##Weighted versions---------------------------------------------------------------------------------
 #GDP Data
 GDPdata <- read.csv("GDP Data.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
@@ -423,16 +429,18 @@ for(i in 1:95) {
     w.indicators$Empl[i] <- weighted.mean(Empl[i,], weights[i,],na.rm=TRUE)
 }
 
+w.indicators$Date <- GDPdata[,1]
+
 
 indicator_plot <- w.indicators[,c(1,2,5,6)]
 colnames(indicator_plot) <- c("Date","Current1","Current2","Forward-looking")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
-g <- g + ylab("Indicator")
+g <- g + ylab("Confidence")
 g <- g + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank())
+g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
 
@@ -444,7 +452,7 @@ g <- g + geom_line()
 g <- g + ylab("Indicator")
 g <- g + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank())
+g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
 
@@ -456,7 +464,7 @@ g <- g + geom_line()
 g <- g + ylab("Indicator")
 g <- g + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank())
+g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
 
@@ -468,7 +476,7 @@ g <- g + geom_line()
 g <- g + ylab("Indicator")
 g <- g + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank())
+g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
 
@@ -1209,7 +1217,154 @@ indicators <- cbind(indicators, Uncert_ee.prod = uncert[,2])
 uncert <- transform(errors2, SD=apply(errors2[,c(-1,-2)],1,se))[,c(1,ncol(errors2)+1)]
 indicators <- cbind(indicators, Uncert_ee.GBC = uncert[,2])
 
+##Weighted versions---------------------------------------------------------------------------------
+#GDP Data
+GDPdata <- read.csv("GDP Data.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+GDPdata$X <- as.Date(GDPdata$X, format = "%Y/%m/%d")
 
+weights <- GDPdata[,c(17,12,6)]
+motor <- 0.05*weights[,3]
+weights <- cbind(weights,MotorRGDP_sa=motor)
+weights <- cbind(weights,SerRGDP_sa=GDPdata[,24])
+
+#weights$total <- rowSums(weights,1)
+
+colnames(w.indicators.M) <- c("Date","w.Conf_cc.M","w.Conf_fl.M","w.Act_prod.M","w.Conf_prod.M","w.Act_GBC.M","w.Conf_GBC.M","w.Invest.M","w.Empl.M")
+colnames(w.indicators.B) <- c("Date","w.Conf_cc.B",              "w.Act_prod.B","w.Conf_prod.B","w.Act_GBC.B","w.Conf_GBC.B",             "w.Empl.B")
+colnames(w.indicators.T) <- c("Date","w.Conf_cc.T",              "w.Act_prod.T","w.Conf_prod.T","w.Act_GBC.T","w.Conf_GBC.T",             "w.Empl.T")
+colnames(w.indicators.V) <- c("Date","w.Conf_cc.V",              "w.Act_prod.V","w.Conf_prod.V","w.Act_GBC.V","w.Conf_GBC.V",             "w.Empl.V")
+colnames(w.indicators.S) <- c("Date","w.Conf_cc.S",              "w.Act_prod.S","w.Conf_prod.S","w.Act_GBC.S","w.Conf_GBC.S",             "w.Empl.S")
+
+CC <- merge(w.indicators.M, w.indicators.B, by.x="Date", by.y="Date",all.x=TRUE)
+CC <- merge(CC, w.indicators.T, by.x="Date", by.y="Date",all.x=TRUE)
+CC <- merge(CC, w.indicators.V, by.x="Date", by.y="Date",all.x=TRUE)
+CC <- merge(CC, w.indicators.S, by.x="Date", by.y="Date",all.x=TRUE)
+
+Conf_cc <- cbind(CC$w.Conf_cc.M,CC$w.Conf_cc.B,CC$w.Conf_cc.T,CC$w.Conf_cc.V,CC$w.Conf_cc.S)
+Act_prod <- cbind(CC$w.Act_prod.M,CC$w.Act_prod.B,CC$w.Act_prod.T,CC$w.Act_prod.V,CC$w.Act_prod.S)
+Conf_prod <- cbind(CC$w.Conf_prod.M,CC$w.Conf_prod.B,CC$w.Conf_prod.T,CC$w.Conf_prod.V,CC$w.Conf_prod.S)
+Act_GBC <- cbind(CC$w.Act_GBC.M,CC$w.Act_GBC.B,CC$w.Act_GBC.T,CC$w.Act_GBC.V,CC$w.Act_GBC.S)
+Conf_GBC <- cbind(CC$w.Conf_GBC.M,CC$w.Conf_GBC.B,CC$w.Conf_GBC.T,CC$w.Conf_GBC.V,CC$w.Conf_GBC.S)
+Empl <- cbind(CC$w.Empl.M,CC$w.Empl.B,CC$w.Empl.T,CC$w.Empl.V,CC$w.Empl.S)
+
+w.indicators <- indicators
+for(i in 1:95) {
+    w.indicators$Conf_cc[i] <- weighted.mean(Conf_cc[i,], weights[i,],na.rm=TRUE)
+    w.indicators$Act_prod[i] <- weighted.mean(Act_prod[i,], weights[i,],na.rm=TRUE)
+    w.indicators$Conf_prod[i] <- weighted.mean(Conf_prod[i,], weights[i,],na.rm=TRUE)
+    w.indicators$Act_GBC[i] <- weighted.mean(Act_GBC[i,], weights[i,],na.rm=TRUE)
+    w.indicators$Conf_GBC[i] <- weighted.mean(Conf_GBC[i,], weights[i,],na.rm=TRUE)
+    w.indicators$Empl[i] <- weighted.mean(Empl[i,], weights[i,],na.rm=TRUE)
+}
+
+##------------------------------------------------------------------------------------------
+
+colnames(w.indicators.M)[10:15] <- c("w.Uncert_fl.M","w.Uncert_fl.prod.M","w.Uncert_fl.GBC.M","w.Uncert_ee.M","w.Uncert_ee.prod.M","w.Uncert_ee.GBC.M")
+colnames(w.indicators.B)[8:11] <-  c(                "w.Uncert_fl.prod.B","w.Uncert_fl.GBC.B",                "w.Uncert_ee.prod.B","w.Uncert_ee.GBC.B")
+colnames(w.indicators.T)[8:11] <-  c(                "w.Uncert_fl.prod.T","w.Uncert_fl.GBC.T",                "w.Uncert_ee.prod.T","w.Uncert_ee.GBC.T")
+colnames(w.indicators.V)[8:11] <-  c(                "w.Uncert_fl.prod.V","w.Uncert_fl.GBC.V",                "w.Uncert_ee.prod.V","w.Uncert_ee.GBC.V")
+colnames(w.indicators.S)[8:11] <-  c(                "w.Uncert_fl.prod.S","w.Uncert_fl.GBC.S",                "w.Uncert_ee.prod.S","w.Uncert_ee.GBC.S")
+
+UN <- merge(w.indicators.M[,c(1,10:15)], w.indicators.B[,c(1,8:11)], by.x="Date", by.y="Date",all.x=TRUE)
+UN <- merge(UN, w.indicators.T[,c(1,8:11)], by.x="Date", by.y="Date",all.x=TRUE)
+UN <- merge(UN, w.indicators.V[,c(1,8:11)], by.x="Date", by.y="Date",all.x=TRUE)
+UN <- merge(UN, w.indicators.S[,c(1,8:11)], by.x="Date", by.y="Date",all.x=TRUE)
+
+Uncert_fl.prod <- cbind(UN$w.Uncert_fl.prod.M,UN$w.Uncert_fl.prod.B,UN$w.Uncert_fl.prod.T,UN$w.Uncert_fl.prod.V,UN$w.Uncert_fl.prod.S)
+Uncert_fl.GBC <- cbind(UN$w.Uncert_fl.GBC.M,UN$w.Uncert_fl.GBC.B,UN$w.Uncert_fl.GBC.T,UN$w.Uncert_fl.GBC.V,UN$w.Uncert_fl.GBC.S)
+Uncert_ee.prod <- cbind(UN$w.Uncert_ee.prod.M,UN$w.Uncert_ee.prod.B,UN$w.Uncert_ee.prod.T,UN$w.Uncert_ee.prod.V,UN$w.Uncert_ee.prod.S)
+Uncert_ee.GBC <- cbind(UN$w.Uncert_ee.GBC.M,UN$w.Uncert_ee.GBC.B,UN$w.Uncert_ee.GBC.T,UN$w.Uncert_ee.GBC.V,UN$w.Uncert_ee.GBC.S)
+
+for(i in 1:95) {
+    w.indicators$Uncert_fl.prod[i] <- weighted.mean(Uncert_fl.prod[i,], weights[i,],na.rm=TRUE)
+    w.indicators$Uncert_fl.GBC[i] <- weighted.mean(Uncert_fl.GBC[i,], weights[i,],na.rm=TRUE)
+    w.indicators$Uncert_ee.prod[i] <- weighted.mean(Uncert_ee.prod[i,], weights[i,],na.rm=TRUE)
+    w.indicators$Uncert_ee.GBC[i] <- weighted.mean(Uncert_ee.GBC[i,], weights[i,],na.rm=TRUE)
+}
+
+
+#-----------------------------------------------------------------------------
+#Load pre-calculated datasets (for speed)
+indicators <- read.csv2("indicators.csv", header=TRUE)[,-1]
+indicators.M <- read.csv2("indicators_M.csv", header=TRUE)[,-1]
+indicators.B <- read.csv2("indicators_B.csv", header=TRUE)[,-1]
+indicators.T <- read.csv2("indicators_T.csv", header=TRUE)[,-1]
+indicators.V <- read.csv2("indicators_V.csv", header=TRUE)[,-1]
+indicators.S <- read.csv2("indicators_S.csv", header=TRUE)[,-1]
+
+w.indicators <- read.csv2("w_indicators.csv")[,-1]
+w.indicators.M <- read.csv2("w_indicators_M.csv")[,-1]
+w.indicators.B <- read.csv2("w_indicators_B.csv")[,-1]
+w.indicators.T <- read.csv2("w_indicators_T.csv")[,-1]
+w.indicators.V <- read.csv2("w_indicators_V.csv")[,-1]
+w.indicators.S <- read.csv2("w_indicators_S.csv")[,-1]
+
+GDPdata$X <- as.Date(GDPdata$X, format = "%Y/%m/%d")
+w.indicators$Date <- GDPdata$X
+indicators$Date <- GDPdata$X
+
+w.uncert.norm <- cbind(Date=w.indicators[,1],as.data.frame(scale(w.indicators[,9:12])))
+uncert.norm <- cbind(Date=indicators[,1],as.data.frame(scale(indicators[,9:12])))
+
+
+indicator_plot <- cbind(uncert.norm[,c(1,3)],w.uncert.norm[,3])
+colnames(indicator_plot) <- c("Date","Unweighted","Weighted")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Uncertainty")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+
+indicator_plot <- cbind(uncert.norm[,c(1,5)],w.uncert.norm[,5])
+colnames(indicator_plot) <- c("Date","Unweighted","Weighted")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Uncertainty")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+
+indicator_plot <- uncert.norm[,c(1,3,5)]
+colnames(indicator_plot) <- c("Date","Forward-looking","Expectation Errors")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Uncertainty")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+
+indicator_plot <- w.uncert.norm[,c(1,3,5)]
+colnames(indicator_plot) <- c("Date","Forward-looking","Expectation Errors")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Uncertainty")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+
+
+# Check correlations
+temp_indices <- cbind(uncert.norm[,c(1,3,5)],w.uncert.norm[,c(3,5)])
+colnames(temp_indices) <- c("Date","Unw_FL","Unw_EE","Weighted_FL","Weighted_EE")
+source("corstarsl.R")
+for(i in 2:ncol(temp_indices)) {temp_indices[,i] <- as.numeric(temp_indices[,i]) }
+ts.all_indices <- as.ts(temp_indices[,-1],start =c(2000,1),end=c(2015,3),frequency=4) 
+#cor(temp_indices[,-1],use="complete.obs")
+xt <- xtable(corstarsl(ts.all_indices), caption="Correlations in Levels")
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"))
 
 
 

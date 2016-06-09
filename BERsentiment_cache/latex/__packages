@@ -4,3 +4,9 @@ plyr
 dplyr
 reshape2
 stargazer
+xtable
+lattice
+survival
+Formula
+Hmisc
+scales

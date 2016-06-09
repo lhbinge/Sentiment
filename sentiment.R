@@ -8,6 +8,8 @@ library(plyr)
 library(dplyr)
 library(reshape2)
 library(stargazer)
+library(xtable)
+library(scales)
 
 ##====================================##
 ## READING IN THE DATA: MANUFACTURING ##
@@ -1395,6 +1397,40 @@ for(i in 1:95) {
 
 
 
+write.csv2(indicators,file="indicators.csv")
+write.csv2(indicators.M,file="indicators_M.csv")
+write.csv2(indicators.B,file="indicators_B.csv")
+write.csv2(indicators.T,file="indicators_T.csv")
+write.csv2(indicators.V,file="indicators_V.csv")
+write.csv2(indicators.S,file="indicators_S.csv")
+
+write.csv2(w.indicators,file="w_indicators.csv")
+write.csv2(w.indicators.M,file="w_indicators_M.csv")
+write.csv2(w.indicators.B,file="w_indicators_B.csv")
+write.csv2(w.indicators.T,file="w_indicators_T.csv")
+write.csv2(w.indicators.V,file="w_indicators_V.csv")
+write.csv2(w.indicators.S,file="w_indicators_S.csv")
+
+cor(w.uncert.norm[,c(3,5)],use="pairwise.complete.obs")
+
+indicators <- read.csv2("indicators.csv", header=TRUE)[,-1]
+indicators.M <- read.csv2("indicators_M.csv", header=TRUE)[,-1]
+indicators.B <- read.csv2("indicators_B.csv", header=TRUE)[,-1]
+indicators.T <- read.csv2("indicators_T.csv", header=TRUE)[,-1]
+indicators.V <- read.csv2("indicators_V.csv", header=TRUE)[,-1]
+indicators.S <- read.csv2("indicators_S.csv", header=TRUE)[,-1]
+
+w.indicators <- read.csv2("w_indicators.csv")[,-1]
+w.indicators.M <- read.csv2("w_indicators_M.csv")[,-1]
+w.indicators.B <- read.csv2("w_indicators_B.csv")[,-1]
+w.indicators.T <- read.csv2("w_indicators_T.csv")[,-1]
+w.indicators.V <- read.csv2("w_indicators_V.csv")[,-1]
+w.indicators.S <- read.csv2("w_indicators_S.csv")[,-1]
+
+w.uncert.norm <- cbind(Date=w.indicators[,1],as.data.frame(scale(w.indicators[,9:12])))
+uncert.norm <- cbind(Date=indicators[,1],as.data.frame(scale(indicators[,9:12])))
+
+
 ##---------------------------------------
 ## Main Graphs
 ##---------------------------------------
@@ -1447,9 +1483,195 @@ g <- g + theme(legend.title=element_blank())
 g <- g + theme(legend.position="bottom")
 g
 
-#-----------------------------------------------------------------------------
-stanndardise <- w.indicators[,9:12]-mean()
 
+#-----------------------------------------------------------------------------
+
+indicator_plot <- w.uncert.norm[,c(1,3,5)]
+colnames(indicator_plot) <- c("Date","Forward-looking","Expectation Errors")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Indicator")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank())
+g <- g + theme(legend.position="bottom")
+g
+
+indicator_plot <- uncert.norm[,c(1,3,5)]
+colnames(indicator_plot) <- c("Date","Forward-looking","Expectation Errors")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Indicator")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank())
+g <- g + theme(legend.position="bottom")
+g
+
+
+indicator_plot <- cbind(uncert.norm[,c(1,3)],w.uncert.norm[,3])
+colnames(indicator_plot) <- c("Date","Unweighted","Weighted")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Indicator")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank())
+g <- g + theme(legend.position="bottom")
+g
+
+indicator_plot <- cbind(uncert.norm[,c(1,5)],w.uncert.norm[,5])
+colnames(indicator_plot) <- c("Date","Unweighted","Weighted")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Indicator")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank())
+g <- g + theme(legend.position="bottom")
+g
+
+
+smoke <- matrix(c(0,-1,-2,1,0,-1,2,1,0),ncol=3,byrow=TRUE)
+colnames(smoke) <- c("Better","Same","Poorer")
+rownames(smoke) <- c("Expected Better","Expected Same","Expected Poorer")
+names(dimnames(smoke)) <- c("Q7Pt", "Q7Pt+1")
+smoke <- as.table(smoke)
+smoke
+
+
+# Check correlations of Uncertainty
+temp_indices <- cbind(uncert.norm[,c(1,3,5)],w.uncert.norm[,c(3,5)])
+colnames(temp_indices) <- c("Date","Unw_FL","Unw_EE","Weighted_FL","Weighted_EE")
+source("corstarsl.R")
+for(i in 2:ncol(temp_indices)) {temp_indices[,i] <- as.numeric(temp_indices[,i]) }
+ts.all_indices <- as.ts(temp_indices[,-1],start =c(1992,1),end=c(2015,3),frequency=4) 
+#cor(temp_indices[,-1],use="complete.obs")
+xt <- xtable(corstarsl(ts.all_indices), caption="Correlations in Levels")
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"))
+
+#-------------------------------------------------------------------------------------------------
+
+# Check correlations of GDP
+#series <- ts(GDPdata[,3], frequency = 4, start = c(1992, 1)) # 
+#realGDPgrowth <- diff(series, lag=4)/ lag(series, k=-4)
+#temp_indices <- w.indicators[-1:-4,c(1,2,5,6,10,12)]
+#ts.all_indices <- as.ts(temp_indices[,-1],start =c(1993,1),end=c(2015,3),frequency=4) 
+#ts.all_indices <- cbind(ts.all_indices,realGDPgrowth)
+
+#GDPdata$X <- as.Date(GDPdata$X, format = "%Y/%m/%d")
+realGDP <- read.csv("RealGDP.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+realGDP$X <- as.Date(realGDP$X, format = "%Y/%m/%d")
+
+x <- realGDP[,2]
+indexes<-1:(NROW(x)-4)
+realGDPgrowth<-c(rep(NA,4),(x[indexes+4]-x[indexes])/x[indexes])
+temp_indices <- cbind(Date=GDPdata$X,indicators[,c(2,5,6,10,12)],realGDPgrowth)
+colnames(temp_indices) <- c("Date", "Concf_CC", "Act_GBC", "Conf_FL", "Uncert_FL", "Uncert_EE", "GDPgrowth")
+ts.all_indices <- ts(temp_indices[,-1],start =c(1992,1),end=c(2015,3),frequency=4) 
+plot(ts.all_indices[,c(3,5,6)],plot.type = "m",main="")
+
+#cor(temp_indices[,-1],use="complete.obs")
+#source("corstarsl.R")
+#for(i in 2:ncol(temp_indices)) {temp_indices[,i] <- as.numeric(temp_indices[,i]) }
+#ts.all_indices <- as.ts(temp_indices[,-1],start =c(1992,1),end=c(2015,3),frequency=4) 
+#cor(temp_indices[,-1],use="complete.obs")
+#xt <- xtable(corstarsl(ts.all_indices), caption="Correlations in Levels")
+#print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"))
+
+Conf_cc <- temp_indices[,2]
+Act_GBC <- temp_indices[,3]
+Conf_GBC <- temp_indices[,4]
+Unc_fl <- temp_indices[,5] 
+Unc_ee <- temp_indices[,6]
+GDPgrowth <- temp_indices[,7]
+
+par(mfrow=c(2,2))
+ccf(Act_GBC,GDPgrowth, na.action = na.pass)
+ccf(Conf_GBC,GDPgrowth, na.action = na.pass)
+ccf(Unc_fl,GDPgrowth, na.action = na.pass)
+ccf(Unc_ee,GDPgrowth, na.action = na.pass)
+
+
+#x <- GDPdata$ManuValue_sa
+x <- GDPdata$Real
+indexes<-1:(NROW(x)-4)
+realGDPgrowth<-c(rep(NA,4),(x[indexes+4]-x[indexes])/x[indexes])
+realGDPgrowth<-realGDPgrowth[-1]
+#temp_indices <- cbind(Date=GDPdata$X,indicators[,c(2,5,6,10,12)],realGDPgrowth)
+temp_indices <- cbind(Date=GDPdata$X[-1],w.indicators.T[,c(2,5,6,9,11)],realGDPgrowth)
+colnames(temp_indices) <- c("Date", "Concf_CC", "Act_GBC", "Conf_FL", "Uncert_FL", "Uncert_EE", "GDPgrowth")
+ts.all_indices <- ts(temp_indices[,-1],start =c(1992,1),end=c(2015,3),frequency=4) 
+plot(ts.all_indices[,c(3,5,6)],plot.type = "m",main="")
+
+Conf_cc <- temp_indices[,2]
+Act_GBC <- temp_indices[,3]
+Conf_GBC <- temp_indices[,4]
+Unc_fl <- temp_indices[,5] 
+Unc_ee <- temp_indices[,6]
+GDPgrowth <- temp_indices[,7]
+
+par(mfrow=c(2,2))
+ccf(Act_GBC,GDPgrowth, na.action = na.pass)
+ccf(Conf_GBC,GDPgrowth, na.action = na.pass)
+ccf(Unc_fl,GDPgrowth, na.action = na.pass)
+ccf(Unc_ee,GDPgrowth, na.action = na.pass)
+
+#ccf(temp_indices[,6],temp_indices[,7], na.action = na.pass)
+
+ts.Conf_cc <- ts(temp_indices[,2],start =c(1992,1),end=c(2015,3),frequency=4) 
+ts.Act_GBC <- ts(temp_indices[,3],start =c(1992,1),end=c(2015,3),frequency=4) 
+ts.Conf_GBC <- ts(temp_indices[,4],start =c(1992,1),end=c(2015,3),frequency=4) 
+ts.Unc_fl <- ts(temp_indices[,5],start =c(1992,1),end=c(2015,3),frequency=4) 
+ts.Unc_ee <- ts(temp_indices[,6],start =c(1992,1),end=c(2015,3),frequency=4) 
+ts.GDPgrowth <- ts(temp_indices[,7],start =c(1992,1),end=c(2015,3),frequency=4) 
+
+acf(ts.all_indices[,2], na.action = na.pass)
+pacf(ts.all_indices[,2], na.action = na.pass)
+ccf(ts.Unc_ee,ts.GDPgrowth, na.action = na.pass)
+ccf(ts.Unc_fl,ts.GDPgrowth, na.action = na.pass)
+
+ccf(ts.Conf_cc,ts.GDPgrowth, na.action = na.pass)
+ccf(ts.Act_GBC,ts.GDPgrowth, na.action = na.pass)
+ccf(ts.Conf_GBC,ts.GDPgrowth, na.action = na.pass)
+
+ccf(ts.Conf_GBC,ts.Unc_ee, na.action = na.pass)
+ccf(ts.Conf_GBC,ts.Unc_fl, na.action = na.pass)
+
+par(mfrow=c(2,2))
+ccf(ts.Act_GBC,ts.GDPgrowth, na.action = na.pass)
+ccf(ts.Conf_GBC,ts.GDPgrowth, na.action = na.pass)
+ccf(ts.Unc_fl,ts.GDPgrowth, na.action = na.pass)
+ccf(ts.Unc_ee,ts.GDPgrowth, na.action = na.pass)
+acf(ts.all_indices, na.action = na.pass)
+
+
+library(tseries)
+library(urca)
+library(zoo)
+
+z <- zoo(c(2,NA,1,4,5,2), c(1,3,4,6,7,8))
+## use underlying time scale for interpolation
+na.approx(z) 
+## use equidistant spacing
+na.approx(z, 1:6)
+# with and without na.rm = FALSE
+zz <- c(NA,9,3,NA,3,2)
+na.approx(zz, na.rm = FALSE)
+na.approx(zz)
+
+ts.all_indices <- na.approx(ts.all_indices)
+ts.all_indices[95,5] <- 0.7706558*0.6829110/0.6509620
+
+adf.test(ts.all_indices[,5])
+
+adf.test(ts.all_indices[,2], alternative = "stationary", k=4) #Dickey-Fuller test for unit roots
+pp.test(ts.all_indices[,3])  #Phillips-Perron test for unit roots
+ur.df(ts.all_indices[,2], c("none"), lags = 4, selectlags = c("AIC"))
 
 #====================================================#
 # ------------------ VAR ANALYSIS ------------------ #

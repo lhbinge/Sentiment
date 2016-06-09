@@ -11,9 +11,9 @@ csl: harvard.csl
 
 <!-- maketile -->
 \begin{center}
-\Large\scshape{Art Price Index} \\ 
+\Large\scshape{Business Sentiment and the Business Cycle in South Africa} \\ 
 \vspace{1em}
-\large\normalfont{Laurie Binge}\footnote{Laurie is a PhD candidate at the Department of Economics of Stellenbosch University.} \\
+\large\normalfont{Laurie Binge}\footnote{PhD candidate at the Department of Economics of Stellenbosch University.} \\
 \large\normalfont{Wimpie Boshoff}\footnote{Associate Professor at the Department of Economics of Stellenbosch University.} \\
 \normalsize\textit{Stellenbosch University} \\
 \normalsize\normalfont{This draft: \today} 
@@ -30,26 +30,41 @@ This paper investigates the Business Tendency Surveys conducted by the BER. The 
 \renewcommand{\thefootnote}{\arabic{footnote}}
 
 #Introduction
-This paper will examine the relationship between business sentiment and real activity in South Africa. In the context of business sentiment, the two concepts which are commonly referred to are *confidence* and *uncertainty*. Business confidence involves economic agents' perceptions of the current and expected future business climate. This is dependent on the prevailing economic environment and expectations of future prospects. Uncertainty reflects agents' inability to forecast the probability of future events occurring. It entails a lack of knowledge of the set of possible outcomes and the probability of each occurring.
+This paper examines the relationship between business sentiment and real activity in South Africa. Two concepts are commonly referred to in the context of business sentiment: *confidence* and *uncertainty*. Business confidence involves economic agents' perceptions of the current and expected future business climate. This is dependent on the prevailing economic environment and expectations of future prospects. Uncertainty reflects agents' inability to forecast the probability of future events occurring. It entails a lack of knowledge of the set of possible outcomes and the probability of each occurring.
 
-The global financial crisis and subsequent Great Recession were associated with low levels of confidence and heightened uncertainty. According to the @ECB2013, the financial crisis created a climate of exceptionally low confidence and heightened uncertainty, which contributed to the subsequent recession a large extent. Even the subsequent recovery was characterised by only modest improvements in business sentiment. This has motivated an increase in research on the impact of changes in business sentiment, and especially uncertainty, on real activity. 
+The global financial crisis and subsequent Great Recession were associated with low levels of confidence and heightened uncertainty. According to the @ECB2013, the financial crisis created a climate of exceptionally low confidence and heightened uncertainty, which contributed to a large extent to the subsequent recession. Even the subsequent recovery was characterised by only modest improvements in business sentiment. This has motivated an increase in research on the impact of changes in business sentiment, and especially uncertainty, on real activity.  
 
-Macroeconomic theory postulates a causal link between confidence and economic activity, based on multiple equilibria in which self-fulfilling expectations of subjective agents generate changes in real activity. Yet the empirical evidence on the relation between confidence and economic activity is inconclusive [@Taylor2007]. Recent work suggests that changes in confidence may affect long-run output growth rather than cause short-run fluctuations [@Barsky2012]. Even if confidence measures do not hold distinct short-run information, their leading indicator properties are well-established and their timely availability has made them popular with analysts all over the world. This is also the case in South Africa, where the BER's business confidence measure is used by the SARB as a leading indicator to identify the official business cycle turning points.
+Macroeconomic theory postulates a causal link between confidence and economic activity, based on multiple equilibria in which self-fulfilling expectations of subjective agents generate changes in real activity. Yet the empirical evidence on the relation between confidence and economic activity is inconclusive [@Taylor2007]. Recent work suggests that changes in confidence may affect long-run output growth rather than cause short-run fluctuations [@Barsky2012]. Even if confidence measures do not hold distinct short-run information, their leading indicator properties are well-established and their timely availability has made them popular with analysts all over the world. This is also the case in South Africa, where the Bureau for Economic Research's business confidence measure is used by the SARB as a leading indicator to identify the official business cycle turning points.
 
 The recent literature has focussed particular attention on the effects of changes in uncertainty on economic activity. While the consensus in the literature is that uncertainty rises during recessions or economic crises, the precise impact of uncertainty on the real economy, and how it differs from low levels of confidence, is less clear. @Bloom2009 suggested a "wait-and-see" effect for uncertainty shocks, which would provide a channel through which uncertainty could exogenously influence production, employment and investment, thereby driving business cycles. A number of channels have been proposed, however, through which uncertainty could potentially have negative or positive effects on growth [@Bloom2014].
 
-This ambiguity is present in the empirical literature, which may be due to the difficulties surrounding the measurement and identification of a separate causal effects. A broad range of proxies have been used to measure uncertainty. The majority of studies have looked at macroeconomic uncertainty using volatility in the stock market, GDP, bond yields and exchange rates as proxies. The rationale is that the more volatile a series, the more difficult it is to forecast and the greater the degree of uncertainty [@Bloom2014]. In addition to volatility measures, disagreement between macroeconomic forecasters, media references to "uncertainty" and standard deviations of expectations in survey responses have been used as indicators.
+This ambiguity is present in the empirical literature, which may be due to the difficulties surrounding the measurement and identification of separate causal effects. A broad range of proxies have been used to measure uncertainty. The majority of studies have looked at macroeconomic uncertainty using volatility in the stock market, GDP, bond yields and exchange rates as proxies. The rationale is that the more volatile a series, the more difficult it is to forecast and the greater the degree of uncertainty [@Bloom2014]. In addition to volatility measures, disagreement between macroeconomic forecasters, media references to "uncertainty" and standard deviations of expectations in survey responses have been used as indicators.
 
 Some of the recent work has suggested that increases in uncertainty may generate fluctuations in output, which would have important policy implications for issues like the appropriate size of stimulus packages in periods of heightened uncertainty. However, it is not yet clear whether uncertainty itself has an impact on the business cycle or whether it is an epiphenomenon which occurs during recessions or periods of low confidence. Hence there is a need to further examine the effect of uncertainty on the real economy. 
 
-This paper studies the relationship between sentiment and economic activity using the Bureau for Economic Research's (BER) business tendency surveys. Although measuring economic sentiment is not a straightforward task, survey-based indicators can be helpful in discovering agents' opinions on future economic developments. Survey-based measures may include information known by the respondents but not yet reflected in aggregate economic variables. Thus, they may reveal important information about expectations, particularly regarding waves of optimism or pessimism, which may be important drivers of the business cycle. Moreover, these indicators are often available earlier (with a shorter lag) than official statistics and are usually not subject to revisions [@ECB2013]. 
+This paper studies the relationship between sentiment and economic activity using the Bureau for Economic Research's (BER) business tendency surveys. Although measuring economic sentiment is not a straightforward task, survey-based indicators can be helpful in discovering agents' opinions on future economic developments. Survey-based measures may include information known by the respondents but not yet reflected in aggregate economic variables. Thus, they may reveal important information about expectations, particularly regarding waves of optimism or pessimism, which may be drivers of the business cycle. Moreover, these indicators are often available earlier (with a shorter lag) than official statistics and are usually not subject to revisions [@ECB2013].  
 
 The aim is to construct different measures of business sentiment based on the microdata from the BER business tendency surveys. Indicators of confidence and uncertainty are calculated at sectoral level and in the aggregate. The relationships between these sentiment indicators and economic activity over the cycle are then evaluated, using the standard agnostic econometric methods (VARs) employed elsewhere. The aim is to examine whether these survey-based measures of confidence and uncertainty have unique and distinguishable relationships with real economic activity. It may be useful to examine the impact of sector-specific sentiment indicators, where the relationships might show up more clearly than in aggregate indicators [@INIS2014].
 
-An investigation of sentiment in the developing country context might be especially informative. Developing countries are usually characterised by higher business uncertainty than developed countries [@Bloom2014]. The South African economy has been subject to much higher levels of political and economic uncertainty than developed economies. Not only is the country an emerging market, but its tumultuous political history and the legacy of Apartheid has contributed significantly to business uncertainty. It is therefore important to confirm the existence and nature of the relationship between sentiment and economic activity in settings outside of the developed world. 
+An investigation of sentiment in the developing country context might be especially informative. Developing countries are often characterised by higher business uncertainty than developed countries [@Bloom2014]. The South African economy in particular has been subject to much higher levels of political and economic uncertainty than developed economies. Not only is it an emerging market, but its tumultuous political history and the legacy of Apartheid has contributed significantly to business uncertainty. It is important to confirm the existence and nature of the relationship between sentiment and economic activity in settings outside of the developed world. 
+
+```{r readdata, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+setwd("C:\\Users\\Laurie\\OneDrive\\Documents\\BING\\BER Confidence Surveys\\Sentiment")
+
+suppressMessages(library(ggplot2))
+suppressMessages(library(plyr))
+suppressMessages(library(dplyr))
+suppressMessages(library(reshape2))
+suppressMessages(library(stargazer))
+suppressMessages(library(xtable))
+suppressMessages(library(scales))
+
+GDPdata <- read.csv("GDP Data.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+GDPdata$X <- as.Date(GDPdata$X, format = "%Y/%m/%d")
+```
 
 #The Concepts of Confidence and Uncertainty
-Within the context of business sentiment, the two concepts which are commonly referred to are business confidence and uncertainty. @Pellissier2002 described business confidence as the *"degree of sentiment towards risk taking by business for whatever reason."* Business confidence involves the state of mind of agents regarding the current and expected future business climate. It can be interpreted a function of agents' perceptions of prevailing business conditions as well as their expectations of future events.
+Within the context of business sentiment, the two concepts which are commonly referred to are business confidence and uncertainty. @Pellissier2002 described business confidence as the *"degree of sentiment towards risk taking by business for whatever reason."* Business confidence involves the state of mind of agents regarding the current and expected future business climate. It can be interpreted a function of agents' perceptions of prevailing business conditions, as well as their expectations of future events.
 
 @Knight1921 defined uncertainty as *"people's inability to forecast the likelihood of events happening."* Uncertainty entails a lack of knowledge regarding the set of possible outcomes and the probability of each occurring (e.g. the number of coins ever produced is uncertain). This lack of knowledge makes prediction increasingly difficult and uncertainty will therefore rise during unique circumstances. According to this definition, uncertainty is distinct from the concept of risk, which describes a known probability distribution over a set of events (e.g. a coin toss). Nevertheless, researchers usually refer to a single concept of uncertainty, which is typically a stand-in for a mixture of risk and uncertainty [@Bloom2014]. 
 
@@ -61,14 +76,14 @@ Notwithstanding the popularity of confidence indicators with analysts, the stanc
 
 Broadly speaking, there are two contrasting approaches to the role of confidence in macroeconomics. The first view, which @Barsky2012 refer to as the "animal spirits" view, claims that independent changes in beliefs have causal effects on business cycles. This view is usually associated with consumer confidence, and the idea that a long-lasting negative consumption shock, associated with an exogenous shift in pessimism, can have a causal effect on overall aggregate demand. 
 
-The second view, which @Barsky2012 refer to as the "information" or "news" view, suggests that confidence indicators contain information about current and future economic developments. The idea is that confidence can proxy for news that agents receive about future productivity that does not otherwise show up in econometricians' information sets. This view supposes that confidence innovations might contain predictive information when agents become aware of changes in future productivity that are independent of current productivity. Both of these views can be compatible with leading indicator properties, but only the animal spirits view would imply causality [@ECB2013].
+The second view, which @Barsky2012 refer to as the "information" or "news" view, claims that confidence indicators contain information about current and future economic developments. The idea is that confidence can proxy for news that agents receive about future productivity that does not otherwise show up in econometricians' information sets. This view supposes that confidence innovations might contain predictive information when agents become aware of changes in future productivity that are independent of current productivity. Both views can be compatible with leading indicator properties, but only the animal spirits view would imply causality [@ECB2013].
 
 A theoretical causal link between business confidence and fluctuations in economic activity can be found in a range of dynamic general equilibrium models that incorporate the subjective views of economic agents. These models give rise to multiple equilibria that are not determined by standard economic fundamentals and in which expectations about the future level of output can become self-fulfilling. As a result, a decline in business confidence can cause a decline in output [@Taylor2007]. In other words, changes in confidence can cause changes in real activity, independently of economic fundamentals. However, the link need not necessarily be quantitatively significant. Thus, the impact of confidence on economic activity is an empirical issue [@Taylor2007].
 
 ##Empirical Findings
 There are two main challenges when it comes to empirical work on business confidence: how to construct proxies for confidence and how to measure the impact of confidence on real activity. Confidence is an elusive concept, which is difficult to define precisely or measure directly. In practice, analysts typically aggregate information from business and consumer surveys to construct proxies for confidence. These surveys typically contain a small number of qualitative questions, which can be answered quickly by respondents. Indicators are typically derived from the subjective answers to questions on past, current and expected future economic developments. The assumption is that before a specific business activity is implemented (e.g. new production plans, employment, or purchases), a certain opinion-building has taken place, which may be called "sentiment" or "confidence" [@Santero1996]. The most important advantage of these surveys is that they are usually available long before official statistical data becomes available. Moreover, they are not subject to revisions and are useful in avoiding trend and seasonality problems.   
 
-The first issue it how to summarise or aggregate the survey responses. A very common and widely used method is to calculate so-called balances. In the context of business tendency surveys, balances are simple averages of survey responses. For most survey questions there are three reply options, such as *up*, *same*, or *down*, and balances are calculated as the difference between the percentage of positive answers and percentage of negative answers. Balances are simple to implement and understand and are considered both practical and entirely adequate for cyclical analysis [@OECD2003].[^3]
+The first issue is to summarise or aggregate the survey responses. A very common and widely used method is to calculate so-called balances. In the context of business tendency surveys, balances are simple averages of survey responses. For most survey questions there are three reply options, such as *up*, *the same*, or *down*, and balances are calculated as the difference between the percentage of positive answers and percentage of negative answers. Balances are simple to implement and understand and are considered both practical and entirely adequate for cyclical analysis [@OECD2003].[^3]
 
 [^3]: Diffusion indices are a slight variation on balances. In the context of business tendency surveys, they indicate the degree to which the change is diffused throughout the sample. The most common way to calculate a diffusion index consists of taking the percentage of respondents answering positively and adding it to half of the percentage of respondents reporting "unchanged". Thus, diffusion indices are a linear transformation of balances and have the same information content (OECD 2003).
 
@@ -76,12 +91,14 @@ Although balances are by far the most common aggregation method used by statisti
 
 [^4]: The probability approach assumes a probability distribution for the variable concerned, which is required to infer the parameters of the probability distribution functions. The statistic is a linear combination of values deriving from a transformation of the observed frequency of the answers. The regression approach uses the relationship between actual values (measured by official statistics) and respondents' perception of the past (reported in the business surveys as judgements) as a yardstick for the quantification of respondents' expectations about the future. Thus, quantitative expectations are a function of a specific regression model rather than a specific probability distribution (Nardo 2003). The latent factor approach regards the percentages of each qualitative answer as a function of a common "latent measure" observed by respondent but not by econometricians. We can try these, but it does not seem very useful for confidence? 
 
-The evidence suggests that sophisticated methods tend to produce indicators that follow the common trend and cycle, which can be more easily deduced by simple aggregation methods, such as balances. For instance, the Italian National Statistical Agency found a very high correlation between balances and more sophisticated indictors when three-option replies were used [@OECD2003]. @Driver2004 assessed different ways of converting qualitative data, obtained from the UK employers' business survey, into quantitative indices for a number of economic variables. The correspondence between the observed actual values of six economic variables and the corresponding transformed survey responses was considered. They found that the balance statistic was a satisfactory method of transforming the questions on investment, output and exports.
+The evidence suggests that sophisticated methods tend to produce indicators that follow the common cycle, which can be more easily deduced by simple aggregation methods such as balances. For instance, the Italian National Statistical Agency found a very high correlation between balances and more sophisticated indictors when three-option replies were used [@OECD2003]. @Driver2004 assessed different ways of converting qualitative data, obtained from the UK employers' business survey, into quantitative indices for a number of economic variables. The correspondence between the observed actual values of six economic variables and the corresponding transformed survey responses was considered. They found that the balance statistic was a satisfactory method of transforming the questions on investment, output and exports.
 
 The next issue concerns the types of questions that should be used to measure confidence, and whether combinations of indicators should be used to calculate aggregate measures. Business confidence entails the relative optimism or pessimism among firms regarding *current conditions* and expected *future developments*, with the former probably influencing the latter. The recent literature suggests a distinction between indicators of current activity and forward-looking indicators [@Bachmann2010]. 
 
-Formally, one can define a $k$-period-ahead expectations measure of activity $(C_t^k)$ at time $t$ as: $C _t^k = E_tf(\Delta^hY_{t+k}$, where $Y_{t+k}$ is a measure of real activity (usually output) at time $t+k$ and $\Delta^hY_{t+k} = Y_{t+k} - Y_{t+k-h}$. A common definition of $f(\Delta^hY_{t+k}$ relies on an up, down, or unchanged classification: $$ f(\Delta^hY_{t+k}) = \begin{cases} -1,& \text{if } \Delta^hY_{t+k} < 0\\ 0,& \text{if } \Delta^hY_{t+k} = 0\\ 1,& \text{if } \Delta^hY_{t+k} > 0\\ \end{cases} $$
-Alternatively, some confidence measures rely on a binary classification (satisfactory or unsatisfactory): $$ f(\Delta^hY_{t+k}) = \begin{cases} 1,& \text{if } \Delta^hY_{t+k} \geq a\\ 0,& \text{if } \Delta^hY_{t+k} < a\\ \end{cases} $$ where $a$ is determined by the preferences of the agent. The recent literature terms $C_t^k$ a measure of "activity" when $k=0$ or a measure of "confidence" when $k>0$.
+Formally, one can define a $k$-period-ahead expectations measure of activity $(C_t^k)$ at time $t$ as: $C _t^k = E_tf(\Delta^hY_{t+k})$, where $Y_{t+k}$ is a measure of real activity (usually output) at time $t+k$ and $\Delta^hY_{t+k} = Y_{t+k} - Y_{t+k-h}$. A common definition of $f(\Delta^hY_{t+k})$ relies on an up, down, or unchanged classification: $$ f(\Delta^hY_{t+k}) = \begin{cases} -1,& \text{if } \Delta^hY_{t+k} < 0\\ 0,& \text{if } \Delta^hY_{t+k} = 0\\ 1,& \text{if } \Delta^hY_{t+k} > 0\\ \end{cases} $$
+
+Alternatively, some confidence measures rely on a binary classification (satisfactory or unsatisfactory): $$ f(\Delta^hY_{t+k}) = \begin{cases} 1,& \text{if } \Delta^hY_{t+k} \geq a\\ 0,& \text{if } \Delta^hY_{t+k} < a\\ \end{cases} $$ where $a$ is determined by the preferences of the agent. The recent literature terms $C_t^k$ a measure of "activity" when $k=0$ and a measure of "confidence" when $k>0$.
+
 Various confidence indices have been used in the literature. For instance, @Taylor2007 used an arithmetic average of two activity measures (based on questions on current conditions) and one confidence measure (based on a question on future conditions).[^5] @Bachmann2010 and @Bachmann2013 defined two forward-looking indices and two indices of current activity, based on the Business Outlook Survey and the German Ifo Business Climate Survey.[^6] @Barsky2012 constructed a forward-looking measure of confidence from the balance of a question on expectations over the next five years.[^7] According to this distinction the BER business confidence index, discussed in more detail below, is an index of current activity. 
 
 [^5]: The business confidence indicator was the arithmetic average of results to the following questions: assessments of order book-levels; assessments of export order-book levels; and production expectations for the months ahead.
@@ -90,7 +107,7 @@ Various confidence indices have been used in the literature. For instance, @Tayl
 
 [^7]: Their measure was based on the following question: *"Turning to economic conditions in the country as a whole, do you expect that over the next five years we will have mostly good times, or periods of widespread unemployment and depression, or what?"* 
 
-The construction of aggregate indicators raises question about the appropriate weighting of the individual components. Indicators from multiple sectors, in turn derived from multiple questions, are often employed. For example, the EC conducts qualitative business surveys for five different sectors, including questions on current conditions and expectations. The aggregate confidence index (the economic sentiment index) is calculated as a weighted average (using value added shares) of sentiment in industry, services, retail trade and construction, as well as among consumers [@ECB2013]. Another example is the Ifo Business Climate indicator, which is a prominent leading indicator for the German economy. It aggregates results for the manufacturing, construction, wholesaling and retailing sectors. The replies are weighted according to the importance of the industry. It is computed as a geometric mean of the balances referring to the current business situation and the business outlook in the next six months [@INIS2014].
+The construction of aggregate indicators raises question about the appropriate weighting of the individual components. Indicators from multiple sectors, in turn derived from multiple questions, are often employed. For example, the EC conducts qualitative business surveys for five different sectors, using questions on current conditions and expectations. The aggregate confidence index (the Economic Sentiment Index) is calculated as a weighted average (using value added shares) of sentiment in industry, services, retail trade and construction, as well as among consumers [@ECB2013]. Another example is the Ifo Business Climate Indicator, which is a prominent leading indicator for the German economy. It aggregates results for the manufacturing, construction, wholesaling and retailing sectors. The replies are weighted according to the importance of the industry. It is computed as a geometric mean of the balances referring to the current business situation and the business outlook in the next six months [@INIS2014].
 
 These survey-based indicators have performed quite well in now-casting and forecasting macroeconomic variables [@Strasser2015], although the evidence has not been unanimous. The empirical literature has often investigated the extent to which confidence indicators contain information over and above economic fundamentals. In other words, studies have investigated whether confidence measures can predict economic outcomes, after appropriate macroeconomic variables are taken into account [@INIS2014]. 
 
@@ -104,9 +121,9 @@ Many of the studies have concentrated on consumer confidence when analysing the 
 
 The seemingly conflicting results among the empirical studies may be linked to the different sets of economic indicators used in the various forecasting models, as well as different proxies used to measure confidence. The distinction between current and forward-looking measures might also be important when evaluating this literature. The literature has often attempted to evaluate how publically-disseminated sentiment indices perform, rather than to construct appropriate proxies of sentiment from underlying data (often because the micro-data is unavailable). When the confidence index is a measure of current conditions or "activity", it might be more appropriate to evaluate the indicator's ability to capture real activity accurately, instead of predicting $\Delta Y_{t+h}$, with $h>0$.
 
-Another possibility for the disagreement may be the use of a linear functional form to model the relationship from consumer attitudes to confidence. It may be that only abrupt shifts in consumer confidence are relevant to signal changes real activity (e.g. only below a certain threshold, or only when significantly negative) [@INIS2014]. For example, @ECB2013 found that shocks to confidence played a relatively small role, compared to shocks to other economic variables. However, there were periods during which shocks to confidence played a more important role, such as during episodes of economic tensions (financial crises or economic recessions) or during geopolitical turmoil. For the Euro Area, these thresholds were found to be asymmetric: strong decreases in consumer confidence were more important in predicting future changes in consumption than large increases. This pointed to a non-linear and asymmetric relationship between confidence and economic fluctuations. The forecasting ability of confidence indicators might be completely offset by other indicators during ordinary times, while increasing notably in the presence of unusual events. 
+Another possibility for the disagreement may be the use of a linear functional form. It may be that only abrupt shifts in confidence are relevant to signal changes real activity (e.g. only below a certain threshold, or only when significantly negative) [@INIS2014]. For example, @ECB2013 found that shocks to confidence played a relatively small role, compared to shocks to other economic variables. However, there were periods during which shocks to confidence played a more important role, such as during episodes of economic tensions (financial crises or economic recessions) or during geopolitical turmoil. For the Euro Area, these thresholds were found to be asymmetric: strong decreases in consumer confidence were more important in predicting future changes in consumption than large increases. This pointed to a non-linear and asymmetric relationship between confidence and economic fluctuations. The forecasting ability of confidence indicators might be completely offset by other indicators during ordinary times, while increasing notably in the presence of unusual events. 
 
-@Parigi2004 stressed that even if confidence indicators were just a synthesis of traditional indicators, they could still be useful for monitoring economic developments in a timely manner and for forecasting. This is because they are available earlier than official quantitative statistics and are subject only to limited revisions. The @ECB2013 also argued that the strong correlations between the confidence indicators and various economic and financial variables, imply that confidence indicators are useful in monitoring economic developments, as they are both timely and point to some leading properties with respect to official quantitative data, without necessarily implying any causal relationship. 
+@Parigi2004 stressed that even if confidence indicators were just a synthesis of traditional indicators, they could still be useful for monitoring economic developments in a timely manner and for forecasting. This is because they are available earlier than official quantitative statistics and are subject only to limited revisions. The @ECB2013 argued that the strong correlations between confidence indicators and various economic and financial variables, imply that confidence indicators are useful in monitoring economic developments, as they are both timely and point to some leading properties with respect to official quantitative data, without necessarily implying any causal relationship.  
 
 The BER's business confidence measure is used by the SARB as an official leading indicator of the South African business cycle. @Pellissier2002 examined the ability of two business confidence indicators in South Africa (the BER and SACOB) as business cycle indicators. The business confidence indicators were highly correlated with each other and showed signs of having leading indicator properties. Both the indicators seemed to be moving towards a coincident relationship rather than a leading one. The BER business confidence indicator displayed comparable cyclical turning point attributes. More recently, @Laubscher2014 selected time series that were the closest predictors of the official reference business cycle turning points. He found that the BER business confidence index was a useful leading indicator. 
 
@@ -114,22 +131,22 @@ The BER's business confidence measure is used by the SARB as an official leading
 ##Theoretical Links
 The theoretical literature emphasises two negative and two positive channels for uncertainty to influence growth. The largest body of theoretical literature focuses on the "real options" theory, based on @Bernanke1983. Uncertainty may have economic consequences when there is a degree of irreversibility to firms' actions. Firms may choose to temporarily delay an investment if the returns to waiting exceed the returns to investing in the present period. Agents receive new information over time, reducing uncertainty and increasing their ability to undertake the optimal investment. If the value of time, i.e. the benefit of new information, exceeds the costs associated with committing to a suboptimal project, it is rational to wait before committing to an investment [@Binding2015]. In the language of real options, the option value of waiting increases as the uncertainty increases [@Bloom2014]. 
 
-This theory has given rise to the idea of the "wait-and-see" effect [@Bloom2009]. If a firm faces large fixed adjustment costs[^8], higher uncertainty over future demand makes new hiring and investment less attractive. Firm try to minimise the number of times this fixed adjustment cost must be paid. If the future is very uncertain, in the sense that demand could be either very high or low relative to the present, then it makes sense to wait until the uncertainty is resolved [@Bachmann2010]. In other words, facing a more uncertain environment, firms pause hiring and investment, i.e. they "wait and see" how the future unfolds, which leads to a decrease in economic activity. As the future unfolds, there is pent-up demand for labour and capital. Firms are closer to their adjustment triggers in subsequent periods, leading to a rebound and even overshoot in economic activity, followed by a return to the steady state [@Bachmann2010]. Thus, the initial "bust" is followed by a quick pick-up and overshoot in economic activity [@Bachmann2013]. This provides a channel through which uncertainty shocks can exogenously influence economic activity. 
+This theory has given rise to the idea of the "wait-and-see" effect [@Bloom2009]. If a firm faces large fixed adjustment costs[^8], higher uncertainty over future demand makes new hiring and investment less attractive. Firms try to minimise the number of times this fixed adjustment cost must be paid. If the future is very uncertain, in the sense that demand could be either very high or low relative to the present, then it makes sense to wait until the uncertainty is resolved [@Bachmann2010]. In other words, facing a more uncertain environment, firms pause hiring and investment, i.e. they "wait and see" how the future unfolds, which leads to a decrease in economic activity. As the future unfolds, there is pent-up demand for labour and capital. Firms are closer to their adjustment triggers in subsequent periods, leading to a rebound and even overshoot in economic activity, followed by a return to the steady state [@Bachmann2010]. Thus, the initial "bust" is followed by a quick pick-up and overshoot in economic activity [@Bachmann2013]. This provides a channel through which uncertainty shocks can exogenously influence economic activity.  
 
 [^8]: In the context of capital, these costs can have both a physical element (equipment may get damaged in installation and removal) and a financial element (the used-good discount on resale). In the context of labour, adjustment costs include recruitment, training, severance pay, as well as search frictions.
 
-Uncertainty can also negatively affect economic activity through risk aversion and risk premia. Greater uncertainty increases risk premia if investors are risk averse by increasing the probability of default among lenders (expanding the size of the left-tail default outcomes) [@Redl2015]. This increase in borrowing costs can reduce growth, emphasised in papers on the impact of uncertainty under financial constraints [summarised in @Bloom2014 and @Bachmann2013]. Another mechanism related to risk premia is the confidence effect of uncertainty. In models where consumers have pessimistic beliefs, agents are so uncertain about the future they cannot form a probability distribution. Instead they have a range of possible outcomes and act as if the worst outcomes will occur, displaying a behaviour known as "ambiguity aversion." As the range of possible outcomes (uncertainty) expands, the worst possible outcome becomes worse, so agents cut back on investment and hiring. If agents are optimistic (they assume the best case), then uncertainty can actually have a positive impact [@Bloom2014]. 
+Uncertainty can also negatively affect economic activity through risk aversion and risk premia. Greater uncertainty increases risk premia if investors are risk averse by increasing the probability of default among lenders (expanding the size of the left-tail default outcomes) [@Redl2015]. This increase in borrowing costs can reduce growth, emphasised in papers on the impact of uncertainty under financial constraints [summarised in @Bloom2014 and @Bachmann2013]. Another mechanism related to risk premia is the confidence effect of uncertainty. In models where consumers have pessimistic beliefs, agents are so uncertain about the future they cannot form a probability distribution. Instead they have a range of possible outcomes and act as if the worst outcomes will occur, displaying a behaviour known as "ambiguity aversion." As the range of possible outcomes (uncertainty) expands, the worst possible outcome becomes worse, so agents cut back on investment and hiring. If agents are optimistic (they assume the best case), however, uncertainty can actually have a positive impact [@Bloom2014].  
 
 @Bloom2014 also refers to two channels through which it can have a positive effect on economic activity. The "growth options" argument is based on the idea that uncertainty can encourage investment if it increases the size of the potential prize. This is due to the potential for an increase in upside gains, while the downside loss is limited to initial sunk costs, which leads to an increase in the expected profits from an investment. Thus uncertainty creates call option effects [@Redl2015]. 
 
-The Oi-Hartman-Abel effect highlights the possibility that firms may be risk-loving if they can expand to exploit good outcomes and contract to insure against bad outcomes. For example, if a firm can easily halve production volumes in response to a price decrease, and double production if prices increase, it should desire a mean-preserving increase in uncertainty because it receives 50% during bad outcomes and 200% during good outcomes. In effect, the firm is partly insured against bad outcomes by being able to contract and has the option to increase its advantage from good outcomes by being able to expand. However, for this mechanism to work, firms need to be able to easily expand or contract in response to good or bad news. @Bloom2014 argues that this effect is typically not very strong in the short run because of adjustment costs, but may be more powerful in the medium to long run.
+The Oi-Hartman-Abel effect highlights the possibility that firms may be risk-loving if they can expand to exploit good outcomes and contract to insure against bad outcomes. For example, if a firm can easily halve production volumes in response to a price decrease, and double production if prices increase, it should desire a mean-preserving increase in uncertainty because it receives 50% during bad outcomes and 200% during good outcomes. In effect, the firm is partly insured against bad outcomes by being able to contract and has the option to increase its advantage from good outcomes by expanding. However, for this mechanism to work, firms need to be able to expand or contract easily in response to good or bad news. @Bloom2014 argues that this effect is typically not very strong in the short run because of adjustment costs, but may be more powerful in the medium to long run.
 
 Thus, the theoretical effects of uncertainty are ambiguous, which is reflected in the empirical literature. @Bonciani2015 argues that in a general equilibrium framework the aforementioned effects may or may not be completely offset. In a New Keynesian Model, for instance, the monetary authority can partially offset the negative effects of uncertainty by reducing the nominal interest rate. They argue that this is the most important reason why many papers do not find a strong effect. However, when the monetary authority is constrained by the zero lower bound, or when there is imperfect pass-through, the effects of uncertainty become much more significant, as the central bank cannot perfectly respond to the shock. 
 
 ##Empirical Findings
 Recently there has been a surge in research interest in uncertainty. This has been driven by the idea that uncertainty increased during the financial crisis and its likely role in shaping the Great Recession. In addition, the availability of empirical proxies for uncertainty has increased, along with the ability to include uncertainty in a wide range of models [@Bloom2014]. There are two main challenges when it comes to empirical work on business uncertainty: how to construct proxies for uncertainty and how to distinguish a separate impact of uncertainty from recessions or periods of low confidence. Uncertainty entails a lack of knowledge regarding the set of possible outcomes and the probability of each occurring. It is unsurprising that there is no perfect measure of uncertainty, given its broad definition and the potential influence of such a broad range of factors. 
 
-The majority of studies have looked at macroeconomic uncertainty, using as proxies the implied or realised volatility in the stock market, GDP, bond yields or exchange rates. The rationale is that the more volatile a series is the more difficult to forecast, and the greater the degree of uncertainty [@Bloom2014]. A second group of proxies is derived from the dispersion of professional forecasts of economic variables. The rationale is that a larger dispersion of opinions about the future should indicate a higher degree of uncertainty. Other studies have constructed proxies based on references to "uncertainty" in the media, as well as the cross-sectional dispersion of firm-level productivity and profits [@Girardi2015]. Another type of indicator, which is used in this paper, is the dispersion of responses from business and consumer surveys and the dispersion of individual respondents' forecast errors. These survey-based measures have the advantage that they are derived from opinions of key economic agents, as opposed to outside observers (e.g. professional forecasters), or the choices of investors on financial markets, which may only partly reflect developments in the real economy [@Girardi2015].
+The majority of studies have looked at macroeconomic uncertainty, using as proxies the implied or realised volatility in the stock market, GDP, bond yields or exchange rates. The rationale is that a more volatile a series is more difficult to forecast, and is associated with a greater the degree of uncertainty [@Bloom2014]. A second group of proxies is derived from the dispersion of professional forecasts of economic variables. The rationale is that a larger dispersion of opinions about the future should indicate a higher degree of uncertainty. Other studies have constructed proxies based on references to "uncertainty" in the media, as well as the cross-sectional dispersion of firm-level productivity and profits [@Girardi2015]. Another type of indicator, which is used in this paper, is the dispersion of responses from business and consumer surveys and the dispersion of individual respondents' forecast errors. These survey-based measures have the advantage that they are derived from opinions of key economic agents, as opposed to outside observers (e.g. professional forecasters), or the choices of investors on financial markets, which may only partly reflect developments in the real economy [@Girardi2015].
 
 The evidence on the impact of uncertainty is limited because of the difficulty in isolating cause and effect. To identify the causal impact of uncertainty on firms and consumers, the literature has taken three approaches [@Bloom2014]. The first approach relies on timing, typically in a VAR framework, by estimating the movements in output, employment and investment that follow changes in uncertainty. A second approach uses structural models to quantify the potential effect of uncertainty shocks. A third approach exploits natural experiments like disasters, political coups, or exchange rate movements. 
 
@@ -137,28 +154,28 @@ In a seminal paper, @Bloom2009 analysed the impact on uncertainty shock in a str
 
 @Bachmann2010 used data from business surveys to investigate the relationship between uncertainty and economic activity within an agnostic structural vector autoregression (SVAR) approach. Based on business surveys for the US and Germany, they used the dispersion of survey responses, as well as the dispersion in individual forecast errors as proxies for uncertainty. They found that innovations to these indicators had protracted negative effects on economic activity. The long-run effects of uncertainty shocks were similar to the long-run effects of negative confidence shocks. However, when uncertainty was restricted to have no long-run impact, which is what the "wait-and-see" effect would predict, uncertainty had no significant impact on activity. Consequently, they argued that uncertainty could be seen as a symptom of poor economic times rather than a causal mechanism. 
 
-In a follow-up study, @Bachmann2013 found that a shock to the survey-based measures of uncertainty was associated with a significant reduction in production and employment in both Germany and the US. German production declined and rebounded fairly quickly following an increase in uncertainty, broadly consistent with the predictions of the "wait-and-see" effect. However, the fraction of output fluctuations explained by movements in the uncertainty proxies was modest. The response of US output to an uncertainty shock was persistent and prolonged, with limited evidence of a rebound. They argued that the difference in impact was unsurprising, because the adjustment frictions were more important in Germany where there are stronger labour market regulations. The results for the US data suggested that some of the other mechanisms proposed in the literature, such as financial frictions may be important.
+In a follow-up study, @Bachmann2013 found that a shock to the survey-based measures of uncertainty was associated with a significant reduction in production and employment in both Germany and the US. German production declined and rebounded fairly quickly following an increase in uncertainty, broadly consistent with the predictions of the "wait-and-see" effect. However, only a modest fraction of output fluctuations was explained by movements in uncertainty. The response of US output to an uncertainty shock was persistent and prolonged, with limited evidence of a rebound. They argued that the difference in impact was unsurprising, because adjustment frictions were more important in Germany where there are stronger labour market regulations. The results for the US data suggested that some of the other mechanisms proposed in the literature, such as financial frictions may be important.
 
 @Popescu2010, for instance, argued that once a measure of financial stress is included in the regressions, the independent role of uncertainty shocks becomes minimal. They used a VAR framework, with forecaster dispersion as a proxy for uncertainty and credit spreads as a measure of financial stress. The real effects of financial stress were much larger and more persistent than the impact of uncertainty. 
 
 @Leduc2015 used traditional volatility measures, as well as survey-based measures of uncertainty to estimate its impact on output in a VAR framework. In their survey uncertainty could be measured directly as the fraction of respondents indicating uncertainty about the future as a factor limiting their spending plans (cars for consumers or capital expenditure for firms). They concluded that an uncertainty shock acted like an aggregate demand shock, raising unemployment and credit spreads, and lowering investment, inflation and short-term interest rates. 
 
-@Baker2015 developed an economic policy uncertainty indices for the US, based on the frequency of references to policy uncertainty in newspapers, the number of tax code provisions about to expire, and the degree of disagreement among forecasters over future government purchases and inflation. They found similar results to @Bloom2009, except for the positive rebound. Specifically, using VARs they found large negative real effects on employment and industrial production. An increase in their uncertainty proxy of the size seen during the financial crisis was associated with a loss of around 2 million jobs and a decline in industrial production of 2.5% for the US.
+@Baker2015 developed economic policy uncertainty indices for the US, based on the frequency of references to policy uncertainty in newspapers, the number of tax code provisions about to expire, and the degree of disagreement among forecasters over future government purchases and inflation. They found similar results to @Bloom2009, except for the positive rebound. Specifically, using VARs they found large negative real effects on employment and industrial production. An increase in their uncertainty proxy of the size seen during the financial crisis was associated with a loss of around 2 million jobs and a decline in industrial production of 2.5% for the US.
 
 @Baker2013 constructed cross-country panel data on stock market levels and volatility as proxies for the first and second moments of business conditions. They then used natural disasters, terrorist attacks and unexpected political shocks as instruments for the stock market proxies of first and second moment shocks. They found that both the first and second moments were highly significant in explaining GDP growth, with second moment shocks accounting for at least a half of the variation in growth.
 
-@Binding2015 exploited the monetary policy shock in Switzerland, when the Swiss National Bank decided to return to a floating exchange rate regime in 2015. They showed how different uncertainty indicators reacted as a consequence of this unexpected policy change. They examined the impact of this exogenous increase in uncertainty on the investment plans of Swiss firms, using firm-level investment surveys and a difference-in-difference framework. They found that firms affected by uncertainty decreased their planned investment (into equipment/machinery and construction), relative to firms which were not affected. However, once they controlled for the degree of irreversibility of firm investment, the relationships were no longer significant.
+@Binding2015 exploited the monetary policy shock in Switzerland, when the Swiss National Bank decided to return to a floating exchange rate regime in 2015. They showed how different uncertainty indicators reacted as a consequence of this unexpected policy change. The impact of this exogenous increase in uncertainty on the investment plans of Swiss firms was examined, using firm-level investment surveys and a difference-in-difference framework. Firms affected by uncertainty decreased their planned investment (into equipment/machinery and construction), relative to firms which were not affected. However, once they controlled for the degree of irreversibility of firm investment, the relationships were no longer significant.
 
 @Jurado2015 proposed new measures of uncertainty. They argued that the measures should reflect the common variation in uncertainty across many series, and that the forecastable component of each series should be removed from each series when calculating the volatility as a proxy for uncertainty. They constructed these measures using a large dataset of macroeconomic and financial indicators, as well as firm-level data. Increases in the volatility of the forecast error were interpreted as increases in uncertainty. Their estimates implied that quantitatively important uncertainty episodes occurred far more infrequently than indicated by common uncertainty proxies. However, when they did occur, they displayed larger and more persistent correlations with real activity. Using multivariable VARs, they found that large positive innovations to uncertainty led to a sizable and protracted declines in real activity, but did not exhibit the "overshooting" pattern found in other studies. 
 
 ###Evidence for South Africa
-There is little evidence on the effects of uncertainty for developing countries. A stylised fact reported by @Bloom2014 is that uncertainty is typically higher in developing countries by about one-third than in developed countries. This may be because developing countries tend to have less-diversified economies, which are more exposed to fluctuations in the output and prices of those goods. Many of these goods may have quite volatile prices. Moreover, developing countries appear to have more domestic political shocks, are more susceptible to natural disasters, and often have less-effective fiscal and monetary stabilisation policies. It is possible that fluctuations in uncertainty are important drivers of business cycles in developing countries, given that developing countries experience higher levels of uncertainty. 
+There is little evidence on the effects of uncertainty for developing countries. A stylised fact reported by @Bloom2014 is that uncertainty is typically higher in developing countries by about one-third than in developed countries. This may be because developing countries tend to have less-diversified economies, which are more exposed to fluctuations in the output and prices of those goods. Many of these goods may have volatile prices. Moreover, developing countries appear to have more domestic political shocks, are more susceptible to natural disasters, and often have less-effective fiscal and monetary stabilisation policies. It is possible that fluctuations in uncertainty are important drivers of business cycles in developing countries, given that developing countries experience higher levels of uncertainty.  
 
 @Redl2015 argued that investigating uncertainty in developing countries could help to disentangle the effects of financial shocks from uncertainty shocks. During the Great Recession many developing countries experienced increases in uncertainty, as their trading partners entered recessionary periods. Yet they did not experience the same levels of financial stress and instability as developed countries. He constructed an index of uncertainty for South Africa, based on disagreement among professional forecasters, the number of local and international newspaper articles discussing economic uncertainty in South Africa, and references to uncertainty in the SARB's Quarterly Review. The index showed high levels of uncertainty around the period of democratic transition in the early 1990s, the large depreciation of the currency in 2001 as well as the financial crisis of 2008. Using an SVAR framework, the results showed that uncertainty was a leading indicator of recessions in South Africa. An unanticipated increase in the index was associated with a decrease in output, employment, asset prices and investment in the future. The results were also robust to the inclusion of consumer confidence and credit spreads, as a measure of financial stress, although the sizes of the effects were moderated.
 
 @McClean2015 constructed a news-based index for aggregate national policy uncertainty. He found moderate evidence of a correlation between this index and the SAVI index, and a modest but theoretically and empirically consistent relationship between the index and SA government bond yields.
 
-@Hart2015 investigated the relationship between sentiment and economy activity in South Africa. The BER's survey of the manufacturing sector was used to construct firm-level measures of uncertainty and confidence, as well as trends in production, employment and investment. An SVAR approach was then used to estimate the impact of uncertainty and confidence shocks on production, investment and employment within the South African manufacturing sector. None of the uncertainty measures were found to be significant, probably due to the small sample size. The study was closely based on @Bachmann2010, which also measured uncertainty in a manufacturing sector using micro-level data. The Ifo survey is also closely comparable to the BER business survey. This paper will build on this approach, expanding the study to include all of the surveyed sectors for the full available sample period.
+@Hart2015 investigated the relationship between sentiment and economy activity in South Africa. The BER's survey of the manufacturing sector was used to construct measures of uncertainty and confidence, as well as trends in production, employment and investment. An SVAR approach was used to estimate the impact of uncertainty and confidence shocks on production, investment and employment within the South African manufacturing sector. None of the uncertainty measures were found to be significant, probably due to the small sample size. The study was closely based on @Bachmann2010, which also measured uncertainty in a manufacturing sector using micro-level data. The Ifo survey is also closely comparable to the BER business survey. This paper will build on this approach, expanding the study to include all of the surveyed sectors for the full available sample period.
 
 The literature provides suggestive but not conclusive evidence on the impact of uncertainty on economic activity. It is not yet clear whether uncertainty in itself has an impact on the business cycle or whether it is an epiphenomenon which occurs during recessions or periods of low confidence. Hence there is a need to further examine the effect of uncertainty on the real economy. This is particularly true for developing countries, where uncertainty is generally higher. It is also valuable to study the impact of uncertainty in specific industries, where the theory can be tested with reference to industry-specific uncertainty, as opposed to uncertainty determined by general macro and financial conditions [@Hart2015]. The following section describes the BER business tendency surveys.
 
@@ -178,7 +195,7 @@ Panel surveys are useful for conducting business tendency surveys, as changes in
 
 In accordance with the international norm, stratified deliberate sampling is used to design the BER's survey panels. Participants are selected to be representative of particular sectors, regions and firm sizes. The list of participants is reviewed every few years to ensure reasonable representation of the universe [@Kershoff2000]. The exact number of firms in the population universe is unknown to the BER and censuses of the business sector in South Africa are not conducted regularly [@Kershoff2002]. 
 
-Panel sizes and response rates determine the representativeness of the sample. Panels have to consist of a certain minimum number of participants in order to be regarded as fair representations of the universe. The minimum size depends on the size of the universe and the level of aggregation [@Kershoff2002]. The overall panel sizes and response rates have remained relatively stable over time, although they are relatively low by international standards [@Kershoff2015]. @Kershoff2002 found that the BER's trade and building panels were fair reflections of the universe, taking into account the response rate and a comparison between the composition of the survey panels and census and other official data. However, the number of participants per sector was too low to consider each sector as a sub-panel. Thus, the degree of representation was adequate to validate the overall results, but the results per subsector and per province should be interpreted with caution. As a consequence, the survey responses are not disaggregated further into sub-sectors below.[^9]
+Panel sizes and response rates determine the representativeness of the sample. Panels have to consist of a certain minimum number of participants in order to be regarded as fair representations of the universe. The minimum size depends on the size of the universe and the level of aggregation [@Kershoff2002]. The overall panel sizes and response rates have remained relatively stable over time, although they are relatively low by international standards [@Kershoff2015]. @Kershoff2002 found that the BER's trade and building panels were fair reflections of the universe, taking into account the response rate and a comparison between the composition of the survey panels and census and other official data. However, the number of participants per sector was too low to consider subsectors as sub-panels. Thus, the degree of representation was adequate to validate the overall results, but the responses per subsector and per province should be interpreted with caution. As a consequence, the survey responses are not disaggregated further into subsectors below.[^9]
 
 [^9]: We could include some descriptive statistics here, such as the panel sizes and response rates for the various surveys over time? For instance, we could plot the number of responses by sector?
 
@@ -195,11 +212,11 @@ The survey results of successive quarters provide a means of tracking cyclical m
 
 In constructing the business confidence indicator the most important issues are which questions to use and the weightings applied to the responses. The business survey contains questions, amongst others, on current and expected future developments regarding sales, orders, employment, inventories, prices and constraints, all of which have an impact on business confidence. To form a composite confidence indicator these responses would need to be weighted. 
 
-The BER business confidence index is constructed from a specific question that appears in all of the surveys: *"Are prevailing business conditions: Satisfactory, Unsatisfactory?"* The business confidence index reflects the weighted percentage of respondents that rated prevailing business conditions as *"Satisfactory"* in a particular sector. The BER measures business confidence on a scale of 0 to 100, where 0 indicates an extreme lack of confidence, 50 neutrality, and 100 extreme confidence. The business confidence index reveals a rating of business conditions at a particular point in time and respondents do not have to compare the current situation with that of a year ago. The indicator is therefore a question reflecting current conditions (activity) rather than not forward-looking confidence.
+The BER business confidence index is constructed from a specific question that appears in all of the surveys: *"Are prevailing business conditions: Satisfactory, Unsatisfactory?"* The business confidence index reflects the weighted percentage of respondents that rated prevailing business conditions as *"Satisfactory"* in a particular sector. The BER measures business confidence on a scale of 0 to 100, where 0 indicates an extreme lack of confidence, 50 neutrality, and 100 extreme confidence. The business confidence index reveals a rating of business conditions at a particular point in time and respondents do not have to compare the current situation with that of a year ago. The indicator therefore reflects confidence in current conditions (activity) rather than forward-looking confidence.
 
 According to @Kershoff2000 there are two reasons for the use of this one question to construct the confidence indicator. Firstly, it is reasonable to assume that respondents who are satisfied with business conditions will have more confidence than those experiencing unsatisfactory conditions. Secondly, respondents take a variety of factors into consideration when rating prevailing business conditions, which solves the problem of weighting different determinants correctly [@Kershoff2000]. 
 
-In line with the international best practice, all the survey responses are weighted (except for the building survey results). Each response is multiplied by a factor, which is calculated as the product of a firm size weight and a subsector size weight (except for the motor trade, where there are no subsectors). Each firm gets a weighting in relation to turnover or size of workforce (manufacturing) to provide for widely differing sizes.[^11] The subsector size weight is based on the composition of production or sales for each subsector, as calculated by Stats SA. The BER does not apply sample weights, as it does not have access to the National Business Register and cannot calculate selection probabilities.[^12] Thus, responses are weighted by firm size and sector weights to obtain the sectoral results.
+In line with the international best practice, all the survey responses are weighted (except for the building survey results). Each response is multiplied by a factor, which is calculated as the product of a firm size weight and a subsector size weight (except for the motor trade, where there are no subsectors). Each firm gets a weighting in relation to turnover or size of workforce (in the case of manufacturing) to provide for widely differing sizes.[^11] The subsector size weight is based on the composition of production or sales for each subsector, as calculated by Stats SA. The BER does not apply sample weights, as it does not have access to the National Business Register and cannot calculate selection probabilities.[^12] Thus, responses are weighted by firm size and sector weights to obtain the sectoral results.
 
 [^11]: Size weights are used in processing qualitative answers because the economic significance of the replies from different firms is linked to the size of the firm - the larger the enterprise the more important the response. Unlike quantitative surveys, where weighting is usually inherent in the variables, weighting is necessary for qualitative surveys, because the variables typically collected do not inherently represent the size of a business (INIS 2014). In this case a logarithmic function is used to determine weighting factors for nine size ranges, similar to the Ifo.
 
@@ -217,19 +234,6 @@ The BER business confidence index has proved useful both as an indicator of econ
 This section uses the methodology suggested by @Bachmann2010 and @Bachmann2013 to calculate indicators for business sentiment in South Africa, based on the BER business tendency surveys. There are a number of other questions on the BER business surveys which have the potential to provide insight into the role of sentiment in South African economic activity. Micro-data for the manufacturing, building, trade and services sectors were obtained from the BER. This allows for the calculation of alternative proxies for confidence and uncertainty. The data runs from the early 1990s for most of the sectors, with the exception of a few quarters for which no data were available, and from 2005 for the services sector. 
 
 ##Confidence
-```{r readdata, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
-##=========================================================================================##
-## -------------------------------- CONFIDENCE ---------------------------------------------##
-##=========================================================================================##
-setwd("C:\\Users\\Laurie\\OneDrive\\Documents\\BING\\BER Confidence Surveys\\Sentiment")
-
-suppressMessages(library(ggplot2))
-suppressMessages(library(plyr))
-suppressMessages(library(dplyr))
-suppressMessages(library(reshape2))
-suppressMessages(library(stargazer))
-```
-
 This section follows the distinction between indicators of confidence for current conditions and forward-looking conditions. For consistency both confidence measures are derived from the same questions that are present in all of the sectoral business surveys. 
 
 Two questions focused on current developments are used to construct confidence measures for current general business conditions: the first is the question used by the BER to construct their business confidence index: *"Are prevailing business conditions: Satisfactory, Unsatisfactory?"* In effect this confidence indicator recreates the BER confidence index, but with latecomers included and amended weightings. The second indicator is based on the question: *"[Estimated development in current quarter] Compared with the same quarter of a year ago, are General Business Conditions: Better, the Same, or Poorer?"*[^14]
@@ -240,19 +244,19 @@ The forward-looking confidence indicators are derived from the question: *"[Esti
 
 [^15]: The Manufacturing survey has an additional question on expectations of future general business conditions: *"In comparison to current levels in your sector, what do you expect the general business conditions to be in 12 months' time: Higher, Same, Lower?"* This is the question that Hart (2015) used, but it is only asked in the Manufacturing survey.
 
-Thus, respondents to compare the current situation with that of a year ago, whereas other surveys often use the previous period for comparison. This provides a qualitative measure of the current conditions relative to levels in the same quarter of the previous year and is therefore equivalent to the year-on-year growth rate in each quarter. The cyclical profiles are therefore easier to detect because they contain no trend. They are usually considered in a growth cycle or growth rate cycle because of their trend free nature [@OECD2003]. It also implies that seasonal adjustment is not required.[^16]
+Thus, respondents use the same quarter in the previous year as the reference period, whereas other surveys often use the previous period for comparison. Responses are relative to levels in the same quarter of the previous year, which is equivalent to the year-on-year growth rate in each quarter. The cyclical profiles are therefore easier to detect because they contain no trend and are usually considered as a growth cycle or growth rate cycle [@OECD2003]. It also implies that seasonal adjustment is not required.[^16]
 
 [^16]: A common difficulty is that respondents may not actually use the reference period specified in the questionnaire in answering the question (OECD 2003). It is possible that this is the case in the BER survey responses. For example, answers to the forward-looking questions may compare the next quarter t+1 to period t, instead of to period t-3. I can try to check if we get better results.
 
-Many institutions also calculate confidence measures based on a set of survey variables. These composite indicators may achieve a better trade-off between responsiveness and stability. Composite indicators can be constructed to have fewer false alarms and fewer missed turning points than its individual components and they tend to have more stable lead-times. They also have the capacity to react to various sources of economic fluctuations and at the same time can be resilient to perturbations affecting only one of the components [@ECB2013]. For instance, the EC builds composite indicators by aggregating the survey responses from combinations of questions for five sectors. The industrial indicator is an average of the balances of questions relating to production expectations, order books and stocks of finished goods (with the inverted sign). The construction indicator is an average of the balances of questions on total order books and employment future tendency. The retail trade indicator is an average of the balances to questions relating to present and future business situation and stocks (with the inverted sign). The services indicator relates to questions on present business situation, and past and future demand [@OECD2003].[^17]
+Many institutions also calculate confidence measures based on a set of survey variables. These composite indicators may achieve a better trade-off between responsiveness and stability. Composite indicators can be constructed to have fewer false alarms and fewer missed turning points than individual components and tend to have more stable lead-times. They also have the capacity to react to various sources of economic fluctuations, while being resilient to fluctuations affecting single components [@ECB2013]. For instance, the EC builds composite indicators by aggregating the survey responses from combinations of questions for five sectors. The industrial indicator is an average of the balances of questions relating to production expectations, order books and stocks of finished goods (with an inverted sign). The construction indicator is an average of the balances of questions on total order books and employment future tendency. The retail trade indicator is an average of the balances to questions relating to present and future business situation and stocks (with an inverted sign). The services indicator relates to questions on present business situation, and past and future demand [@OECD2003].[^17]
 
-[^17]: We could easily make similar composite indicators? For instance we could combine the balances for the questions on production volumes, order, etc.
+[^17]: We could easily make similar composite indicators? For instance we could combine the balances for the questions on production volumes, order, etc. Otherwise, we could just exclude this reference.
 
 However, as mentioned above, the BER regards the use of one question to measure confidence as an advantage, because respondents will take a wide variety of factors into consideration when rating general business conditions. This removes the problem of which questions to aggregate and which weights attach to the various potential questions. The @OECD2003 also argues that answers to questions on the general business situation will usually be based on a combination of factors, such as the respondents' appraisals about order books and expected new orders, as well as expectations about interest rates, exchange rates and political developments.[^18]
 
-[^18]: Bachmann et al (2010) and Hart (2015) also construct 4 measures of activity from the survey data: production, investment and employment and employment turnover. The questions on investment are not present in all of the surveys. But I have calculated the measures production, employment, and employment turnover (which just adds the fractions of respondents indicating "up" and "down". It is not yet clear if these will be useful, as we have official statistics on production and employment.
+[^18]: Bachmann et al (2010) and Hart (2015) also construct 4 measures of activity from the survey data: production, investment and employment and employment turnover. The questions on investment are not present in all of the surveys. But I have calculated the measures of production, employment, and employment turnover (which just adds the fractions of respondents indicating "up" and "down". It is not yet clear if these will be useful, as we have official statistics on production and employment.
 
-As discussed above, confidence indicators are almost always based on the balance statistics, which aggregates the individual answers by subtracting the share of negative answers from the share of positive answers. This allows the presentation of a single figure as a summary of responses to each question [@Santero1996]. The BER also converts almost all the responses to net balances, i.e. the weighted percentage of respondents indicating that a particular activity is "up" less the weighted percentage indicating "down". It is the cross sectional average of the survey responses if the standard quantification method for survey data is used, whereby the "up" category is quantified by +1, the "same" category" by 0 and the "down" category by -1. 
+As discussed above, confidence indicators are almost always based on the balance statistics, which aggregates the individual answers by subtracting the share of negative answers from the share of positive answers. This allows the presentation of a single figure as a summary of responses to each question [@Santero1996]. The BER also converts almost all the responses to net balances, i.e. the weighted percentage of respondents indicating that a particular activity is "up" less the weighted percentage indicating "down". It is the cross sectional average of the survey responses if the standard quantification method for survey data is used, whereby the "up" category is quantified by +1, "the same" category by 0 and the "down" category by -1. 
 
 For each of the surveyed sectors, confidence measures of current conditions (activity measures) and forward-looking conditions are calculated. For each sector the responses are weighted by firm size and subsector weight, and balances are calculated. Thus, confidence reflecting current conditions may be defined as: $CC.Confidence_t = Frac_t(Up) - Frac_t(Down)$. Forward-looking confidence relate to firms' expectations concerning future business conditions: $FL.Confidence_t = Frac_{t+1}(Up) - Frac_{t+1}(Down)$. Following the advice from the @INIS2014, the sectoral indicators are then weighted by GDP share to form the overall aggregate indicators of business confidence.[^19]
 
@@ -636,6 +640,9 @@ altBER <- BER
 altBER$Q4A <- replace(altBER$Q4A, altBER$Q4A==-1,1) # replace -1 (Down) responses with 1
 indicators <- cbind(indicators, Empl_turn = aggregate(altBER$Q4A, by=list(altBER$surveyQ), FUN=mean, na.rm=TRUE)[,2])
 
+GDPdata$X <- as.Date(GDPdata$X, format = "%Y/%m/%d")
+indicators$Date <- GDPdata[,1]
+
 ##Weighted versions---------------------------------------------------------------------------------
 #GDP Data
 GDPdata <- read.csv("GDP Data.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
@@ -672,11 +679,14 @@ for(i in 1:95) {
     w.indicators$Conf_GBC[i] <- weighted.mean(Conf_GBC[i,], weights[i,],na.rm=TRUE)
     w.indicators$Empl[i] <- weighted.mean(Empl[i,], weights[i,],na.rm=TRUE)
 }
+
+GDPdata$X <- as.Date(GDPdata$X, format = "%Y/%m/%d")
+w.indicators$Date <- GDPdata[,1]
 ```
 
-Figure 1 illustrates the two weighted aggregate confidence indicators for current conditions, as well as the weighted aggregate forward-looking confidence index.[^20] They seem to follow a similar cyclical trend over the business cycle, and the forward-looking index seems to lead the other two indices to some extent. The same is true of the respective sectoral indicators, even though their trends are slightly different (and they have some missing quarters). The two indicators generated from the question on general business conditions do not increase as substantially as the other indicator over the protracted upswing phase from around 2003 to 2007, which is a feature of all of the respective sector indicators. 
+Figure 1 illustrates the two weighted aggregate confidence indicators for current conditions, as well as the weighted aggregate forward-looking confidence index.[^20] They seem to follow a similar cyclical trend over the business cycle. The forward-looking index seems to lead the two current conditions indices to some extent. The same is true of the respective sectoral indicators, even though their trends are slightly different (and they have some missing quarters). The two indicators generated from the question on general business conditions do not increase as substantially as the other indicator (derived from the BER question) over the protracted upswing phase from around 2003 to 2007, which is a feature of all of the respective sectoral indicators. 
 
-[^20]: We could also take the geometric mean of the indices and then normalise it to the average of the base year, as the Ifo does? The indicators may also be generated from firm-specific questions on production, instead of the question on general business conditions. As found in the literature, the indicators generated from the more firm-specific questions are very highly correlated to the indicators for general business conditions. Previous studies have concluded that answers on general business conditions are essentially indicators of firm-specific business conditions.
+[^20]: We could also take the geometric mean of the indices and then normalise it to the average of the base year, as the Ifo does? I also generated the indicators from firm-specific questions on production, instead of the question on general business conditions. As found in the literature, the indicators generated from the more firm-specific questions are very highly correlated to the indicators for general business conditions. Previous studies have concluded that answers on general business conditions are essentially indicators of firm-specific business conditions.
 
 ```{r figure1, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted Confidence Indicators"}
 indicator_plot <- w.indicators[,c(1,2,5,6)]
@@ -684,15 +694,15 @@ colnames(indicator_plot) <- c("Date","Current1","Current2","Forward-looking")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
-g <- g + ylab("Indicator")
+g <- g + ylab("Confidence")
 g <- g + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank())
+g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
 ```
 
-Figure 2 compares the RMB/BER Business Confidence Index to the confidence indicator derived from the same question. The indicators are very similar, even though the BER uses a slightly ad hoc weighting procedure. The slight difference is probably due to altered weightings and the BER's exclusion of latecomers. The same is true of the indicators for the respective sectors, not illustrated here. The fact that they are so similar means that the results for the first activity measure are the same as the results for the popular published index.
+Figure 2 compares the RMB/BER Business Confidence Index to the confidence indicator derived from the same question. The indicators are very similar, even though the BER uses a slightly ad hoc weighting procedure. The slight difference is probably due to altered weightings and the BER's exclusion of latecomers. The same is true of the indicators for the respective sectors, not illustrated here. In effect, the results for the first activity measure are the same as the results for the popular published index.
 
 ```{r figure2, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted Confidence compared to the RMB/BER Confidence Index"}
 indicator_plot <- cbind(w.indicators[,c(1,2)],(GDPdata$Confidence-50)/50)
@@ -700,15 +710,15 @@ colnames(indicator_plot) <- c("Date","Current1","BER Confidence")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
-g <- g + ylab("Indicator")
+g <- g + ylab("Confidence")
 g <- g + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank())
+g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
 ```
 
-Figure 3 and Figure 4 compare the aggregate weighted and unweighted versions of the confidence indicators (i.e. the first activity indicator and the forward-looking indicator). The unweighted versions are calculated by stacking all of the available responses from all of the surveys are therefore completely unweighted. In both cases they are very similar, with the weighted versions slightly more volatile than the unweighted indicators. Thus, the specific weighting turns out to have very little impact on the confidence indices. This should give us confidence that the specific weighting adopted does not significantly alter the results. The same is true of the respective sector indices, not illustrated here.
+Figure 3 and Figure 4 compare the aggregate weighted and unweighted versions of the confidence indicators (i.e. the first activity indicator and the forward-looking indicator). The unweighted versions are calculated by stacking all of the available responses from all of the surveys, and are therefore completely unweighted. In both cases they are very similar, with the weighted versions slightly more volatile than the unweighted indicators. Thus, the specific weighting turns out to have very little impact on the confidence indices. This should give us confidence that the specific weighting adopted does not significantly alter the results. The same is true of the respective sector indices, not illustrated here.
 
 ```{r figure3, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted and Unweighted Confidence - Current Conditions"}
 indicator_plot <- cbind(indicators[,c(1,2)],w.indicators[,2])
@@ -716,10 +726,10 @@ colnames(indicator_plot) <- c("Date","Unweighted","Weighted")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
-g <- g + ylab("Indicator")
+g <- g + ylab("Confidence")
 g <- g + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank())
+g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
 ```
@@ -730,21 +740,987 @@ colnames(indicator_plot) <- c("Date","Unweighted","Weighted")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
-g <- g + ylab("Indicator")
+g <- g + ylab("Confidence")
 g <- g + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank())
+g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
 ```
 
-
 ##Uncertainty
+This section follows @Bachmann2010 and @Bachmann2013 and calculates two measures of uncertainty for each sector and for the aggregate: the cross-sectional dispersion of forward-looking responses and the cross-sectional dispersion in errors in individual firm's expectations. Thus, the micro-data allows the calculation of *ex ante* disagreement and *ex post* forecast error variance. These measures both capture a low level of predictability. The cross-sectional dispersion method can be seen as akin to the forecast disagreement measure used to proxy macro uncertainty by @Baker2013.
 
-```{r manufact.uncert, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+The first measure of uncertainty is the cross-sectional dispersion of forward-looking responses, using the same question used to construct the confidence measure: *"[Estimated development in next quarter] Compared with the same quarter of a year ago, will General Business Conditions be: Better, the Same, or Poorer?"* The uncertainty measures are the cross-sectional standard deviation of responses: $$U_t = \sqrt(Frac_t(Up) + Frac_t(Down) - [Frac_t(Up) - Frac_t(Down)]^2)$$
+Frac(Up) is again defined as the weighted fraction of firms in the cross section with "Better" responses at time $t$. The weightings are applied in the same way as for the confidence indicators, i.e. firm size and subsector weights. The sectoral indicators are then aggregated again with GDP shares as weights. 
 
+```{r manufact.uncert, eval=FALSE, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+##====================================================================================##
+## -------------------------------- UNCERTAINTY --------------------------------------##
+##====================================================================================##
+# Kan dit verander na standard error or standard deviation?
+se <- function(x) sqrt(var(x,na.rm=TRUE)/length(na.omit(x))*(length(na.omit(x))-1)) #adjust for (n-1)
+
+##=====================================##
+## CALCULATE INDICATORS: MANUFACTURING ##
+##=====================================##
+indicators.M <- cbind(indicators.M, Uncert_fl = aggregate(BER.M$Q31, by=list(BER.M$surveyQ), FUN=se)[,2])
+indicators.M <- cbind(indicators.M, Uncert_fl.prod = aggregate(BER.M$Q3P, by=list(BER.M$surveyQ), FUN=se)[,2])
+indicators.M <- cbind(indicators.M, Uncert_fl.GBC = aggregate(BER.M$Q7P, by=list(BER.M$surveyQ), FUN=se)[,2])
+
+#The expectations of firms in question 31 in period t are compared to the realization of firms 
+#in question 7A in period t+4. 
+#Also compare the expectations of firms in questions 3P & 7P in period t to the realizations 
+#in questions 3A & 7A in period t+1. 
+
+dups <- BER.M[duplicated(BER.M[,c("id","surveyQ")]) | duplicated(BER.M[,c("id","surveyQ")], fromLast = TRUE),]
+uniBER.M <- BER.M[!duplicated(BER.M[,c("id","surveyQ")]),]
+
+errors1 <- indicators.M[,c(1,11)]
+errors2 <- indicators.M[,c(1,11)]
+errors3 <- indicators.M[,c(1,11)]
+tel <- 2
+for(i in levels(uniBER.M$id)){
+    tel <- tel + 1
+    #BER.M$counter <- as.numeric(BER.M$survey)
+    exp.error <- indicators.M[,c(1,11)]
+    data <- subset(uniBER.M, uniBER.M$id==i)
+    #data <- data[order(data$counter),]
+    exp.error <- merge(exp.error, data, by.x="Date",by.y="surveyQ", all.x = TRUE)
+    
+    for(t in 1:(nrow(exp.error))) {
+        exp.error$error1[t] <- exp.error$Q7A[t+4] - exp.error$Q31[t]
+        exp.error$error2[t] <- exp.error$Q3A[t+1] - exp.error$Q3P[t]
+        exp.error$error3[t] <- exp.error$Q7A[t+1] - exp.error$Q7P[t]
+    }
+    errors1 <- cbind(errors1, exp.error$error1)
+    colnames(errors1)[tel] <- as.character(i)
+    errors2 <- cbind(errors2, exp.error$error2)
+    colnames(errors2)[tel] <- as.character(i)
+    errors3 <- cbind(errors3, exp.error$error3)
+    colnames(errors3)[tel] <- as.character(i)
+}
+
+# Kan dit verander na standard error or standard deviation (maar maak geen verskil nie)
+uncert <- transform(errors1, SD=apply(errors1[,c(-1,-2)],1,se))[,c(1,ncol(errors1)+1)]
+#uncert1 <- transform(errors1, SD=apply(errors1[,c(-1,-2)],1,sd,na.rm=TRUE))[,c(1,ncol(errors1)+1)]
+indicators.M <- cbind(indicators.M, Uncert_ee = uncert[,2])    
+uncert <- transform(errors2, SD=apply(errors2[,c(-1,-2)],1,se))[,c(1,ncol(errors2)+1)]
+indicators.M <- cbind(indicators.M, Uncert_ee.prod = uncert[,2])
+uncert <- transform(errors3, SD=apply(errors3[,c(-1,-2)],1,se))[,c(1,ncol(errors3)+1)]
+indicators.M <- cbind(indicators.M, Uncert_ee.GBC = uncert[,2])
+
+##Weighted versions-----------------------------------------------------------------------------------------------
+w.Uncert_fl <- NULL
+w.Uncert_fl.prod <- NULL
+w.Uncert_fl.GBC <- NULL
+i <- 0
+for(kwartaal in levels(BER.M$surveyQ)) {
+    i <- i+1
+    temp <- subset(BER.M,BER.M$surveyQ==kwartaal)
+    fr.up <- sum((temp$Q31*temp$factor)[temp$Q31>0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q31)],na.rm=TRUE)
+    fr.down <- sum((temp$Q31*temp$factor)[temp$Q31<0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q31)],na.rm=TRUE)
+    w.Uncert_fl[i] <- sqrt(fr.up-fr.down-(fr.up+fr.down)^2)
+    
+    fr.up <- sum((temp$Q3P*temp$factor)[temp$Q3P>0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)],na.rm=TRUE)
+    fr.down <- sum((temp$Q3P*temp$factor)[temp$Q3P<0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)],na.rm=TRUE)
+    w.Uncert_fl.prod[i] <- sqrt(fr.up-fr.down-(fr.up+fr.down)^2)
+    
+    fr.up <- sum((temp$Q7P*temp$factor)[temp$Q7P>0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q7P)],na.rm=TRUE)
+    fr.down <- sum((temp$Q7P*temp$factor)[temp$Q7P<0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q7P)],na.rm=TRUE)
+    w.Uncert_fl.GBC[i] <- sqrt(fr.up-fr.down-(fr.up+fr.down)^2)
+}
+w.indicators.M <- cbind(w.indicators.M,w.Uncert_fl,w.Uncert_fl.prod,w.Uncert_fl.GBC)
+#-------------------------------------------------------------------------------------------------------------------
+
+errors1 <- w.indicators.M[,c(1,11)]
+err.fac1 <- w.indicators.M[,c(1,11)]
+w.fact1 <- w.indicators.M[,c(1,11)]
+errors2 <- w.indicators.M[,c(1,11)]
+err.fac2 <- w.indicators.M[,c(1,11)]
+w.fact2 <- w.indicators.M[,c(1,11)]
+errors3 <- w.indicators.M[,c(1,11)]
+err.fac3 <- w.indicators.M[,c(1,11)]
+w.fact3 <- w.indicators.M[,c(1,11)]
+tel <- 2
+for(i in levels(uniBER.M$id)){
+    tel <- tel + 1
+    exp.error <- w.indicators.M[,c(1,11)]
+    data <- subset(uniBER.M, uniBER.M$id==i)
+    exp.error <- merge(exp.error, data, by.x="Date",by.y="surveyQ", all.x = TRUE)
+    for(t in 1:(nrow(exp.error))) {
+        exp.error$error1[t] <- exp.error$Q7A[t+4] - exp.error$Q31[t]
+        exp.error$error2[t] <- exp.error$Q3A[t+1] - exp.error$Q3P[t]
+        exp.error$error3[t] <- exp.error$Q7A[t+1] - exp.error$Q7P[t]
+    }
+    
+    errors1 <- cbind(errors1, exp.error$error1)
+    err.fac1 <- cbind(err.fac1, exp.error$error1*exp.error$factor)
+    w.fact1 <- cbind(w.fact1, exp.error$factor)
+    errors2 <- cbind(errors2, exp.error$error2)
+    err.fac2 <- cbind(err.fac2, exp.error$error2*exp.error$factor)
+    w.fact2 <- cbind(w.fact2, exp.error$factor)
+    errors3 <- cbind(errors3, exp.error$error3)
+    err.fac3 <- cbind(err.fac3, exp.error$error3*exp.error$factor)
+    w.fact3 <- cbind(w.fact3, exp.error$factor)
+    
+    colnames(errors1)[tel] <- as.character(i)
+    colnames(err.fac1)[tel] <- as.character(i)
+    colnames(w.fact1)[tel] <- as.character(i)
+    colnames(errors2)[tel] <- as.character(i)
+    colnames(err.fac2)[tel] <- as.character(i)
+    colnames(w.fact2)[tel] <- as.character(i)
+    colnames(errors3)[tel] <- as.character(i)
+    colnames(err.fac3)[tel] <- as.character(i)
+    colnames(w.fact3)[tel] <- as.character(i)
+}
+
+w.Uncert_ee <- NULL
+w.Uncert_ee.prod <- NULL
+w.Uncert_ee.GBC <- NULL
+i <- 0
+for(kwartaal in levels(err.fac1$Date)) {
+    i <- i+1
+    temp1 <- subset(err.fac1,err.fac1$Date==kwartaal)[,c(-1,-2)]
+    temp2 <- subset(errors1,errors1$Date==kwartaal)[,c(-1,-2)]
+    temp3 <- subset(w.fact1,w.fact1$Date==kwartaal)[,c(-1,-2)]
+    temp4 <- replace(temp2, temp2==0,1)
+    temp4 <- replace(temp4, temp4==-2,2)
+    temp4 <- replace(temp4, temp4==-1,1)
+    temp4 <- temp4*temp3
+    
+    fr.2 <- sum(temp1[temp2==2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.1 <- sum(temp1[temp2==1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m1 <- sum(temp1[temp2==-1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m2 <- sum(temp1[temp2==-2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    w.Uncert_ee[i] <- sqrt(4*fr.2+fr.1-fr.m1-4*fr.m2-(2*fr.2+fr.1+fr.m1+2*fr.m2)^2)
+    
+    temp1 <- subset(err.fac2,err.fac2$Date==kwartaal)[,c(-1,-2)]
+    temp2 <- subset(errors2,errors2$Date==kwartaal)[,c(-1,-2)]
+    temp3 <- subset(w.fact2,w.fact2$Date==kwartaal)[,c(-1,-2)]
+    temp4 <- replace(temp2, temp2==0,1)
+    temp4 <- replace(temp4, temp4==-2,2)
+    temp4 <- replace(temp4, temp4==-1,1)
+    temp4 <- temp4*temp3
+    
+    fr.2 <- sum(temp1[temp2==2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.1 <- sum(temp1[temp2==1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m1 <- sum(temp1[temp2==-1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m2 <- sum(temp1[temp2==-2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    w.Uncert_ee.prod[i] <- sqrt(4*fr.2+fr.1-fr.m1-4*fr.m2-(2*fr.2+fr.1+fr.m1+2*fr.m2)^2)
+    
+    temp1 <- subset(err.fac3,err.fac3$Date==kwartaal)[,c(-1,-2)]
+    temp2 <- subset(errors3,errors3$Date==kwartaal)[,c(-1,-2)]
+    temp3 <- subset(w.fact3,w.fact3$Date==kwartaal)[,c(-1,-2)]
+    temp4 <- replace(temp2, temp2==0,1)
+    temp4 <- replace(temp4, temp4==-2,2)
+    temp4 <- replace(temp4, temp4==-1,1)
+    temp4 <- temp4*temp3
+    
+    fr.2 <- sum(temp1[temp2==2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.1 <- sum(temp1[temp2==1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m1 <- sum(temp1[temp2==-1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m2 <- sum(temp1[temp2==-2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    w.Uncert_ee.GBC[i] <- sqrt(4*fr.2+fr.1-fr.m1-4*fr.m2-(2*fr.2+fr.1+fr.m1+2*fr.m2)^2)
+}
+w.indicators.M <- cbind(w.indicators.M,w.Uncert_ee,w.Uncert_ee.prod,w.Uncert_ee.GBC)
 ```
 
+```{r building.uncert, eval=FALSE, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+##================================##
+## CALCULATE INDICATORS: BUILDING ##
+##================================##
+indicators.B <- cbind(indicators.B, Uncert_fl.prod = aggregate(BER.B$Q3P, by=list(BER.B$surveyQ), FUN=se)[,2])
+indicators.B <- cbind(indicators.B, Uncert_fl.GBC = aggregate(BER.B$Q2P, by=list(BER.B$surveyQ), FUN=se)[,2])
+
+dups <- BER.B[duplicated(BER.B[,c("id","surveyQ")]) | duplicated(BER.B[,c("id","surveyQ")], fromLast = TRUE),]
+uniBER.B <- BER.B[!duplicated(BER.B[,c("id","surveyQ")]),]
+
+errors1 <- indicators.B[,c(1,9)]
+errors2 <- indicators.B[,c(1,9)]
+tel <- 2
+for(i in levels(uniBER.B$id)){
+    tel <- tel + 1
+    #BER.B$counter <- as.numeric(BER.B$survey)
+    exp.error <- indicators.B[,c(1,9)]
+    data <- subset(uniBER.B, uniBER.B$id==i)
+    #data <- data[order(data$counter),]
+    exp.error <- merge(exp.error, data, by.x="Date",by.y="surveyQ", all.x = TRUE)
+    for(t in 1:(nrow(exp.error))) {
+        exp.error$error1[t] <- exp.error$Q3A[t+1] - exp.error$Q3P[t]
+        exp.error$error2[t] <- exp.error$Q2A[t+1] - exp.error$Q2P[t]
+    }
+    errors1 <- cbind(errors1, exp.error$error1)
+    colnames(errors1)[tel] <- as.character(i)
+    errors2 <- cbind(errors2, exp.error$error2)
+    colnames(errors2)[tel] <- as.character(i)
+}
+
+# Kan dit verander na standard error or standard deviation?
+uncert <- transform(errors1, SD=apply(errors1[,c(-1,-2)],1,se))[,c(1,ncol(errors1)+1)]
+indicators.B <- cbind(indicators.B, Uncert_ee.prod = uncert[,2])    
+uncert <- transform(errors2, SD=apply(errors2[,c(-1,-2)],1,se))[,c(1,ncol(errors2)+1)]
+indicators.B <- cbind(indicators.B, Uncert_ee.GBC = uncert[,2])
+
+##Weighted versions--------------------------------------------------------------------------------------
+w.Uncert_fl.prod <- NULL
+w.Uncert_fl.GBC <- NULL
+i <- 0
+for(kwartaal in levels(BER.B$surveyQ)) {
+    i <- i+1
+    temp <- subset(BER.B,BER.B$surveyQ==kwartaal)
+    
+    fr.up <- sum((temp$Q3P*temp$factor)[temp$Q3P>0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)],na.rm=TRUE)
+    fr.down <- sum((temp$Q3P*temp$factor)[temp$Q3P<0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)],na.rm=TRUE)
+    w.Uncert_fl.prod[i] <- sqrt(fr.up-fr.down-(fr.up+fr.down)^2)
+    
+    fr.up <- sum((temp$Q2P*temp$factor)[temp$Q2P>0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q2P)],na.rm=TRUE)
+    fr.down <- sum((temp$Q2P*temp$factor)[temp$Q2P<0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q2P)],na.rm=TRUE)
+    w.Uncert_fl.GBC[i] <- sqrt(fr.up-fr.down-(fr.up+fr.down)^2)
+}
+w.indicators.B <- cbind(w.indicators.B,w.Uncert_fl.prod,w.Uncert_fl.GBC)
+
+#-----------------------------------------------------------------------------------------------------------
+errors1 <- w.indicators.B[,c(1,9)]
+err.fac1 <- w.indicators.B[,c(1,9)]
+w.fact1 <- w.indicators.B[,c(1,9)]
+errors2 <- w.indicators.B[,c(1,9)]
+err.fac2 <- w.indicators.B[,c(1,9)]
+w.fact2 <- w.indicators.B[,c(1,9)]
+tel <- 2
+for(i in levels(uniBER.B$id)){
+    tel <- tel + 1
+    exp.error <- w.indicators.B[,c(1,9)]
+    data <- subset(uniBER.B, uniBER.B$id==i)
+    exp.error <- merge(exp.error, data, by.x="Date",by.y="surveyQ", all.x = TRUE)
+    for(t in 1:(nrow(exp.error))) {
+        exp.error$error1[t] <- exp.error$Q3A[t+1] - exp.error$Q3P[t]
+        exp.error$error2[t] <- exp.error$Q2A[t+1] - exp.error$Q2P[t]
+    }
+    
+    errors1 <- cbind(errors1, exp.error$error1)
+    err.fac1 <- cbind(err.fac1, exp.error$error1*exp.error$factor)
+    w.fact1 <- cbind(w.fact1, exp.error$factor)
+    errors2 <- cbind(errors2, exp.error$error2)
+    err.fac2 <- cbind(err.fac2, exp.error$error2*exp.error$factor)
+    w.fact2 <- cbind(w.fact2, exp.error$factor)
+    
+    colnames(errors1)[tel] <- as.character(i)
+    colnames(err.fac1)[tel] <- as.character(i)
+    colnames(w.fact1)[tel] <- as.character(i)
+    colnames(errors2)[tel] <- as.character(i)
+    colnames(err.fac2)[tel] <- as.character(i)
+    colnames(w.fact2)[tel] <- as.character(i)
+}
+
+w.Uncert_ee.prod <- NULL
+w.Uncert_ee.GBC <- NULL
+i <- 0
+for(kwartaal in levels(err.fac1$Date)) {
+    i <- i+1
+    temp1 <- subset(err.fac1,err.fac1$Date==kwartaal)[,c(-1,-2)]
+    temp2 <- subset(errors1,errors1$Date==kwartaal)[,c(-1,-2)]
+    temp3 <- subset(w.fact1,w.fact1$Date==kwartaal)[,c(-1,-2)]
+    temp4 <- replace(temp2, temp2==0,1)
+    temp4 <- replace(temp4, temp4==-2,2)
+    temp4 <- replace(temp4, temp4==-1,1)
+    temp4 <- temp4*temp3
+    
+    fr.2 <- sum(temp1[temp2==2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.1 <- sum(temp1[temp2==1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m1 <- sum(temp1[temp2==-1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m2 <- sum(temp1[temp2==-2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    w.Uncert_ee.prod[i] <- sqrt(4*fr.2+fr.1-fr.m1-4*fr.m2-(2*fr.2+fr.1+fr.m1+2*fr.m2)^2)
+    
+    temp1 <- subset(err.fac2,err.fac2$Date==kwartaal)[,c(-1,-2)]
+    temp2 <- subset(errors2,errors2$Date==kwartaal)[,c(-1,-2)]
+    temp3 <- subset(w.fact2,w.fact2$Date==kwartaal)[,c(-1,-2)]
+    temp4 <- replace(temp2, temp2==0,1)
+    temp4 <- replace(temp4, temp4==-2,2)
+    temp4 <- replace(temp4, temp4==-1,1)
+    temp4 <- temp4*temp3
+    
+    fr.2 <- sum(temp1[temp2==2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.1 <- sum(temp1[temp2==1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m1 <- sum(temp1[temp2==-1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m2 <- sum(temp1[temp2==-2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    w.Uncert_ee.GBC[i] <- sqrt(4*fr.2+fr.1-fr.m1-4*fr.m2-(2*fr.2+fr.1+fr.m1+2*fr.m2)^2)
+    
+}
+w.indicators.B <- cbind(w.indicators.B,w.Uncert_ee.prod,w.Uncert_ee.GBC)
+```
+
+```{r trade.uncert, eval=FALSE, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+##=============================##
+## CALCULATE INDICATORS: TRADE ##
+##=============================##
+indicators.T <- cbind(indicators.T, Uncert_fl.prod = aggregate(BER.T$Q3P, by=list(BER.T$surveyQ), FUN=se)[,2])
+indicators.T <- cbind(indicators.T, Uncert_fl.GBC = aggregate(BER.T$Q2P, by=list(BER.T$surveyQ), FUN=se)[,2])
+
+dups <- BER.T[duplicated(BER.T[,c("id","surveyQ")]) | duplicated(BER.T[,c("id","surveyQ")], fromLast = TRUE),]
+uniBER.T <- BER.T[!duplicated(BER.T[,c("id","surveyQ")]),]
+
+errors1 <- indicators.T[,c(1,9)]
+errors2 <- indicators.T[,c(1,9)]
+tel <- 2
+for(i in levels(uniBER.T$id)){
+    tel <- tel + 1
+    #BER.T$counter <- as.numeric(BER.T$survey)
+    exp.error <- indicators.T[,c(1,9)]
+    data <- subset(uniBER.T, uniBER.T$id==i)
+    #data <- data[order(data$counter),]
+    exp.error <- merge(exp.error, data, by.x="Date",by.y="surveyQ", all.x = TRUE)
+    for(t in 1:(nrow(exp.error))) {
+        exp.error$error1[t] <- exp.error$Q3A[t+1] - exp.error$Q3P[t]
+        exp.error$error2[t] <- exp.error$Q2A[t+1] - exp.error$Q2P[t]
+    }
+    errors1 <- cbind(errors1, exp.error$error1)
+    colnames(errors1)[tel] <- as.character(i)
+    errors2 <- cbind(errors2, exp.error$error2)
+    colnames(errors2)[tel] <- as.character(i)
+}
+
+# Kan dit verander na standard error or standard deviation?
+uncert <- transform(errors1, SD=apply(errors1[,c(-1,-2)],1,se))[,c(1,ncol(errors1)+1)]
+indicators.T <- cbind(indicators.T, Uncert_ee.prod = uncert[,2])    
+uncert <- transform(errors2, SD=apply(errors2[,c(-1,-2)],1,se))[,c(1,ncol(errors2)+1)]
+indicators.T <- cbind(indicators.T, Uncert_ee.GBC = uncert[,2])
+
+##Weighted versions-----------------------------------------------------------------------
+w.Uncert_fl.prod <- NULL
+w.Uncert_fl.GBC <- NULL
+i <- 0
+for(kwartaal in levels(BER.T$surveyQ)) {
+    i <- i+1
+    temp <- subset(BER.T,BER.T$surveyQ==kwartaal)
+    
+    fr.up <- sum((temp$Q3P*temp$factor)[temp$Q3P>0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)],na.rm=TRUE)
+    fr.down <- sum((temp$Q3P*temp$factor)[temp$Q3P<0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)],na.rm=TRUE)
+    w.Uncert_fl.prod[i] <- sqrt(fr.up-fr.down-(fr.up+fr.down)^2)
+    
+    fr.up <- sum((temp$Q2P*temp$factor)[temp$Q2P>0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q2P)],na.rm=TRUE)
+    fr.down <- sum((temp$Q2P*temp$factor)[temp$Q2P<0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q2P)],na.rm=TRUE)
+    w.Uncert_fl.GBC[i] <- sqrt(fr.up-fr.down-(fr.up+fr.down)^2)
+}
+w.indicators.T <- cbind(w.indicators.T,w.Uncert_fl.prod,w.Uncert_fl.GBC)
+#-------------------------------------------------------------------------------------------
+errors1 <- w.indicators.T[,c(1,9)]
+err.fac1 <- w.indicators.T[,c(1,9)]
+w.fact1 <- w.indicators.T[,c(1,9)]
+errors2 <- w.indicators.T[,c(1,9)]
+err.fac2 <- w.indicators.T[,c(1,9)]
+w.fact2 <- w.indicators.T[,c(1,9)]
+tel <- 2
+for(i in levels(uniBER.T$id)){
+    tel <- tel + 1
+    exp.error <- w.indicators.T[,c(1,9)]
+    data <- subset(uniBER.T, uniBER.T$id==i)
+    exp.error <- merge(exp.error, data, by.x="Date",by.y="surveyQ", all.x = TRUE)
+    for(t in 1:(nrow(exp.error))) {
+        exp.error$error1[t] <- exp.error$Q3A[t+1] - exp.error$Q3P[t]
+        exp.error$error2[t] <- exp.error$Q2A[t+1] - exp.error$Q2P[t]
+    }
+    
+    errors1 <- cbind(errors1, exp.error$error1)
+    err.fac1 <- cbind(err.fac1, exp.error$error1*exp.error$factor)
+    w.fact1 <- cbind(w.fact1, exp.error$factor)
+    errors2 <- cbind(errors2, exp.error$error2)
+    err.fac2 <- cbind(err.fac2, exp.error$error2*exp.error$factor)
+    w.fact2 <- cbind(w.fact2, exp.error$factor)
+    
+    colnames(errors1)[tel] <- as.character(i)
+    colnames(err.fac1)[tel] <- as.character(i)
+    colnames(w.fact1)[tel] <- as.character(i)
+    colnames(errors2)[tel] <- as.character(i)
+    colnames(err.fac2)[tel] <- as.character(i)
+    colnames(w.fact2)[tel] <- as.character(i)
+}
+
+w.Uncert_ee.prod <- NULL
+w.Uncert_ee.GBC <- NULL
+i <- 0
+for(kwartaal in levels(err.fac1$Date)) {
+    i <- i+1
+    temp1 <- subset(err.fac1,err.fac1$Date==kwartaal)[,c(-1,-2)]
+    temp2 <- subset(errors1,errors1$Date==kwartaal)[,c(-1,-2)]
+    temp3 <- subset(w.fact1,w.fact1$Date==kwartaal)[,c(-1,-2)]
+    temp4 <- replace(temp2, temp2==0,1)
+    temp4 <- replace(temp4, temp4==-2,2)
+    temp4 <- replace(temp4, temp4==-1,1)
+    temp4 <- temp4*temp3
+    
+    fr.2 <- sum(temp1[temp2==2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.1 <- sum(temp1[temp2==1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m1 <- sum(temp1[temp2==-1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m2 <- sum(temp1[temp2==-2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    w.Uncert_ee.prod[i] <- sqrt(4*fr.2+fr.1-fr.m1-4*fr.m2-(2*fr.2+fr.1+fr.m1+2*fr.m2)^2)
+    
+    temp1 <- subset(err.fac2,err.fac2$Date==kwartaal)[,c(-1,-2)]
+    temp2 <- subset(errors2,errors2$Date==kwartaal)[,c(-1,-2)]
+    temp3 <- subset(w.fact2,w.fact2$Date==kwartaal)[,c(-1,-2)]
+    temp4 <- replace(temp2, temp2==0,1)
+    temp4 <- replace(temp4, temp4==-2,2)
+    temp4 <- replace(temp4, temp4==-1,1)
+    temp4 <- temp4*temp3
+    
+    fr.2 <- sum(temp1[temp2==2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.1 <- sum(temp1[temp2==1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m1 <- sum(temp1[temp2==-1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m2 <- sum(temp1[temp2==-2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    w.Uncert_ee.GBC[i] <- sqrt(4*fr.2+fr.1-fr.m1-4*fr.m2-(2*fr.2+fr.1+fr.m1+2*fr.m2)^2)
+    
+}
+w.indicators.T <- cbind(w.indicators.T,w.Uncert_ee.prod,w.Uncert_ee.GBC)
+```
+
+
+```{r motor.uncert, eval=FALSE, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+##======================================##
+## CALCULATE INDICATORS: Motor Vehicles ##
+##======================================##
+indicators.V <- cbind(indicators.V, Uncert_fl.prod.new = aggregate(BER.V$Q3P, by=list(BER.V$surveyQ), FUN=se)[,2])
+indicators.V <- cbind(indicators.V, Uncert_fl.prod.used = aggregate(BER.V$Q8P, by=list(BER.V$surveyQ), FUN=se)[,2])
+indicators.V <- cbind(indicators.V, Uncert_fl.prod.spare = aggregate(BER.V$Q12P, by=list(BER.V$surveyQ), FUN=se)[,2])
+
+indicators.V <- cbind(indicators.V, Uncert_fl.GBC.new = aggregate(BER.V$Q2P, by=list(BER.V$surveyQ), FUN=se)[,2])
+indicators.V <- cbind(indicators.V, Uncert_fl.GBC.used = aggregate(BER.V$Q7P, by=list(BER.V$surveyQ), FUN=se)[,2])
+indicators.V <- cbind(indicators.V, Uncert_fl.GBC.spare = aggregate(BER.V$Q11P, by=list(BER.V$surveyQ), FUN=se)[,2])
+
+
+dups <- BER.V[duplicated(BER.V[,c("id","surveyQ")]) | duplicated(BER.V[,c("id","surveyQ")], fromLast = TRUE),]
+uniBER.V <- BER.V[!duplicated(BER.V[,c("id","surveyQ")]),]
+
+errors1 <- indicators.V[,c(1,9)]
+errors2 <- indicators.V[,c(1,9)]
+errors3 <- indicators.V[,c(1,9)]
+errors4 <- indicators.V[,c(1,9)]
+errors5 <- indicators.V[,c(1,9)]
+errors6 <- indicators.V[,c(1,9)]
+
+tel <- 2
+for(i in levels(uniBER.V$id)){
+    tel <- tel + 1
+    #BER.V$counter <- as.numeric(BER.V$survey)
+    exp.error <- indicators.V[,c(1,9)]
+    data <- subset(uniBER.V, uniBER.V$id==i)
+    #data <- data[order(data$counter),]
+    exp.error <- merge(exp.error, data, by.x="Date",by.y="surveyQ", all.x = TRUE)
+    for(t in 1:(nrow(exp.error))) {
+        exp.error$error1[t] <- exp.error$Q3A[t+1] - exp.error$Q3P[t]
+        exp.error$error2[t] <- exp.error$Q2A[t+1] - exp.error$Q2P[t]
+        exp.error$error3[t] <- exp.error$Q8A[t+1] - exp.error$Q8P[t]
+        exp.error$error4[t] <- exp.error$Q7A[t+1] - exp.error$Q7P[t]
+        exp.error$error5[t] <- exp.error$Q12A[t+1] - exp.error$Q12P[t]
+        exp.error$error6[t] <- exp.error$Q11A[t+1] - exp.error$Q11P[t]
+    }
+    errors1 <- cbind(errors1, exp.error$error1)
+    colnames(errors1)[tel] <- as.character(i)
+    errors2 <- cbind(errors2, exp.error$error2)
+    colnames(errors2)[tel] <- as.character(i)
+    errors3 <- cbind(errors3, exp.error$error3)
+    colnames(errors3)[tel] <- as.character(i)
+    errors4 <- cbind(errors4, exp.error$error4)
+    colnames(errors4)[tel] <- as.character(i)
+    errors5 <- cbind(errors5, exp.error$error5)
+    colnames(errors5)[tel] <- as.character(i)
+    errors6 <- cbind(errors6, exp.error$error6)
+    colnames(errors6)[tel] <- as.character(i)
+}
+
+# Kan dit verander na standard error or standard deviation?
+uncert <- transform(errors1, SD=apply(errors1[,c(-1,-2)],1,se))[,c(1,ncol(errors1)+1)]
+indicators.V <- cbind(indicators.V, Uncert_ee.prod.new = uncert[,2])    
+uncert <- transform(errors2, SD=apply(errors2[,c(-1,-2)],1,se))[,c(1,ncol(errors2)+1)]
+indicators.V <- cbind(indicators.V, Uncert_ee.GBC.new = uncert[,2])
+uncert <- transform(errors1, SD=apply(errors3[,c(-1,-2)],1,se))[,c(1,ncol(errors3)+1)]
+indicators.V <- cbind(indicators.V, Uncert_ee.prod.used = uncert[,2])    
+uncert <- transform(errors2, SD=apply(errors4[,c(-1,-2)],1,se))[,c(1,ncol(errors4)+1)]
+indicators.V <- cbind(indicators.V, Uncert_ee.GBC.used = uncert[,2])
+uncert <- transform(errors1, SD=apply(errors5[,c(-1,-2)],1,se))[,c(1,ncol(errors5)+1)]
+indicators.V <- cbind(indicators.V, Uncert_ee.prod.spare = uncert[,2])    
+uncert <- transform(errors2, SD=apply(errors6[,c(-1,-2)],1,se))[,c(1,ncol(errors6)+1)]
+indicators.V <- cbind(indicators.V, Uncert_ee.GBC.spare = uncert[,2])
+
+##Weighted versions-------------------------------------------------------------------------------
+w.Uncert_fl.prod <- NULL
+w.Uncert_fl.GBC <- NULL
+i <- 0
+for(kwartaal in levels(BER.V$surveyQ)) {
+    i <- i+1
+    temp <- subset(BER.V,BER.V$surveyQ==kwartaal)
+    
+    fr.up <- sum((temp$Q3P*temp$factor)[temp$Q3P>0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)],na.rm=TRUE)
+    fr.down <- sum((temp$Q3P*temp$factor)[temp$Q3P<0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)],na.rm=TRUE)
+    w.Uncert_fl.prod[i] <- sqrt(fr.up-fr.down-(fr.up+fr.down)^2)
+    
+    fr.up <- sum((temp$Q2P*temp$factor)[temp$Q2P>0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q2P)],na.rm=TRUE)
+    fr.down <- sum((temp$Q2P*temp$factor)[temp$Q2P<0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q2P)],na.rm=TRUE)
+    w.Uncert_fl.GBC[i] <- sqrt(fr.up-fr.down-(fr.up+fr.down)^2)
+}
+w.indicators.V <- cbind(w.indicators.V,w.Uncert_fl.prod,w.Uncert_fl.GBC)
+
+#------------------------------------------------------------------------------------------------
+errors1 <- w.indicators.V[,c(1,9)]
+err.fac1 <- w.indicators.V[,c(1,9)]
+w.fact1 <- w.indicators.V[,c(1,9)]
+errors2 <- w.indicators.V[,c(1,9)]
+err.fac2 <- w.indicators.V[,c(1,9)]
+w.fact2 <- w.indicators.V[,c(1,9)]
+tel <- 2
+for(i in levels(uniBER.V$id)){
+    tel <- tel + 1
+    exp.error <- w.indicators.V[,c(1,9)]
+    data <- subset(uniBER.V, uniBER.V$id==i)
+    exp.error <- merge(exp.error, data, by.x="Date",by.y="surveyQ", all.x = TRUE)
+    for(t in 1:(nrow(exp.error))) {
+        exp.error$error1[t] <- exp.error$Q3A[t+1] - exp.error$Q3P[t]
+        exp.error$error2[t] <- exp.error$Q2A[t+1] - exp.error$Q2P[t]
+    }
+    
+    errors1 <- cbind(errors1, exp.error$error1)
+    err.fac1 <- cbind(err.fac1, exp.error$error1*exp.error$factor)
+    w.fact1 <- cbind(w.fact1, exp.error$factor)
+    errors2 <- cbind(errors2, exp.error$error2)
+    err.fac2 <- cbind(err.fac2, exp.error$error2*exp.error$factor)
+    w.fact2 <- cbind(w.fact2, exp.error$factor)
+    
+    colnames(errors1)[tel] <- as.character(i)
+    colnames(err.fac1)[tel] <- as.character(i)
+    colnames(w.fact1)[tel] <- as.character(i)
+    colnames(errors2)[tel] <- as.character(i)
+    colnames(err.fac2)[tel] <- as.character(i)
+    colnames(w.fact2)[tel] <- as.character(i)
+}
+
+w.Uncert_ee.prod <- NULL
+w.Uncert_ee.GBC <- NULL
+i <- 0
+for(kwartaal in levels(err.fac1$Date)) {
+    i <- i+1
+    temp1 <- subset(err.fac1,err.fac1$Date==kwartaal)[,c(-1,-2)]
+    temp2 <- subset(errors1,errors1$Date==kwartaal)[,c(-1,-2)]
+    temp3 <- subset(w.fact1,w.fact1$Date==kwartaal)[,c(-1,-2)]
+    temp4 <- replace(temp2, temp2==0,1)
+    temp4 <- replace(temp4, temp4==-2,2)
+    temp4 <- replace(temp4, temp4==-1,1)
+    temp4 <- temp4*temp3
+    
+    fr.2 <- sum(temp1[temp2==2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.1 <- sum(temp1[temp2==1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m1 <- sum(temp1[temp2==-1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m2 <- sum(temp1[temp2==-2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    w.Uncert_ee.prod[i] <- sqrt(4*fr.2+fr.1-fr.m1-4*fr.m2-(2*fr.2+fr.1+fr.m1+2*fr.m2)^2)
+    
+    temp1 <- subset(err.fac2,err.fac2$Date==kwartaal)[,c(-1,-2)]
+    temp2 <- subset(errors2,errors2$Date==kwartaal)[,c(-1,-2)]
+    temp3 <- subset(w.fact2,w.fact2$Date==kwartaal)[,c(-1,-2)]
+    temp4 <- replace(temp2, temp2==0,1)
+    temp4 <- replace(temp4, temp4==-2,2)
+    temp4 <- replace(temp4, temp4==-1,1)
+    temp4 <- temp4*temp3
+    
+    fr.2 <- sum(temp1[temp2==2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.1 <- sum(temp1[temp2==1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m1 <- sum(temp1[temp2==-1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m2 <- sum(temp1[temp2==-2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    w.Uncert_ee.GBC[i] <- sqrt(4*fr.2+fr.1-fr.m1-4*fr.m2-(2*fr.2+fr.1+fr.m1+2*fr.m2)^2)
+    
+}
+w.indicators.V <- cbind(w.indicators.V,w.Uncert_ee.prod,w.Uncert_ee.GBC)
+```
+
+```{r services.uncert, eval=FALSE, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+##================================##
+## CALCULATE INDICATORS: SERVICES ##
+##================================##
+indicators.S <- cbind(indicators.S, Uncert_fl.prod = aggregate(BER.S$Q3P, by=list(BER.S$surveyQ), FUN=se)[,2])
+indicators.S <- cbind(indicators.S, Uncert_fl.GBC = aggregate(BER.S$Q2P, by=list(BER.S$surveyQ), FUN=se)[,2])
+
+dups <- BER.S[duplicated(BER.S[,c("id","surveyQ")]) | duplicated(BER.S[,c("id","surveyQ")], fromLast = TRUE),]
+uniBER.S <- BER.S[!duplicated(BER.S[,c("id","surveyQ")]),]
+
+errors1 <- indicators.S[,c(1,9)]
+errors2 <- indicators.S[,c(1,9)]
+tel <- 2
+for(i in levels(uniBER.S$id)){
+    tel <- tel + 1
+    #BER.S$counter <- as.numeric(BER.S$survey)
+    exp.error <- indicators.S[,c(1,9)]
+    data <- subset(uniBER.S, uniBER.S$id==i)
+    #data <- data[order(data$counter),]
+    exp.error <- merge(exp.error, data, by.x="Date",by.y="surveyQ", all.x = TRUE)
+    for(t in 1:(nrow(exp.error))) {
+        exp.error$error1[t] <- exp.error$Q3A[t+1] - exp.error$Q3P[t]
+        exp.error$error2[t] <- exp.error$Q2A[t+1] - exp.error$Q2P[t]
+    }
+    errors1 <- cbind(errors1, exp.error$error1)
+    colnames(errors1)[tel] <- as.character(i)
+    errors2 <- cbind(errors2, exp.error$error2)
+    colnames(errors2)[tel] <- as.character(i)
+}
+
+# Kan dit verander na standard error or standard deviation?
+uncert <- transform(errors1, SD=apply(errors1[,c(-1,-2)],1,se))[,c(1,ncol(errors1)+1)]
+indicators.S <- cbind(indicators.S, Uncert_ee.prod = uncert[,2])    
+uncert <- transform(errors2, SD=apply(errors2[,c(-1,-2)],1,se))[,c(1,ncol(errors2)+1)]
+indicators.S <- cbind(indicators.S, Uncert_ee.GBC = uncert[,2])
+
+##Weighted versions----------------------------------------------------------------------
+w.Uncert_fl.prod <- NULL
+w.Uncert_fl.GBC <- NULL
+i <- 0
+for(kwartaal in levels(BER.S$surveyQ)) {
+    i <- i+1
+    temp <- subset(BER.S,BER.S$surveyQ==kwartaal)
+    
+    fr.up <- sum((temp$Q3P*temp$factor)[temp$Q3P>0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)],na.rm=TRUE)
+    fr.down <- sum((temp$Q3P*temp$factor)[temp$Q3P<0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)],na.rm=TRUE)
+    w.Uncert_fl.prod[i] <- sqrt(fr.up-fr.down-(fr.up+fr.down)^2)
+    
+    fr.up <- sum((temp$Q2P*temp$factor)[temp$Q2P>0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q2P)],na.rm=TRUE)
+    fr.down <- sum((temp$Q2P*temp$factor)[temp$Q2P<0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q2P)],na.rm=TRUE)
+    w.Uncert_fl.GBC[i] <- sqrt(fr.up-fr.down-(fr.up+fr.down)^2)
+}
+w.indicators.S <- cbind(w.indicators.S,w.Uncert_fl.prod,w.Uncert_fl.GBC)
+#-----------------------------------------------------------------------------------------
+errors1 <- w.indicators.S[,c(1,9)]
+err.fac1 <- w.indicators.S[,c(1,9)]
+w.fact1 <- w.indicators.S[,c(1,9)]
+errors2 <- w.indicators.S[,c(1,9)]
+err.fac2 <- w.indicators.S[,c(1,9)]
+w.fact2 <- w.indicators.S[,c(1,9)]
+tel <- 2
+for(i in levels(uniBER.S$id)){
+    tel <- tel + 1
+    exp.error <- w.indicators.S[,c(1,9)]
+    data <- subset(uniBER.S, uniBER.S$id==i)
+    exp.error <- merge(exp.error, data, by.x="Date",by.y="surveyQ", all.x = TRUE)
+    for(t in 1:(nrow(exp.error))) {
+        exp.error$error1[t] <- exp.error$Q3A[t+1] - exp.error$Q3P[t]
+        exp.error$error2[t] <- exp.error$Q2A[t+1] - exp.error$Q2P[t]
+    }
+    
+    errors1 <- cbind(errors1, exp.error$error1)
+    err.fac1 <- cbind(err.fac1, exp.error$error1*exp.error$factor)
+    w.fact1 <- cbind(w.fact1, exp.error$factor)
+    errors2 <- cbind(errors2, exp.error$error2)
+    err.fac2 <- cbind(err.fac2, exp.error$error2*exp.error$factor)
+    w.fact2 <- cbind(w.fact2, exp.error$factor)
+    
+    colnames(errors1)[tel] <- as.character(i)
+    colnames(err.fac1)[tel] <- as.character(i)
+    colnames(w.fact1)[tel] <- as.character(i)
+    colnames(errors2)[tel] <- as.character(i)
+    colnames(err.fac2)[tel] <- as.character(i)
+    colnames(w.fact2)[tel] <- as.character(i)
+}
+
+w.Uncert_ee.prod <- NULL
+w.Uncert_ee.GBC <- NULL
+i <- 0
+for(kwartaal in levels(err.fac1$Date)) {
+    i <- i+1
+    temp1 <- subset(err.fac1,err.fac1$Date==kwartaal)[,c(-1,-2)]
+    temp2 <- subset(errors1,errors1$Date==kwartaal)[,c(-1,-2)]
+    temp3 <- subset(w.fact1,w.fact1$Date==kwartaal)[,c(-1,-2)]
+    temp4 <- replace(temp2, temp2==0,1)
+    temp4 <- replace(temp4, temp4==-2,2)
+    temp4 <- replace(temp4, temp4==-1,1)
+    temp4 <- temp4*temp3
+    
+    fr.2 <- sum(temp1[temp2==2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.1 <- sum(temp1[temp2==1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m1 <- sum(temp1[temp2==-1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m2 <- sum(temp1[temp2==-2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    w.Uncert_ee.prod[i] <- sqrt(4*fr.2+fr.1-fr.m1-4*fr.m2-(2*fr.2+fr.1+fr.m1+2*fr.m2)^2)
+    
+    temp1 <- subset(err.fac2,err.fac2$Date==kwartaal)[,c(-1,-2)]
+    temp2 <- subset(errors2,errors2$Date==kwartaal)[,c(-1,-2)]
+    temp3 <- subset(w.fact2,w.fact2$Date==kwartaal)[,c(-1,-2)]
+    temp4 <- replace(temp2, temp2==0,1)
+    temp4 <- replace(temp4, temp4==-2,2)
+    temp4 <- replace(temp4, temp4==-1,1)
+    temp4 <- temp4*temp3
+    
+    fr.2 <- sum(temp1[temp2==2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.1 <- sum(temp1[temp2==1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m1 <- sum(temp1[temp2==-1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    fr.m2 <- sum(temp1[temp2==-2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
+    w.Uncert_ee.GBC[i] <- sqrt(4*fr.2+fr.1-fr.m1-4*fr.m2-(2*fr.2+fr.1+fr.m1+2*fr.m2)^2)
+    
+}
+w.indicators.S <- cbind(w.indicators.S,w.Uncert_ee.prod,w.Uncert_ee.GBC)
+```
+
+```{r total.uncert, eval=FALSE, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+##=================================##
+## AGGREGATING as much as possible ##
+##=================================##
+indicators <- cbind(indicators, Uncert_fl.prod = aggregate(BER$Q3P, by=list(BER$surveyQ), FUN=se)[,2])
+indicators <- cbind(indicators, Uncert_fl.GBC = aggregate(BER$Q2P, by=list(BER$surveyQ), FUN=se)[,2])
+
+#The expectations of firms in question 31 in period t are compared to the realization of firms in question 7A in period t+4. 
+#Also compare the expectations of firms in questions 3P & 7P in period t to the realizations in questions 3A & 7A in period t+1. 
+dups <- BER[duplicated(BER[,c("id","surveyQ")]) | duplicated(BER[,c("id","surveyQ")], fromLast = TRUE),]
+uniBER <- BER[!duplicated(BER[,c("id","surveyQ")]),]
+
+errors1 <- indicators[,c(1,9)]
+errors2 <- indicators[,c(1,9)]
+tel <- 2
+for(i in levels(uniBER$id)){
+    tel <- tel + 1
+    #BER.S$counter <- as.numeric(BER.S$survey)
+    exp.error <- indicators[,c(1,9)]
+    data <- subset(uniBER, uniBER$id==i)
+    #data <- data[order(data$counter),]
+    exp.error <- merge(exp.error, data, by.x="Date",by.y="surveyQ", all.x = TRUE)
+    for(t in 1:(nrow(exp.error))) {
+        exp.error$error1[t] <- exp.error$Q3A[t+1] - exp.error$Q3P[t]
+        exp.error$error2[t] <- exp.error$Q2A[t+1] - exp.error$Q2P[t]
+    }
+    errors1 <- cbind(errors1, exp.error$error1)
+    colnames(errors1)[tel] <- as.character(i)
+    errors2 <- cbind(errors2, exp.error$error2)
+    colnames(errors2)[tel] <- as.character(i)
+}
+
+# Kan dit verander na standard error or standard deviation?
+uncert <- transform(errors1, SD=apply(errors1[,c(-1,-2)],1,se))[,c(1,ncol(errors1)+1)]
+indicators <- cbind(indicators, Uncert_ee.prod = uncert[,2])    
+uncert <- transform(errors2, SD=apply(errors2[,c(-1,-2)],1,se))[,c(1,ncol(errors2)+1)]
+indicators <- cbind(indicators, Uncert_ee.GBC = uncert[,2])
+
+##Weighted versions---------------------------------------------------------------------------------
+#GDP Data
+GDPdata <- read.csv("GDP Data.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+
+weights <- GDPdata[,c(17,12,6)]
+motor <- 0.05*weights[,3]
+weights <- cbind(weights,MotorRGDP_sa=motor)
+weights <- cbind(weights,SerRGDP_sa=GDPdata[,24])
+
+#weights$total <- rowSums(weights,1)
+
+colnames(w.indicators.M) <- c("Date","w.Conf_cc.M","w.Conf_fl.M","w.Act_prod.M","w.Conf_prod.M","w.Act_GBC.M","w.Conf_GBC.M","w.Invest.M","w.Empl.M")
+colnames(w.indicators.B) <- c("Date","w.Conf_cc.B",              "w.Act_prod.B","w.Conf_prod.B","w.Act_GBC.B","w.Conf_GBC.B",             "w.Empl.B")
+colnames(w.indicators.T) <- c("Date","w.Conf_cc.T",              "w.Act_prod.T","w.Conf_prod.T","w.Act_GBC.T","w.Conf_GBC.T",             "w.Empl.T")
+colnames(w.indicators.V) <- c("Date","w.Conf_cc.V",              "w.Act_prod.V","w.Conf_prod.V","w.Act_GBC.V","w.Conf_GBC.V",             "w.Empl.V")
+colnames(w.indicators.S) <- c("Date","w.Conf_cc.S",              "w.Act_prod.S","w.Conf_prod.S","w.Act_GBC.S","w.Conf_GBC.S",             "w.Empl.S")
+
+CC <- merge(w.indicators.M, w.indicators.B, by.x="Date", by.y="Date",all.x=TRUE)
+CC <- merge(CC, w.indicators.T, by.x="Date", by.y="Date",all.x=TRUE)
+CC <- merge(CC, w.indicators.V, by.x="Date", by.y="Date",all.x=TRUE)
+CC <- merge(CC, w.indicators.S, by.x="Date", by.y="Date",all.x=TRUE)
+
+Conf_cc <- cbind(CC$w.Conf_cc.M,CC$w.Conf_cc.B,CC$w.Conf_cc.T,CC$w.Conf_cc.V,CC$w.Conf_cc.S)
+Act_prod <- cbind(CC$w.Act_prod.M,CC$w.Act_prod.B,CC$w.Act_prod.T,CC$w.Act_prod.V,CC$w.Act_prod.S)
+Conf_prod <- cbind(CC$w.Conf_prod.M,CC$w.Conf_prod.B,CC$w.Conf_prod.T,CC$w.Conf_prod.V,CC$w.Conf_prod.S)
+Act_GBC <- cbind(CC$w.Act_GBC.M,CC$w.Act_GBC.B,CC$w.Act_GBC.T,CC$w.Act_GBC.V,CC$w.Act_GBC.S)
+Conf_GBC <- cbind(CC$w.Conf_GBC.M,CC$w.Conf_GBC.B,CC$w.Conf_GBC.T,CC$w.Conf_GBC.V,CC$w.Conf_GBC.S)
+Empl <- cbind(CC$w.Empl.M,CC$w.Empl.B,CC$w.Empl.T,CC$w.Empl.V,CC$w.Empl.S)
+
+w.indicators <- indicators
+for(i in 1:95) {
+    w.indicators$Conf_cc[i] <- weighted.mean(Conf_cc[i,], weights[i,],na.rm=TRUE)
+    w.indicators$Act_prod[i] <- weighted.mean(Act_prod[i,], weights[i,],na.rm=TRUE)
+    w.indicators$Conf_prod[i] <- weighted.mean(Conf_prod[i,], weights[i,],na.rm=TRUE)
+    w.indicators$Act_GBC[i] <- weighted.mean(Act_GBC[i,], weights[i,],na.rm=TRUE)
+    w.indicators$Conf_GBC[i] <- weighted.mean(Conf_GBC[i,], weights[i,],na.rm=TRUE)
+    w.indicators$Empl[i] <- weighted.mean(Empl[i,], weights[i,],na.rm=TRUE)
+}
+
+##------------------------------------------------------------------------------------------
+colnames(w.indicators.M)[10:15] <- c("w.Uncert_fl.M","w.Uncert_fl.prod.M","w.Uncert_fl.GBC.M","w.Uncert_ee.M","w.Uncert_ee.prod.M","w.Uncert_ee.GBC.M")
+colnames(w.indicators.B)[8:11] <-  c(                "w.Uncert_fl.prod.B","w.Uncert_fl.GBC.B",                "w.Uncert_ee.prod.B","w.Uncert_ee.GBC.B")
+colnames(w.indicators.T)[8:11] <-  c(                "w.Uncert_fl.prod.T","w.Uncert_fl.GBC.T",                "w.Uncert_ee.prod.T","w.Uncert_ee.GBC.T")
+colnames(w.indicators.V)[8:11] <-  c(                "w.Uncert_fl.prod.V","w.Uncert_fl.GBC.V",                "w.Uncert_ee.prod.V","w.Uncert_ee.GBC.V")
+colnames(w.indicators.S)[8:11] <-  c(                "w.Uncert_fl.prod.S","w.Uncert_fl.GBC.S",                "w.Uncert_ee.prod.S","w.Uncert_ee.GBC.S")
+
+UN <- merge(w.indicators.M[,c(1,10:15)], w.indicators.B[,c(1,8:11)], by.x="Date", by.y="Date",all.x=TRUE)
+UN <- merge(UN, w.indicators.T[,c(1,8:11)], by.x="Date", by.y="Date",all.x=TRUE)
+UN <- merge(UN, w.indicators.V[,c(1,8:11)], by.x="Date", by.y="Date",all.x=TRUE)
+UN <- merge(UN, w.indicators.S[,c(1,8:11)], by.x="Date", by.y="Date",all.x=TRUE)
+
+Uncert_fl.prod <- cbind(UN$w.Uncert_fl.prod.M,UN$w.Uncert_fl.prod.B,UN$w.Uncert_fl.prod.T,UN$w.Uncert_fl.prod.V,UN$w.Uncert_fl.prod.S)
+Uncert_fl.GBC <- cbind(UN$w.Uncert_fl.GBC.M,UN$w.Uncert_fl.GBC.B,UN$w.Uncert_fl.GBC.T,UN$w.Uncert_fl.GBC.V,UN$w.Uncert_fl.GBC.S)
+Uncert_ee.prod <- cbind(UN$w.Uncert_ee.prod.M,UN$w.Uncert_ee.prod.B,UN$w.Uncert_ee.prod.T,UN$w.Uncert_ee.prod.V,UN$w.Uncert_ee.prod.S)
+Uncert_ee.GBC <- cbind(UN$w.Uncert_ee.GBC.M,UN$w.Uncert_ee.GBC.B,UN$w.Uncert_ee.GBC.T,UN$w.Uncert_ee.GBC.V,UN$w.Uncert_ee.GBC.S)
+
+for(i in 1:95) {
+    w.indicators$Uncert_fl.prod[i] <- weighted.mean(Uncert_fl.prod[i,], weights[i,],na.rm=TRUE)
+    w.indicators$Uncert_fl.GBC[i] <- weighted.mean(Uncert_fl.GBC[i,], weights[i,],na.rm=TRUE)
+    w.indicators$Uncert_ee.prod[i] <- weighted.mean(Uncert_ee.prod[i,], weights[i,],na.rm=TRUE)
+    w.indicators$Uncert_ee.GBC[i] <- weighted.mean(Uncert_ee.GBC[i,], weights[i,],na.rm=TRUE)
+}
+```
+
+```{r load, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+#Load pre-calculated datasets (for speed)
+indicators <- read.csv2("indicators.csv", header=TRUE)[,-1]
+indicators.M <- read.csv2("indicators_M.csv", header=TRUE)[,-1]
+indicators.B <- read.csv2("indicators_B.csv", header=TRUE)[,-1]
+indicators.T <- read.csv2("indicators_T.csv", header=TRUE)[,-1]
+indicators.V <- read.csv2("indicators_V.csv", header=TRUE)[,-1]
+indicators.S <- read.csv2("indicators_S.csv", header=TRUE)[,-1]
+
+w.indicators <- read.csv2("w_indicators.csv")[,-1]
+w.indicators.M <- read.csv2("w_indicators_M.csv")[,-1]
+w.indicators.B <- read.csv2("w_indicators_B.csv")[,-1]
+w.indicators.T <- read.csv2("w_indicators_T.csv")[,-1]
+w.indicators.V <- read.csv2("w_indicators_V.csv")[,-1]
+w.indicators.S <- read.csv2("w_indicators_S.csv")[,-1]
+
+GDPdata$X <- as.Date(GDPdata$X, format = "%Y/%m/%d")
+w.indicators$Date <- GDPdata$X
+indicators$Date <- GDPdata$X
+
+w.uncert.norm <- cbind(Date=w.indicators[,1],as.data.frame(scale(w.indicators[,9:12])))
+uncert.norm <- cbind(Date=indicators[,1],as.data.frame(scale(indicators[,9:12])))
+```
+
+Figure 5 illustrates the centered[^21] weighted and unweighted uncertainty indicators, based on *ex ante* disagreement in forward-looking responses. As was the case for the confidence indicators, the unweighted versions are calculated by stacking all of the available responses from all of the surveys. Again, the weighted and unweighted versions are similar, with the weighted indicator slightly more volatile. According to these measures there were three episodes of large increases in uncertainty around 1994, 1999 and 2009. All three were roughly at the end or just after the three official downswing phases in the business cycle over the period. There appears to be two substantial differences between the two measures. The weighted index exhibts a large trough in 2004, not mirrored by the unweighted index, while the unweighted index has a larger dip and subsequent recovery around the financial crisis in 2008. The sectoral uncertainty indicators (not illustrated here), exhibit similar trends, althougfh there are some missing values and a few idiosyncratic/unique spikes and troughs.
+
+[^21]: I normalised/standardised them for easier and clearer graphical presentation.
+
+```{r figure5, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Uncertainty from forward-looking dispersion: Unweighted and Weighted"}
+indicator_plot <- cbind(uncert.norm[,c(1,3)],w.uncert.norm[,3])
+colnames(indicator_plot) <- c("Date","Unweighted","Weighted")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Uncertainty")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+```
+
+@Bachmann2010 and @Bachmann2013 noted that there are two potential problems with this proxy. Firstly, time-varying cross-sectional dispersion in survey responses might simply be due to different firms reacting differently to aggregate shocks, even with constant uncertainty.[^22] Secondly, time variation in the dispersion of expectations might simply reflect time variation in the heterogeneity of expectations, without the degree of subjective uncertainty changing over time. Accordingly, they recommended a qualitative index of the *ex post* forecast error standard deviation, which requires access to the micro-data. Forecast error is the error in individual firm's expectations, which excludes heterogeneous but certain disagreement in expectations. 
+
+[^22]: They do a variance decomposition of uncertainty and compare the "within" and "between" variance at a subsector level. The idea is that a difference in factor loadings for aggregate shocks might be due to industry-specific adjustment and production technologies. They argue that the high "within" variance and the low "between" variance, means that time series movements in dispersion are not explained by manufacturing subsectors getting more or less different over the business cycle. We could do this as well, but I am not quite sure how it works?
+
+The panel dimension of the survey is exploited to construct qualitative measures of *ex post* forecast errors. The same question is used to construct the uncertainty indicator: *"[Estimated development in current quarter] Compared with the same quarter of a year ago, are General Business Conditions: Better, the Same, or Poorer?"*[^23] Thus, the survey in period $t$ is used to extract the expectations of general business conditions in time $t+1$ relative to $t-3$. The errors are then calculated by subtracting these expectations from the actual realisations from the survey at time $t+1$, relative to $t-3$.  For example, for a firm that expected an improvement in (i.e. better) conditions, the realisation of better conditions would be coded as a 0 forecast error, no change would be coded as a -1 forecast error, and poorer conditions would be coded as a -2 forecast error. Table 1 illustrates the 9 possible expectation errors that arise.[^24] Uncertainty was then measured as the cross-sectional standard deviation of the expectation errors in each quarter: $U_t = STD(Error_{t+1})$.
+
+[^23]: I have also calculated uncertainty indicators based on the BER question and indicators for production uncertainty. Daar is duplicated id pairs in die surveys - wat 'n fout moet wees - so ek haal hulle uit. Should we impute missing sectoral values with aggregated data, and should we interpolate the 2005Q4 missing values?
+
+[^24]: Again, a common difficulty is that respondents may not actually use the reference period specified in the questionnaire in answering the question (OECD 2003). It is possible that this is the case in the BER survey responses. For example, answers to the forward-looking questions may compare the next quarter t+1 to period t, instead of to period t-3. Kershoff (2015) admits this possibility and offers it as one explanation for potential seasonal patterns in the data. Ons kan dan probeer om 'n plan te maak, soos die average vat van die vorige changes in die activity variable.
+
+\begin{table}[]
+\centering
+\caption{Possible Expectation Errors}
+\label{my-label}
+\begin{tabular}{llrrr}
+                          &                                &                             & $Q1A_{t+1}$               &                             \\ \cline{2-5} 
+\multicolumn{1}{l|}{}     & \multicolumn{1}{l|}{}          & \multicolumn{1}{r|}{Better} & \multicolumn{1}{r|}{Same} & \multicolumn{1}{r|}{Poorer} \\ \cline{2-5} 
+\multicolumn{1}{l|}{}     & \multicolumn{1}{l|}{E(Better)} & \multicolumn{1}{r|}{0}      & \multicolumn{1}{r|}{-1}   & \multicolumn{1}{r|}{-2}     \\ \cline{2-5} 
+\multicolumn{1}{l|}{$Q1P_t$} & \multicolumn{1}{l|}{E(Same)}   & \multicolumn{1}{r|}{1}      & \multicolumn{1}{r|}{0}    & \multicolumn{1}{r|}{-1}     \\ \cline{2-5} 
+\multicolumn{1}{l|}{}     & \multicolumn{1}{l|}{E(Poorer)} & \multicolumn{1}{r|}{2}      & \multicolumn{1}{r|}{1}    & \multicolumn{1}{r|}{0}      \\ \cline{2-5} 
+\end{tabular}
+\end{table}
+
+Although it is based on the realised expectation errors in the next quarter, this is dependent on the knowledge and level of uncertainty in the current period. Thus, the standard deviation of realised expectation errors at time $t+1$ does not constitute uncertainty in $t+1$ [@Bachmann2010]. Rather, it is the knowledge (in month t) of this standard deviation going up or down that makes decision makers more or less uncertain at time $t$. This timing does not require decision makers to know anything about the future, other than that it is more or less uncertain. 
+
+Figure 6 illustrates the centered weighted and unweighted uncertainty indicators, based on *ex post* dispersion in expectations errors. The weighted and unweighted versions are similar, with the weighted indicator slightly more volatile. These measures also point to those three episodes of large increases in uncertainty around 1994, 1999 and 2009. In the South African case, uncertainty was most pronounced around the period of Democratic transition from 1992-1994. The second spike coincides with the Asian crisis and subsequent financial distress associated with Russia's default on its sovereign debt and the collapse of Long Term Capital Management. The third increase is related to the financial crisis and subsequent Great recession. In addition, there seems to be two spikes around 2001 and 2002, which corresponds to the period when some South African business cycle indicators signalled a potential turning point. This was ultimately not considered an official reference turning point by the SARB, because the criteria in terms of amplitude and duration were not met. The sectoral uncertainty indicators (not illustrated here), exhibit similar trends, althougfh there are some missing values and a few idiosyncratic/unique spikes and troughs.
+
+```{r figure6, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Uncertainty from Expectation Error dispersion: Unweighted and Weighted"}
+indicator_plot <- cbind(uncert.norm[,c(1,5)],w.uncert.norm[,5])
+colnames(indicator_plot) <- c("Date","Unweighted","Weighted")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Uncertainty")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+```
+
+Figure 7 and Figure 8 compare the two uncertainty indicators, both in unweighted and weighted form.  They exhibit similar patterns, although the unweighted versions are smoother and seem to exhibit a more pronounounced cyclical trend. Interestingly, the increase in uncertainty around the financial crisis in 2008, particularly for the weighted measures, is not as pronounced as has been found for many developed countries [e.g. @Bachmann2013 and @Bloom2014]. Given that the peaks and troughs in the uncertainty indicators coincide with potentially relevant political and economic events, the shape of the indicator seems plausible [@Girardi2015]. They also broadly correspond to the the significant events reflected in @Redl2015's uncertainty measure for South Africa based on forecaster disagreement.[^25]
+
+[^25]: There are a few smaller spikes in 1996, 2003 and at the end of 2011. According to Redl (2015) 1996 may relate to EU/South African free trade area talks, the new Constitution and political unrest. 2003 may be related to the stagflation induced by the large and persistent exchange rate depreciation (of 50%). 2011 may be related to the Eurozone crisis, chicanery around raising the U.S. federal debt ceiling, and the earthquake in Japan.
+
+```{r figure7, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Unweighted Uncertainty Indicators"}
+indicator_plot <- uncert.norm[,c(1,3,5)]
+colnames(indicator_plot) <- c("Date","Forward-looking","Expectation Errors")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Uncertainty")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+```
+
+```{r figure8, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted Uncertainty Indicators"}
+indicator_plot <- w.uncert.norm[,c(1,3,5)]
+colnames(indicator_plot) <- c("Date","Forward-looking","Expectation Errors")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Uncertainty")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+```
+
+Table 2 reports that the correlations between these measures of uncertainty are all significant. The correlations between forward-looking dispersion measures and expectations error measures are 0.55 and 0.4 for the unweighted and weighted versions. This supports the findings in @Bachmann2010 and @Bachmann2013. The fact that both conceptually different proxies for uncertainty are reasonably close to each other lends some support to the widespread practice of proxying uncertainty with survey disagreement [@Bachmann2010]. If the dispersion series were mainly driven by heterogeneous but certain disagreement then one would expect *ex ante* dispersion to be only weakly correlated with the *ex post* forecast error standard deviation [@Bachmann2013].[^26]
+
+[^26]: Bachmann et al (2013) construct another proxy for uncertainty based on these forecast errors. It is a measure of the average size of idiosyncratic forecast errors, which one would expect to be larger in a more uncertain environment. Ons kan dit ook doen. Another extention would be based on the work of Girardi et al (2015), where they extend the dispersion measure to include all 22 forward-looking questions in the EU survey. Ons kan ook kyk of die measures correlate met ander proxies.
+
+```{r table2, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+# Check correlations
+temp_indices <- cbind(uncert.norm[,c(1,3,5)],w.uncert.norm[,c(3,5)])
+colnames(temp_indices) <- c("Date","Unw_FL","Unw_EE","Weighted_FL","Weighted_EE")
+source("corstarsl.R")
+for(i in 2:ncol(temp_indices)) {temp_indices[,i] <- as.numeric(temp_indices[,i]) }
+ts.all_indices <- as.ts(temp_indices[,-1],start =c(1992,1),end=c(2015,3),frequency=4) 
+#cor(temp_indices[,-1],use="complete.obs")
+xt <- xtable(corstarsl(ts.all_indices), caption="Correlations in Uncertainty Indicators")
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"))
+```
+
+#Cyclical Analysis and Comovement
+This section will investigate the extent to which these confidence and uncertainty measures are associated with fluctuations in real activity, both in the aggregate and for the sectors seperately.[^27] Figure 9 illustrates the preferred aggregate (unweighted) confidence and uncertainty indicators, i.e. forward-looking confidence and uncertainty based on expectations errors, as well as real GDP growth over the period. These survey-based measures appeared to plausibly capture confidence and uncertainty in South Africa. The confidence indicators appear to strongly pro-cyclical, and follow real GDP growth closely. The uncertainty indicators appear to fall sharply at the beginning of the recessionary period, as gents are less uncertain, and to rise sharply towards the end of the recessionary period and into the recovery period. These indiocators of uncertainty do not appear to be as counter-cyclical as some of the indicators in the international literature [e.g. @Bloom2014].
+
+[^27]: George has also suggested looking at the non-response rate for a cyclical trend. Hart (2015) calculated the non-response rate by taking the number of firms which did not respond to a specific question as a fraction of the number of firms which returned the survey in each quarter. Maar bedoel George nie die non-response rate in terme van questionnaires answered nie? Is there a correlation between non-responses and uncertainty? Non-responses in terms of missing values or in terms of number of respondents out of total (1,500) mailed?
+
+```{r figure9, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Confidence and uncertainty Indicators and real GDP growth"}
+realGDP <- read.csv("RealGDP.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+realGDP$X <- as.Date(realGDP$X, format = "%Y/%m/%d")
+
+x <- realGDP[,2]
+indexes<-1:(NROW(x)-4)
+realGDPgrowth<-c(rep(NA,4),(x[indexes+4]-x[indexes])/x[indexes])
+realGDPgrowth<- realGDPgrowth[-1:-4]
+temp_indices <- cbind(Date=GDPdata$X,indicators[,c(2,5,6,10,12)],realGDPgrowth)
+colnames(temp_indices) <- c("Date", "Concf_CC", "Act_GBC", "Conf_FL", "Uncert_FL", "Uncert_EE", "GDPgrowth")
+ts.all_indices <- ts(temp_indices[,-1],start =c(1992,1),end=c(2015,3),frequency=4) 
+
+plot(ts.all_indices[,c(3,5,6)],plot.type = "m",main="")
+```
+
+Figure 10 illustrates the cross-correlograms for the variables. Confidence is significantly correlated with real GDP growth. The highest correlation coefficient for the forward-looking measure occurs at 2 lags, whereas for the activity measure it occurs contemporaneously, which is what one would expect. The uncertainty indicators exhibit a positive correlation with real GDP growth, with the maximum at 2 lags. However, they are significantly negatively correlated with lagged real economic growth at lags between 4 and 9. This confirms the pattern exhibited above. Uncertainty seems to decrease significantly as the economy enters a recession, and spike towards the end of the recession or the beginning of the recovery period. The patterns are very similar for the weighted versions of the indicators, althoufgh they are slightly less significant. The patterns are also generally similar for the sectoral indicators and sectoral real GDP, although the indicators are usually more highly correlated with the OECD sectoral production indices.
+
+```{r figure10, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Cross-correlograms of fonfidence and uncertainty and real GDP growth"}
+Conf_cc <- temp_indices[,2]
+Act_GBC <- temp_indices[,3]
+Conf_GBC <- temp_indices[,4]
+Unc_fl <- temp_indices[,5] 
+Unc_ee <- temp_indices[,6]
+GDPgrowth <- temp_indices[,7]
+
+par(mfrow=c(2,2))
+ccf(Act_GBC,GDPgrowth, na.action = na.pass)
+ccf(Conf_GBC,GDPgrowth, na.action = na.pass)
+ccf(Unc_fl,GDPgrowth, na.action = na.pass)
+ccf(Unc_ee,GDPgrowth, na.action = na.pass)
+```
 
 
 #References
