@@ -20,7 +20,7 @@ csl: harvard.csl
 \end{center}
 
 \begin{small}
-This paper investigates the Business Tendency Surveys conducted by the BER. The microdata from the surveys are used to calculate indicators of business sentiment for South Africa since the early 1990s. Confidence and uncertainty indicators are calculated for four sectors surveyed by the BER, as well as for the aggregate. The indicators are then compared to measures of output, including sectoral GDP, production indices and employment. The relationships are investigated using agnostic SVARs and impulse response functions. The preliminary findings indicate that.
+This paper investigates the Business Tendency Surveys conducted by the BER. The microdata from the surveys are used to calculate indicators of business sentiment for South Africa since the early 1990s. Confidence and uncertainty indicators are calculated for five sectors surveyed by the BER, as well as for the aggregate. The indicators are then compared to measures of economic activity, including GDP and production indices. The relationships are investigated using agnostic VARs and impulse response functions. The preliminary findings indicate that all the measures of confidence are significantly positively correlated with output. The survey-based measures of uncertainty do not exhibit the typical anti-cyclical trend found in the international literature. Instead, large increase in these measures tend to occur around the start of the recovery phase in business cycle. Accordingly, they exhibit a mildly positive contemporaneous correlation with output, and a negative correlation only at longer lags. 
 
 \vspace{0.5em}
 \noindent{\textbf{JEL Classification:} X01, Z01, Z01} \\
@@ -32,21 +32,21 @@ This paper investigates the Business Tendency Surveys conducted by the BER. The 
 #Introduction
 This paper examines the relationship between business sentiment and real activity in South Africa. Two concepts are commonly referred to in the context of business sentiment: *confidence* and *uncertainty*. Business confidence involves economic agents' perceptions of the current and expected future business climate. This is dependent on the prevailing economic environment and expectations of future prospects. Uncertainty reflects agents' inability to forecast the probability of future events occurring. It entails a lack of knowledge of the set of possible outcomes and the probability of each occurring.
 
-The global financial crisis and subsequent Great Recession were associated with low levels of confidence and heightened uncertainty. According to the @ECB2013, the financial crisis created a climate of exceptionally low confidence and heightened uncertainty, which contributed to a large extent to the subsequent recession. Even the subsequent recovery was characterised by only modest improvements in business sentiment. This has motivated an increase in research on the impact of changes in business sentiment, and especially uncertainty, on real activity.  
+The global financial crisis and subsequent Great Recession were associated with low levels of confidence and heightened uncertainty. According to the @ECB2013, the financial crisis created a climate of exceptionally low confidence and heightened uncertainty, which contributed to a large extent to the subsequent recession. Even the subsequent recovery was characterised by only modest improvements in business sentiment. This has motivated an increase in research on the impact of changes in business sentiment, and especially uncertainty, on real activity.
 
 Macroeconomic theory postulates a causal link between confidence and economic activity, based on multiple equilibria in which self-fulfilling expectations of subjective agents generate changes in real activity. Yet the empirical evidence on the relation between confidence and economic activity is inconclusive [@Taylor2007]. Recent work suggests that changes in confidence may affect long-run output growth rather than cause short-run fluctuations [@Barsky2012]. Even if confidence measures do not hold distinct short-run information, their leading indicator properties are well-established and their timely availability has made them popular with analysts all over the world. This is also the case in South Africa, where the Bureau for Economic Research's business confidence measure is used by the SARB as a leading indicator to identify the official business cycle turning points.
 
-The recent literature has focussed particular attention on the effects of changes in uncertainty on economic activity. While the consensus in the literature is that uncertainty rises during recessions or economic crises, the precise impact of uncertainty on the real economy, and how it differs from low levels of confidence, is less clear. @Bloom2009 suggested a "wait-and-see" effect for uncertainty shocks, which would provide a channel through which uncertainty could exogenously influence production, employment and investment, thereby driving business cycles. A number of channels have been proposed, however, through which uncertainty could potentially have negative or positive effects on growth [@Bloom2014].
+The recent literature has focussed particular attention on the effects of changes in uncertainty on economic activity. While the consensus in the literature is that uncertainty rises during recessions or economic crises, the precise impact of uncertainty on the real economy, and how it differs from low levels of confidence, is less clear. @Bloom2009 suggested a "wait-and-see" effect for uncertainty shocks, which would provide a channel through which uncertainty could exogenously influence production, employment and investment, thereby driving business cycles. However, a number of channels have been proposed through which uncertainty could potentially have negative or positive effects on growth [@Bloom2014].
 
-This ambiguity is present in the empirical literature, which may be due to the difficulties surrounding the measurement and identification of separate causal effects. A broad range of proxies have been used to measure uncertainty. The majority of studies have looked at macroeconomic uncertainty using volatility in the stock market, GDP, bond yields and exchange rates as proxies. The rationale is that the more volatile a series, the more difficult it is to forecast and the greater the degree of uncertainty [@Bloom2014]. In addition to volatility measures, disagreement between macroeconomic forecasters, media references to "uncertainty" and standard deviations of expectations in survey responses have been used as indicators.
+This ambiguity is present in the empirical literature. This may be due to the difficulties surrounding the measurement of uncertainty and the identification of separate causal effects. A broad range of proxies have been used to measure uncertainty. The majority of studies have looked at macroeconomic uncertainty using volatility in the stock market, GDP, bond yields and exchange rates as proxies. The rationale is that the more volatile a series, the more difficult it is to forecast, and the greater the degree of uncertainty [@Bloom2014]. In addition to volatility measures, other indicators have been based on the disagreement between macroeconomic forecasters, media references to "uncertainty", and the dispersion of expectations in survey responses.
 
-Some of the recent work has suggested that increases in uncertainty may generate fluctuations in output, which would have important policy implications for issues like the appropriate size of stimulus packages in periods of heightened uncertainty. However, it is not yet clear whether uncertainty itself has an impact on the business cycle or whether it is an epiphenomenon which occurs during recessions or periods of low confidence. Hence there is a need to further examine the effect of uncertainty on the real economy. 
+Some of the recent work has suggested that increases in uncertainty may generate fluctuations in output, which would have important policy implications for issues like the appropriate size of stimulus packages in periods of heightened uncertainty. However, it is not yet clear whether uncertainty itself has an impact on the business cycle or whether it is an epiphenomenon which occurs during recessions or periods of low confidence. Hence, there is a need to further examine the effect of uncertainty on the real economy. 
 
-This paper studies the relationship between sentiment and economic activity using the Bureau for Economic Research's (BER) business tendency surveys. Although measuring economic sentiment is not a straightforward task, survey-based indicators can be helpful in discovering agents' opinions on future economic developments. Survey-based measures may include information known by the respondents but not yet reflected in aggregate economic variables. Thus, they may reveal important information about expectations, particularly regarding waves of optimism or pessimism, which may be drivers of the business cycle. Moreover, these indicators are often available earlier (with a shorter lag) than official statistics and are usually not subject to revisions [@ECB2013].  
+This paper studies the relationship between sentiment and economic activity in South Africa using the Bureau for Economic Research's (BER) business tendency surveys. Although measuring economic sentiment is not a straightforward task, survey-based indicators can be helpful in discovering agents' opinions on future economic developments. Survey-based measures may include information known by the respondents but not yet reflected in aggregate economic variables. Thus, they may reveal important information about expectations, particularly regarding waves of optimism or pessimism, which may be drivers of the business cycle. Moreover, these indicators are often available earlier (with a shorter lag) than official statistics and are usually not subject to revisions [@ECB2013]. 
 
-The aim is to construct different measures of business sentiment based on the microdata from the BER business tendency surveys. Indicators of confidence and uncertainty are calculated at sectoral level and in the aggregate. The relationships between these sentiment indicators and economic activity over the cycle are then evaluated, using the standard agnostic econometric methods (VARs) employed elsewhere. The aim is to examine whether these survey-based measures of confidence and uncertainty have unique and distinguishable relationships with real economic activity. It may be useful to examine the impact of sector-specific sentiment indicators, where the relationships might show up more clearly than in aggregate indicators [@INIS2014].
+The aim is to construct different measures of business sentiment based on the microdata from the BER business tendency surveys. Indicators of confidence and uncertainty are calculated at sectoral level and in the aggregate. The relationships between these sentiment indicators and economic activity over the cycle are then evaluated, using the standard agnostic econometric methods (VARs) employed elsewhere. The aim is to examine whether these survey-based measures of confidence and uncertainty have unique and distinguishable relationships with real economic activity. It may be particularly useful to examine the impact of sector-specific sentiment indicators, where the relationships might show up more clearly than in aggregate indicators [@INIS2014].
 
-An investigation of sentiment in the developing country context might be especially informative. Developing countries are often characterised by higher business uncertainty than developed countries [@Bloom2014]. The South African economy in particular has been subject to much higher levels of political and economic uncertainty than developed economies. Not only is it an emerging market, but its tumultuous political history and the legacy of Apartheid has contributed significantly to business uncertainty. It is important to confirm the existence and nature of the relationship between sentiment and economic activity in settings outside of the developed world. 
+It is important to confirm the existence and nature of the relationship between sentiment and economic activity in settings outside of the developed world. Developing countries are often characterised by higher business uncertainty than developed countries [@Bloom2014]. The South African economy in particular has been subject to much higher levels of political and economic uncertainty than developed economies. Not only is South Africa an emerging market, but its tumultuous political history and the legacy of Apartheid has contributed significantly to business uncertainty. An investigation of sentiment in the developing country context might therefore be especially informative.
 
 ```{r readdata, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
 setwd("C:\\Users\\Laurie\\OneDrive\\Documents\\BING\\BER Confidence Surveys\\Sentiment")
@@ -58,9 +58,21 @@ suppressMessages(library(reshape2))
 suppressMessages(library(stargazer))
 suppressMessages(library(xtable))
 suppressMessages(library(scales))
+suppressMessages(library(quantmod))
+suppressMessages(library(vars))
+suppressMessages(library(tseries))
+suppressMessages(library(urca))
 
 GDPdata <- read.csv("GDP Data.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
 GDPdata$X <- as.Date(GDPdata$X, format = "%Y/%m/%d")
+
+##For Grpahing Business cycles
+recessions.df = read.table(textConnection(
+    "Peak, Trough
+    1989-02-28, 1993-05-30
+    1996-11-30, 1999-08-31
+    2007-11-30, 2009-08-31"), sep=',',
+    colClasses=c('Date', 'Date'), header=TRUE)
 ```
 
 #The Concepts of Confidence and Uncertainty
@@ -72,16 +84,16 @@ The two concepts of confidence and uncertainty are inherently linked. Confidence
 
 #Confidence
 ##Theoretical Links
-Notwithstanding the popularity of confidence indicators with analysts, the stance of the academic literature is more ambiguous. The opinions range from the view that confidence measures have an important causal role in the business cycle, to the view that they contain useful predictive information but little causal role, to the conclusion that they have no value even in forecasting [@INIS2014].
+Notwithstanding the popularity of confidence indicators with analysts, the stance of the academic literature is more ambiguous. The opinions range from the view that confidence measures have an important causal role in the business cycle, to the view that they contain useful predictive information but little causal role, to the conclusion that they have no value, even in forecasting [@INIS2014].
 
 Broadly speaking, there are two contrasting approaches to the role of confidence in macroeconomics. The first view, which @Barsky2012 refer to as the "animal spirits" view, claims that independent changes in beliefs have causal effects on business cycles. This view is usually associated with consumer confidence, and the idea that a long-lasting negative consumption shock, associated with an exogenous shift in pessimism, can have a causal effect on overall aggregate demand. 
 
 The second view, which @Barsky2012 refer to as the "information" or "news" view, claims that confidence indicators contain information about current and future economic developments. The idea is that confidence can proxy for news that agents receive about future productivity that does not otherwise show up in econometricians' information sets. This view supposes that confidence innovations might contain predictive information when agents become aware of changes in future productivity that are independent of current productivity. Both views can be compatible with leading indicator properties, but only the animal spirits view would imply causality [@ECB2013].
 
-A theoretical causal link between business confidence and fluctuations in economic activity can be found in a range of dynamic general equilibrium models that incorporate the subjective views of economic agents. These models give rise to multiple equilibria that are not determined by standard economic fundamentals and in which expectations about the future level of output can become self-fulfilling. As a result, a decline in business confidence can cause a decline in output [@Taylor2007]. In other words, changes in confidence can cause changes in real activity, independently of economic fundamentals. However, the link need not necessarily be quantitatively significant. Thus, the impact of confidence on economic activity is an empirical issue [@Taylor2007].
+A theoretical causal link between business confidence and fluctuations in economic activity can be found in dynamic general equilibrium models that incorporate the subjective views of economic agents. These models give rise to multiple equilibria that are not determined by standard economic fundamentals and in which expectations about the future level of output can become self-fulfilling. As a result, a decline in business confidence can cause a decline in output [@Taylor2007]. In other words, changes in confidence can cause changes in real activity, independently of economic fundamentals. However, the link need not necessarily be quantitatively significant. Thus, the impact of confidence on economic activity would then be an empirical issue [@Taylor2007].
 
 ##Empirical Findings
-There are two main challenges when it comes to empirical work on business confidence: how to construct proxies for confidence and how to measure the impact of confidence on real activity. Confidence is an elusive concept, which is difficult to define precisely or measure directly. In practice, analysts typically aggregate information from business and consumer surveys to construct proxies for confidence. These surveys typically contain a small number of qualitative questions, which can be answered quickly by respondents. Indicators are typically derived from the subjective answers to questions on past, current and expected future economic developments. The assumption is that before a specific business activity is implemented (e.g. new production plans, employment, or purchases), a certain opinion-building has taken place, which may be called "sentiment" or "confidence" [@Santero1996]. The most important advantage of these surveys is that they are usually available long before official statistical data becomes available. Moreover, they are not subject to revisions and are useful in avoiding trend and seasonality problems.   
+There are two main challenges when it comes to empirical work on business confidence: how to construct proxies for confidence and how to measure the impact of confidence on real activity. Confidence is an elusive concept, which is difficult to define precisely or measure directly. In practice, analysts typically aggregate information from business and consumer surveys to construct proxies for confidence. These surveys usually contain a small number of qualitative questions, which can be answered quickly by respondents. Indicators are typically derived from the subjective answers to questions on past, current and expected future economic developments. The assumption is that before a specific business activity is implemented (e.g. new production plans, employment, or purchases), a certain opinion-building has taken place, which may be called "sentiment" or "confidence" [@Santero1996]. The most important advantage of these surveys is that they are available long before official statistical data becomes available. Moreover, they are not subject to revisions and are useful in avoiding trend and seasonality problems.  
 
 The first issue is to summarise or aggregate the survey responses. A very common and widely used method is to calculate so-called balances. In the context of business tendency surveys, balances are simple averages of survey responses. For most survey questions there are three reply options, such as *up*, *the same*, or *down*, and balances are calculated as the difference between the percentage of positive answers and percentage of negative answers. Balances are simple to implement and understand and are considered both practical and entirely adequate for cyclical analysis [@OECD2003].[^3]
 
@@ -89,15 +101,15 @@ The first issue is to summarise or aggregate the survey responses. A very common
 
 Although balances are by far the most common aggregation method used by statistical agencies and analysts, they do rely on assumptions about the distribution of responses. Namely, that the "unchanged" share is constant over time and that the relationship among positive and negative answers is linear and constant over time. For this reason, various alternatives have been discussed in the literature, including the probabilistic approach, the regression approach, and the latent factor approach [@INIS2014].[^4] However, these approaches usually require actual quantitative measures of the relevant variables, which is very restrictive in the case of business confidence, where actual quantitative measures are not available. Moreover, the fact that they are linked to a reference series, implies that these methods can become unreliable when exceptional events have a large impact on the correlation between the survey data and the quantitative reference data [@INIS2014].
 
-[^4]: The probability approach assumes a probability distribution for the variable concerned, which is required to infer the parameters of the probability distribution functions. The statistic is a linear combination of values deriving from a transformation of the observed frequency of the answers. The regression approach uses the relationship between actual values (measured by official statistics) and respondents' perception of the past (reported in the business surveys as judgements) as a yardstick for the quantification of respondents' expectations about the future. Thus, quantitative expectations are a function of a specific regression model rather than a specific probability distribution (Nardo 2003). The latent factor approach regards the percentages of each qualitative answer as a function of a common "latent measure" observed by respondent but not by econometricians. We can try these, but it does not seem very useful for confidence? 
+[^4]: The probability approach assumes a probability distribution for the variable concerned, which is required to infer the parameters of the probability distribution functions. The statistic is a linear combination of values deriving from a transformation of the observed frequency of the answers. The regression approach uses the relationship between actual values (measured by official statistics) and respondents' perception of the past (reported in the business surveys as judgements) as a yardstick for the quantification of respondents' expectations about the future. Thus, quantitative expectations are a function of a specific regression model rather than a specific probability distribution (Nardo 2003). The latent factor approach regards the percentages of each qualitative answer as a function of a common "latent measure" observed by respondent but not by econometricians.  
 
-The evidence suggests that sophisticated methods tend to produce indicators that follow the common cycle, which can be more easily deduced by simple aggregation methods such as balances. For instance, the Italian National Statistical Agency found a very high correlation between balances and more sophisticated indictors when three-option replies were used [@OECD2003]. @Driver2004 assessed different ways of converting qualitative data, obtained from the UK employers' business survey, into quantitative indices for a number of economic variables. The correspondence between the observed actual values of six economic variables and the corresponding transformed survey responses was considered. They found that the balance statistic was a satisfactory method of transforming the questions on investment, output and exports.
+The evidence suggests that sophisticated methods tend to produce indicators that follow the common cycle, which can be more easily deduced by simple aggregation methods such as balances. For instance, the Italian National Statistical Agency found a very high correlation between balances and more sophisticated indictors when three-option replies were used [@OECD2003]. @Driver2004 assessed different ways of converting qualitative data, obtained from the UK employers' business survey, into quantitative indices for a number of economic variables. The relationship between the observed actual values of six economic variables and the corresponding transformed survey responses was considered. They found that the balance statistic was a satisfactory method of transforming the questions on investment, output and exports.
 
 The next issue concerns the types of questions that should be used to measure confidence, and whether combinations of indicators should be used to calculate aggregate measures. Business confidence entails the relative optimism or pessimism among firms regarding *current conditions* and expected *future developments*, with the former probably influencing the latter. The recent literature suggests a distinction between indicators of current activity and forward-looking indicators [@Bachmann2010]. 
 
 Formally, one can define a $k$-period-ahead expectations measure of activity $(C_t^k)$ at time $t$ as: $C _t^k = E_tf(\Delta^hY_{t+k})$, where $Y_{t+k}$ is a measure of real activity (usually output) at time $t+k$ and $\Delta^hY_{t+k} = Y_{t+k} - Y_{t+k-h}$. A common definition of $f(\Delta^hY_{t+k})$ relies on an up, down, or unchanged classification: $$ f(\Delta^hY_{t+k}) = \begin{cases} -1,& \text{if } \Delta^hY_{t+k} < 0\\ 0,& \text{if } \Delta^hY_{t+k} = 0\\ 1,& \text{if } \Delta^hY_{t+k} > 0\\ \end{cases} $$
 
-Alternatively, some confidence measures rely on a binary classification (satisfactory or unsatisfactory): $$ f(\Delta^hY_{t+k}) = \begin{cases} 1,& \text{if } \Delta^hY_{t+k} \geq a\\ 0,& \text{if } \Delta^hY_{t+k} < a\\ \end{cases} $$ where $a$ is determined by the preferences of the agent. The recent literature terms $C_t^k$ a measure of "activity" when $k=0$ and a measure of "confidence" when $k>0$.
+An alternative is to use a binary classification (e.g. satisfactory or unsatisfactory): $$ f(\Delta^hY_{t+k}) = \begin{cases} 1,& \text{if } \Delta^hY_{t+k} \geq a\\ 0,& \text{if } \Delta^hY_{t+k} < a\\ \end{cases} $$ where $a$ is determined by the preferences of the agent. The recent literature terms $C_t^k$ a measure of "activity" when $k=0$ and a measure of "confidence" when $k>0$.
 
 Various confidence indices have been used in the literature. For instance, @Taylor2007 used an arithmetic average of two activity measures (based on questions on current conditions) and one confidence measure (based on a question on future conditions).[^5] @Bachmann2010 and @Bachmann2013 defined two forward-looking indices and two indices of current activity, based on the Business Outlook Survey and the German Ifo Business Climate Survey.[^6] @Barsky2012 constructed a forward-looking measure of confidence from the balance of a question on expectations over the next five years.[^7] According to this distinction the BER business confidence index, discussed in more detail below, is an index of current activity. 
 
@@ -684,27 +696,9 @@ GDPdata$X <- as.Date(GDPdata$X, format = "%Y/%m/%d")
 w.indicators$Date <- GDPdata[,1]
 ```
 
-Figure 1 illustrates the two weighted aggregate confidence indicators for current conditions, as well as the weighted aggregate forward-looking confidence index.[^20] They seem to follow a similar cyclical trend over the business cycle. The forward-looking index seems to lead the two current conditions indices to some extent. The same is true of the respective sectoral indicators, even though their trends are slightly different (and they have some missing quarters). The two indicators generated from the question on general business conditions do not increase as substantially as the other indicator (derived from the BER question) over the protracted upswing phase from around 2003 to 2007, which is a feature of all of the respective sectoral indicators. 
+Figure 1 compares the RMB/BER Business Confidence Index to the confidence indicator derived from the same question. The indicators are very similar, even though the BER uses a slightly ad hoc weighting procedure. The slight difference is probably due to altered weightings and the BER's exclusion of latecomers. The same is true of the indicators for the respective sectors, not illustrated here. In effect, the results for the first activity measure are the same as the results for the popular published index.
 
-[^20]: We could also take the geometric mean of the indices and then normalise it to the average of the base year, as the Ifo does? I also generated the indicators from firm-specific questions on production, instead of the question on general business conditions. As found in the literature, the indicators generated from the more firm-specific questions are very highly correlated to the indicators for general business conditions. Previous studies have concluded that answers on general business conditions are essentially indicators of firm-specific business conditions.
-
-```{r figure1, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted Confidence Indicators"}
-indicator_plot <- w.indicators[,c(1,2,5,6)]
-colnames(indicator_plot) <- c("Date","Current1","Current2","Forward-looking")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g <- g + geom_line()
-g <- g + ylab("Confidence")
-g <- g + xlab("")
-g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + theme(legend.position="bottom")
-g
-```
-
-Figure 2 compares the RMB/BER Business Confidence Index to the confidence indicator derived from the same question. The indicators are very similar, even though the BER uses a slightly ad hoc weighting procedure. The slight difference is probably due to altered weightings and the BER's exclusion of latecomers. The same is true of the indicators for the respective sectors, not illustrated here. In effect, the results for the first activity measure are the same as the results for the popular published index.
-
-```{r figure2, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted Confidence compared to the RMB/BER Confidence Index"}
+```{r figure1, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted Confidence compared to the RMB/BER Confidence Index"}
 indicator_plot <- cbind(w.indicators[,c(1,2)],(GDPdata$Confidence-50)/50)
 colnames(indicator_plot) <- c("Date","Current1","BER Confidence")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -718,9 +712,9 @@ g <- g + theme(legend.position="bottom")
 g
 ```
 
-Figure 3 and Figure 4 compare the aggregate weighted and unweighted versions of the confidence indicators (i.e. the first activity indicator and the forward-looking indicator). The unweighted versions are calculated by stacking all of the available responses from all of the surveys, and are therefore completely unweighted. In both cases they are very similar, with the weighted versions slightly more volatile than the unweighted indicators. Thus, the specific weighting turns out to have very little impact on the confidence indices. This should give us confidence that the specific weighting adopted does not significantly alter the results. The same is true of the respective sector indices, not illustrated here.
+Figure 2 and Figure 3 compare the aggregate weighted and unweighted versions of the confidence indicators (i.e. the first activity indicator and the forward-looking indicator). The unweighted versions are calculated by stacking all of the available responses from all of the surveys, and are therefore completely unweighted. In both cases they are very similar, with the weighted versions slightly more volatile than the unweighted indicators. Thus, the specific weighting turns out to have very little impact on the confidence indices. This should give us confidence that the specific weighting adopted does not significantly alter the results. The same is true of the respective sector indices, not illustrated here.
 
-```{r figure3, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted and Unweighted Confidence - Current Conditions"}
+```{r figure2, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted and Unweighted Confidence - Current Conditions"}
 indicator_plot <- cbind(indicators[,c(1,2)],w.indicators[,2])
 colnames(indicator_plot) <- c("Date","Unweighted","Weighted")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -734,12 +728,33 @@ g <- g + theme(legend.position="bottom")
 g
 ```
 
-```{r figure4, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted and Unweighted Confidence - Forward-looking"}
+```{r figure3, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted and Unweighted Confidence - Forward-looking"}
 indicator_plot <- cbind(indicators[,c(1,6)],w.indicators[,6])
 colnames(indicator_plot) <- c("Date","Unweighted","Weighted")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
+g <- g + ylab("Confidence")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+```
+
+Figure 4 illustrates the two unweighted aggregate confidence indicators for current conditions, as well as the unweighted aggregate forward-looking confidence index.[^20] The shaded areas are the recessionary periods according to the official turning points provided by the SARB. They seem to follow a similar cyclical trend over the business cycle and ... The forward-looking index seems to lead the two current conditions indices to some extent. The same is true of the respective sectoral indicators, even though their trends are slightly different (and they have some missing quarters). The two indicators generated from the question on general business conditions do not increase as substantially as the other indicator (derived from the BER question) over the protracted upswing phase from around 2003 to 2007, which is a feature of all of the respective sectoral indicators. 
+
+[^20]: We could also take the geometric mean of the indices and then normalise it to the average of the base year, as the Ifo does? I also generated the indicators from firm-specific questions on production, instead of the question on general business conditions. As found in the literature, the indicators generated from the more firm-specific questions are very highly correlated to the indicators for general business conditions. Previous studies have concluded that answers on general business conditions are essentially indicators of firm-specific business conditions.
+
+```{r figure4, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Unweighted Confidence Indicators"}
+indicator_plot <- indicators[,c(1,2,5,6)]
+g <- ggplot(indicator_plot) 
+g <- g + geom_line(aes(x=Date, y=Conf_cc, colour="Current_1"), size = 1)
+g <- g + geom_line(aes(x=Date, y=Act_GBC, colour="Current_2"), size = 1)
+g <- g + geom_line(aes(x=Date, y=Conf_GBC, colour="Forward-looking"), size = 1)
+g <- g + theme_bw()
+g <- g + labs(color="Legend text")
+g <- g + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
 g <- g + ylab("Confidence")
 g <- g + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
@@ -1578,7 +1593,7 @@ w.uncert.norm <- cbind(Date=w.indicators[,1],as.data.frame(scale(w.indicators[,9
 uncert.norm <- cbind(Date=indicators[,1],as.data.frame(scale(indicators[,9:12])))
 ```
 
-Figure 5 illustrates the centered[^21] weighted and unweighted uncertainty indicators, based on *ex ante* disagreement in forward-looking responses. As was the case for the confidence indicators, the unweighted versions are calculated by stacking all of the available responses from all of the surveys. Again, the weighted and unweighted versions are similar, with the weighted indicator slightly more volatile. According to these measures there were three episodes of large increases in uncertainty around 1994, 1999 and 2009. All three were roughly at the end or just after the three official downswing phases in the business cycle over the period. There appears to be two substantial differences between the two measures. The weighted index exhibts a large trough in 2004, not mirrored by the unweighted index, while the unweighted index has a larger dip and subsequent recovery around the financial crisis in 2008. The sectoral uncertainty indicators (not illustrated here), exhibit similar trends, althougfh there are some missing values and a few idiosyncratic/unique spikes and troughs.
+Figure 5 illustrates the centered[^21] weighted and unweighted uncertainty indicators, based on *ex ante* disagreement in forward-looking responses. As was the case for the confidence indicators, the unweighted versions are calculated by stacking all of the available responses from all of the surveys. Again, the weighted and unweighted versions are similar, with the weighted indicator slightly more volatile. There appears to be two substantial differences between the two measures. The weighted index exhibts a large trough in 2004, not mirrored by the unweighted index, while the unweighted index has a larger dip and subsequent recovery around the financial crisis in 2008. The sectoral uncertainty indicators (not illustrated here), exhibit similar trends, althougfh there are some missing values and a few idiosyncratic/unique spikes and troughs.
 
 [^21]: I normalised/standardised them for easier and clearer graphical presentation.
 
@@ -1621,43 +1636,11 @@ The panel dimension of the survey is exploited to construct qualitative measures
 
 Although it is based on the realised expectation errors in the next quarter, this is dependent on the knowledge and level of uncertainty in the current period. Thus, the standard deviation of realised expectation errors at time $t+1$ does not constitute uncertainty in $t+1$ [@Bachmann2010]. Rather, it is the knowledge (in month t) of this standard deviation going up or down that makes decision makers more or less uncertain at time $t$. This timing does not require decision makers to know anything about the future, other than that it is more or less uncertain. 
 
-Figure 6 illustrates the centered weighted and unweighted uncertainty indicators, based on *ex post* dispersion in expectations errors. The weighted and unweighted versions are similar, with the weighted indicator slightly more volatile. These measures also point to those three episodes of large increases in uncertainty around 1994, 1999 and 2009. In the South African case, uncertainty was most pronounced around the period of Democratic transition from 1992-1994. The second spike coincides with the Asian crisis and subsequent financial distress associated with Russia's default on its sovereign debt and the collapse of Long Term Capital Management. The third increase is related to the financial crisis and subsequent Great recession. In addition, there seems to be two spikes around 2001 and 2002, which corresponds to the period when some South African business cycle indicators signalled a potential turning point. This was ultimately not considered an official reference turning point by the SARB, because the criteria in terms of amplitude and duration were not met. The sectoral uncertainty indicators (not illustrated here), exhibit similar trends, althougfh there are some missing values and a few idiosyncratic/unique spikes and troughs.
+Figure 6 illustrates the centered weighted and unweighted uncertainty indicators, based on *ex post* dispersion in expectations errors. The weighted and unweighted versions are similar, with the weighted indicator slightly more volatile. The sectoral uncertainty indicators (not illustrated here), exhibit similar trends, althougfh there are some missing values and a few idiosyncratic/unique spikes and troughs.
 
 ```{r figure6, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Uncertainty from Expectation Error dispersion: Unweighted and Weighted"}
 indicator_plot <- cbind(uncert.norm[,c(1,5)],w.uncert.norm[,5])
 colnames(indicator_plot) <- c("Date","Unweighted","Weighted")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g <- g + geom_line()
-g <- g + ylab("Uncertainty")
-g <- g + xlab("")
-g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + theme(legend.position="bottom")
-g
-```
-
-Figure 7 and Figure 8 compare the two uncertainty indicators, both in unweighted and weighted form.  They exhibit similar patterns, although the unweighted versions are smoother and seem to exhibit a more pronounounced cyclical trend. Interestingly, the increase in uncertainty around the financial crisis in 2008, particularly for the weighted measures, is not as pronounced as has been found for many developed countries [e.g. @Bachmann2013 and @Bloom2014]. Given that the peaks and troughs in the uncertainty indicators coincide with potentially relevant political and economic events, the shape of the indicator seems plausible [@Girardi2015]. They also broadly correspond to the the significant events reflected in @Redl2015's uncertainty measure for South Africa based on forecaster disagreement.[^25]
-
-[^25]: There are a few smaller spikes in 1996, 2003 and at the end of 2011. According to Redl (2015) 1996 may relate to EU/South African free trade area talks, the new Constitution and political unrest. 2003 may be related to the stagflation induced by the large and persistent exchange rate depreciation (of 50%). 2011 may be related to the Eurozone crisis, chicanery around raising the U.S. federal debt ceiling, and the earthquake in Japan.
-
-```{r figure7, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Unweighted Uncertainty Indicators"}
-indicator_plot <- uncert.norm[,c(1,3,5)]
-colnames(indicator_plot) <- c("Date","Forward-looking","Expectation Errors")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g <- g + geom_line()
-g <- g + ylab("Uncertainty")
-g <- g + xlab("")
-g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + theme(legend.position="bottom")
-g
-```
-
-```{r figure8, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted Uncertainty Indicators"}
-indicator_plot <- w.uncert.norm[,c(1,3,5)]
-colnames(indicator_plot) <- c("Date","Forward-looking","Expectation Errors")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
@@ -1685,6 +1668,28 @@ xt <- xtable(corstarsl(ts.all_indices), caption="Correlations in Uncertainty Ind
 print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"))
 ```
 
+Figure 7 compares the two unweighted uncertainty indicators. The shaded areas again represent recessionary periods. They exhibit similar patterns .. According to these measures there were three episodes of large increases in uncertainty around 1994, 1999 and 2009. All three were roughly at the end or just after the three official downswing phases in the business cycle over the period. These measures also point to those three episodes of large increases in uncertainty around 1994, 1999 and 2009. In the South African case, uncertainty was most pronounced around the period of Democratic transition from 1992-1994. The second spike coincides with the Asian crisis and subsequent financial distress associated with Russia's default on its sovereign debt and the collapse of Long Term Capital Management. The third increase is related to the financial crisis and subsequent Great recession. In addition, there seems to be two spikes around 2001 and 2002, which corresponds to the period when some South African business cycle indicators signalled a potential turning point. This was ultimately not considered an official reference turning point by the SARB, because the criteria in terms of amplitude and duration were not met.
+
+Interestingly, the increase in uncertainty around the financial crisis in 2008, particularly for the weighted measures, is not as pronounced as has been found for many developed countries [e.g. @Bachmann2013 and @Bloom2014]. In gereal the uncertainty indicators are not contemporaneously anti-cyclical as found in most of the international literature. They tend to spike towards the end of the recessionary period. Given that the peaks and troughs in the uncertainty indicators coincide with potentially relevant political and economic events, the shape of the indicator seems plausible [@Girardi2015]. They also broadly correspond to the the significant events reflected in @Redl2015's uncertainty measure for South Africa based on forecaster disagreement.[^25]
+
+[^25]: There are a few smaller spikes in 1996, 2003 and at the end of 2011. According to Redl (2015) 1996 may relate to EU/South African free trade area talks, the new Constitution and political unrest. 2003 may be related to the stagflation induced by the large and persistent exchange rate depreciation (of 50%). 2011 may be related to the Eurozone crisis, chicanery around raising the U.S. federal debt ceiling, and the earthquake in Japan.
+
+```{r figure7, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Unweighted Uncertainty Indicators"}
+indicator_plot <- uncert.norm[,c(1,3,5)]
+g <- ggplot(indicator_plot) 
+g <- g + geom_line(aes(x=Date, y=Uncert_fl.GBC, colour="Forward_looking"), size = 1)
+g <- g + geom_line(aes(x=Date, y=Uncert_ee.GBC, colour="Expectation Errors"), size = 1)
+g <- g + theme_bw()
+g <- g + labs(color="Legend text")
+g <- g + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
+g <- g + ylab("Uncertainty")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+```
+
 #Cyclical Analysis and Comovement
 This section will investigate the extent to which these confidence and uncertainty measures are associated with fluctuations in real activity, both in the aggregate and for the sectors seperately.[^27] Figure 9 illustrates the preferred aggregate (unweighted) confidence and uncertainty indicators, i.e. forward-looking confidence and uncertainty based on expectations errors, as well as real GDP growth over the period. These survey-based measures appeared to plausibly capture confidence and uncertainty in South Africa. The confidence indicators appear to strongly pro-cyclical, and follow real GDP growth closely. The uncertainty indicators appear to fall sharply at the beginning of the recessionary period, as gents are less uncertain, and to rise sharply towards the end of the recessionary period and into the recovery period. These indiocators of uncertainty do not appear to be as counter-cyclical as some of the indicators in the international literature [e.g. @Bloom2014].
 
@@ -1697,8 +1702,7 @@ realGDP$X <- as.Date(realGDP$X, format = "%Y/%m/%d")
 x <- realGDP[,2]
 indexes<-1:(NROW(x)-4)
 realGDPgrowth<-c(rep(NA,4),(x[indexes+4]-x[indexes])/x[indexes])
-realGDPgrowth<- realGDPgrowth[-1:-4]
-temp_indices <- cbind(Date=GDPdata$X,indicators[,c(2,5,6,10,12)],realGDPgrowth)
+temp_indices <- cbind(Date=GDPdata$X,indicators[,c(2,5,6,10,12)],realGDPgrowth[-1:-4])
 colnames(temp_indices) <- c("Date", "Concf_CC", "Act_GBC", "Conf_FL", "Uncert_FL", "Uncert_EE", "GDPgrowth")
 ts.all_indices <- ts(temp_indices[,-1],start =c(1992,1),end=c(2015,3),frequency=4) 
 

@@ -10,6 +10,12 @@ library(reshape2)
 library(stargazer)
 library(xtable)
 library(scales)
+library(quantmod)
+library(vars)
+library(tseries)
+library(urca)
+library(zoo)
+
 
 ##====================================##
 ## READING IN THE DATA: MANUFACTURING ##
@@ -1427,9 +1433,12 @@ w.indicators.T <- read.csv2("w_indicators_T.csv")[,-1]
 w.indicators.V <- read.csv2("w_indicators_V.csv")[,-1]
 w.indicators.S <- read.csv2("w_indicators_S.csv")[,-1]
 
+GDPdata$X <- as.Date(GDPdata$X, format = "%Y/%m/%d")
+indicators$Date <- GDPdata$X
+w.indicators$Date <- GDPdata$X
+
 w.uncert.norm <- cbind(Date=w.indicators[,1],as.data.frame(scale(w.indicators[,9:12])))
 uncert.norm <- cbind(Date=indicators[,1],as.data.frame(scale(indicators[,9:12])))
-
 
 ##---------------------------------------
 ## Main Graphs
@@ -1484,6 +1493,7 @@ g <- g + theme(legend.position="bottom")
 g
 
 
+
 #-----------------------------------------------------------------------------
 
 indicator_plot <- w.uncert.norm[,c(1,3,5)]
@@ -1510,6 +1520,33 @@ g <- g + theme(legend.title=element_blank())
 g <- g + theme(legend.position="bottom")
 g
 
+##Grpahing Business cycles
+recessions.df = read.table(textConnection(
+    "Peak, Trough
+    1989-02-28, 1993-05-30
+    1996-11-30, 1999-08-31
+    2007-11-30, 2009-08-31"), sep=',',
+    colClasses=c('Date', 'Date'), header=TRUE)
+
+#recessions.trim = subset(recessions.df, Peak >= min(indicators$Date))
+
+#g <- ggplot(w.indicators[,c(1,2)]) + geom_line(aes(x=Date, y=Conf_cc)) + theme_bw()
+#g <- g + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
+#g
+
+indicator_plot <- uncert.norm[,c(1,3,5)]
+g <- ggplot(indicator_plot) 
+g <- g + geom_line(aes(x=Date, y=Uncert_fl.GBC, colour="Forward_looking"), size = 1)
+g <- g + geom_line(aes(x=Date, y=Uncert_ee.GBC, colour="Expectation Errors"), size = 1)
+g <- g + theme_bw()
+g <- g + labs(color="Legend text")
+g <- g + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
+g <- g + ylab("Uncertainty")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
 
 indicator_plot <- cbind(uncert.norm[,c(1,3)],w.uncert.norm[,3])
 colnames(indicator_plot) <- c("Date","Unweighted","Weighted")
@@ -1535,6 +1572,20 @@ g <- g + theme(legend.title=element_blank())
 g <- g + theme(legend.position="bottom")
 g
 
+indicator_plot <- indicators[,c(1,2,5,6)]
+g <- ggplot(indicator_plot) 
+g <- g + geom_line(aes(x=Date, y=Conf_cc, colour="Current_1"), size = 1)
+g <- g + geom_line(aes(x=Date, y=Act_GBC, colour="Current_2"), size = 1)
+g <- g + geom_line(aes(x=Date, y=Conf_GBC, colour="Forward-looking"), size = 1)
+g <- g + theme_bw()
+g <- g + labs(color="Legend text")
+g <- g + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
+g <- g + ylab("Indicator")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
 
 smoke <- matrix(c(0,-1,-2,1,0,-1,2,1,0),ncol=3,byrow=TRUE)
 colnames(smoke) <- c("Better","Same","Poorer")
@@ -1554,66 +1605,58 @@ ts.all_indices <- as.ts(temp_indices[,-1],start =c(1992,1),end=c(2015,3),frequen
 xt <- xtable(corstarsl(ts.all_indices), caption="Correlations in Levels")
 print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"))
 
+##==============================================================================================
+##COMOVEMENT------------------------------------------------------------------------------------
+##==============================================================================================
+#Maak hulle time series
+#Interpoleer NAs
+#Wat van in levels? - raak dit dan VECM??
 #-------------------------------------------------------------------------------------------------
 
-# Check correlations of GDP
-#series <- ts(GDPdata[,3], frequency = 4, start = c(1992, 1)) # 
-#realGDPgrowth <- diff(series, lag=4)/ lag(series, k=-4)
-#temp_indices <- w.indicators[-1:-4,c(1,2,5,6,10,12)]
-#ts.all_indices <- as.ts(temp_indices[,-1],start =c(1993,1),end=c(2015,3),frequency=4) 
-#ts.all_indices <- cbind(ts.all_indices,realGDPgrowth)
+ts.indicators <- ts(indicators[,-1],start =c(1992,1),end=c(2015,3),frequency=4) 
+ts.indicators.M <- ts(indicators.M[,-1],start =c(1992,1),end=c(2015,3),frequency=4) 
+ts.indicators.B <- ts(indicators.B[,-1],start =c(1993,2),end=c(2015,3),frequency=4) 
+ts.indicators.T <- ts(indicators.T[,-1],start =c(1992,2),end=c(2015,3),frequency=4) 
+
+ts.windicators <- ts(w.indicators[,-1],start =c(1992,1),end=c(2015,3),frequency=4) 
+ts.windicators.M <- ts(w.indicators.M[,-1],start =c(1992,1),end=c(2015,3),frequency=4) 
+ts.windicators.B <- ts(w.indicators.B[,-1],start =c(1993,2),end=c(2015,3),frequency=4) 
+ts.windicators.T <- ts(w.indicators.T[,-1],start =c(1992,2),end=c(2015,3),frequency=4) 
 
 #GDPdata$X <- as.Date(GDPdata$X, format = "%Y/%m/%d")
 realGDP <- read.csv("RealGDP.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
 realGDP$X <- as.Date(realGDP$X, format = "%Y/%m/%d")
 
-x <- realGDP[,2]
-indexes<-1:(NROW(x)-4)
-realGDPgrowth<-c(rep(NA,4),(x[indexes+4]-x[indexes])/x[indexes])
-temp_indices <- cbind(Date=GDPdata$X,indicators[,c(2,5,6,10,12)],realGDPgrowth)
-colnames(temp_indices) <- c("Date", "Concf_CC", "Act_GBC", "Conf_FL", "Uncert_FL", "Uncert_EE", "GDPgrowth")
-ts.all_indices <- ts(temp_indices[,-1],start =c(1992,1),end=c(2015,3),frequency=4) 
-plot(ts.all_indices[,c(3,5,6)],plot.type = "m",main="")
+rGDPgrowth4 <- sapply(log(realGDP[,-1]), diff, lag =4)
+rGDPgrowth4 <- as.data.frame(rGDPgrowth4)
+ts.GDPgrowth4 <- ts(rGDPgrowth4,start =c(1991,1),end=c(2015,3),frequency=4)
 
-#cor(temp_indices[,-1],use="complete.obs")
-#source("corstarsl.R")
-#for(i in 2:ncol(temp_indices)) {temp_indices[,i] <- as.numeric(temp_indices[,i]) }
-#ts.all_indices <- as.ts(temp_indices[,-1],start =c(1992,1),end=c(2015,3),frequency=4) 
-#cor(temp_indices[,-1],use="complete.obs")
-#xt <- xtable(corstarsl(ts.all_indices), caption="Correlations in Levels")
-#print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"))
+rGDPgrowth1 <- sapply(log(realGDP[,-1]), diff, lag =1)
+rGDPgrowth1 <- as.data.frame(rGDPgrowth1)
+ts.GDPgrowth1 <- ts(rGDPgrowth1,start =c(1991,1),end=c(2015,3),frequency=4)
 
-Conf_cc <- temp_indices[,2]
-Act_GBC <- temp_indices[,3]
-Conf_GBC <- temp_indices[,4]
-Unc_fl <- temp_indices[,5] 
-Unc_ee <- temp_indices[,6]
-GDPgrowth <- temp_indices[,7]
+#x <- realGDP[,2]
+#indexes<-1:(NROW(x)-4)
+#realGDPgrowth<-c(rep(NA,4),(x[indexes+4]-x[indexes])/x[indexes])
+temp_indices <- cbind(indicators[,c(1,6,12)],rGDPgrowth=rGDPgrowth4[,1])
+#all_indices <- cbind(Date=GDPdata$X,w.indicators[,c(2,5,6,10,12)],realGDPgrowth[-1:-4])
+#colnames(all_indices) <- c("Date", "Conf_CC", "Act_GBC", "Conf_FL", "Uncert_FL", "Uncert_EE", "GDPgrowth")
+ts.temp_indices <- ts(temp_indices[,-1],start =c(1992,1),end=c(2015,3),frequency=4) 
+plot(ts.temp_indices,plot.type = "m",main="")
 
-par(mfrow=c(2,2))
-ccf(Act_GBC,GDPgrowth, na.action = na.pass)
-ccf(Conf_GBC,GDPgrowth, na.action = na.pass)
-ccf(Unc_fl,GDPgrowth, na.action = na.pass)
-ccf(Unc_ee,GDPgrowth, na.action = na.pass)
+##Maak hulle logs en kyk of dit anders is???
+#ln_indices <- cbind(all_indices[,1],log(all_indices[,-1]))
 
+#GDPdata$X <- as.Date(GDPdata$X, format = "%Y/%m/%d")
+#w.indicators$Date <- GDPdata$X
+#indicators$Date <- GDPdata$X
 
-#x <- GDPdata$ManuValue_sa
-x <- GDPdata$Real
-indexes<-1:(NROW(x)-4)
-realGDPgrowth<-c(rep(NA,4),(x[indexes+4]-x[indexes])/x[indexes])
-realGDPgrowth<-realGDPgrowth[-1]
-#temp_indices <- cbind(Date=GDPdata$X,indicators[,c(2,5,6,10,12)],realGDPgrowth)
-temp_indices <- cbind(Date=GDPdata$X[-1],w.indicators.T[,c(2,5,6,9,11)],realGDPgrowth)
-colnames(temp_indices) <- c("Date", "Concf_CC", "Act_GBC", "Conf_FL", "Uncert_FL", "Uncert_EE", "GDPgrowth")
-ts.all_indices <- ts(temp_indices[,-1],start =c(1992,1),end=c(2015,3),frequency=4) 
-plot(ts.all_indices[,c(3,5,6)],plot.type = "m",main="")
-
-Conf_cc <- temp_indices[,2]
-Act_GBC <- temp_indices[,3]
-Conf_GBC <- temp_indices[,4]
-Unc_fl <- temp_indices[,5] 
-Unc_ee <- temp_indices[,6]
-GDPgrowth <- temp_indices[,7]
+Conf_cc <- all_indices[,2]
+Act_GBC <- all_indices[,3]
+Conf_GBC <- all_indices[,4]
+Unc_fl <- all_indices[,5] 
+Unc_ee <- all_indices[,6]
+GDPgrowth <- rGDPgrowth4[,1]
 
 par(mfrow=c(2,2))
 ccf(Act_GBC,GDPgrowth, na.action = na.pass)
@@ -1621,93 +1664,346 @@ ccf(Conf_GBC,GDPgrowth, na.action = na.pass)
 ccf(Unc_fl,GDPgrowth, na.action = na.pass)
 ccf(Unc_ee,GDPgrowth, na.action = na.pass)
 
-#ccf(temp_indices[,6],temp_indices[,7], na.action = na.pass)
+#ts.Conf_CC <- ts(all_indices[,2],start =c(1992,1),end=c(2015,3),frequency=4) 
+#ts.GDPgrowth <- ts(all_indices[,7],start =c(1992,1),end=c(2015,3),frequency=4) 
 
-ts.Conf_cc <- ts(temp_indices[,2],start =c(1992,1),end=c(2015,3),frequency=4) 
-ts.Act_GBC <- ts(temp_indices[,3],start =c(1992,1),end=c(2015,3),frequency=4) 
-ts.Conf_GBC <- ts(temp_indices[,4],start =c(1992,1),end=c(2015,3),frequency=4) 
-ts.Unc_fl <- ts(temp_indices[,5],start =c(1992,1),end=c(2015,3),frequency=4) 
-ts.Unc_ee <- ts(temp_indices[,6],start =c(1992,1),end=c(2015,3),frequency=4) 
-ts.GDPgrowth <- ts(temp_indices[,7],start =c(1992,1),end=c(2015,3),frequency=4) 
+#ts.GDP <- ts(GDPdata$RealGDP_sa,start =c(1992,1),end=c(2015,3),frequency=4) 
+#ts.lnGDP <- log(ts.GDP)
+#ts.dlnGDP <- diff(ts.lnGDP)
+#ts.dlnGDP4 <- diff(ts.lnGDP,lag=4)
 
-acf(ts.all_indices[,2], na.action = na.pass)
-pacf(ts.all_indices[,2], na.action = na.pass)
-ccf(ts.Unc_ee,ts.GDPgrowth, na.action = na.pass)
-ccf(ts.Unc_fl,ts.GDPgrowth, na.action = na.pass)
+#ts.dlnGDP4.M <- ts(diff(log(GDPdata$ManuRGDP_sa),lag=4),start =c(1992,1),end=c(2015,3),frequency=4) 
+#ts.dlnGDP4.B <- ts(diff(log(GDPdata$ConstRGDP),lag=4),start =c(1992,1),end=c(2015,3),frequency=4) 
+#ts.dlnGDP4.T <- ts(diff(log(GDPdata$TradeRGDP_sa),lag=4),start =c(1992,1),end=c(2015,3),frequency=4) 
 
-ccf(ts.Conf_cc,ts.GDPgrowth, na.action = na.pass)
-ccf(ts.Act_GBC,ts.GDPgrowth, na.action = na.pass)
-ccf(ts.Conf_GBC,ts.GDPgrowth, na.action = na.pass)
+#ts.dlnVol4.M <- ts(diff(log(GDPdata$ManuVol_sa),lag=4),start =c(1992,1),end=c(2015,3),frequency=4) 
+#ts.dlnVol4.B <- ts(diff(log(GDPdata$ConstProd_sa),lag=4),start =c(1992,1),end=c(2015,3),frequency=4) 
+#ts.dlnVol4.T <- ts(diff(log(GDPdata$TradeVol_sa),lag=4),start =c(1992,1),end=c(2015,3),frequency=4) 
 
-ccf(ts.Conf_GBC,ts.Unc_ee, na.action = na.pass)
-ccf(ts.Conf_GBC,ts.Unc_fl, na.action = na.pass)
-
-par(mfrow=c(2,2))
-ccf(ts.Act_GBC,ts.GDPgrowth, na.action = na.pass)
-ccf(ts.Conf_GBC,ts.GDPgrowth, na.action = na.pass)
-ccf(ts.Unc_fl,ts.GDPgrowth, na.action = na.pass)
-ccf(ts.Unc_ee,ts.GDPgrowth, na.action = na.pass)
-acf(ts.all_indices, na.action = na.pass)
-
-
-library(tseries)
-library(urca)
-library(zoo)
-
-z <- zoo(c(2,NA,1,4,5,2), c(1,3,4,6,7,8))
-## use underlying time scale for interpolation
-na.approx(z) 
-## use equidistant spacing
-na.approx(z, 1:6)
-# with and without na.rm = FALSE
-zz <- c(NA,9,3,NA,3,2)
-na.approx(zz, na.rm = FALSE)
-na.approx(zz)
-
-ts.all_indices <- na.approx(ts.all_indices)
-ts.all_indices[95,5] <- 0.7706558*0.6829110/0.6509620
-
-adf.test(ts.all_indices[,5])
-
-adf.test(ts.all_indices[,2], alternative = "stationary", k=4) #Dickey-Fuller test for unit roots
-pp.test(ts.all_indices[,3])  #Phillips-Perron test for unit roots
-ur.df(ts.all_indices[,2], c("none"), lags = 4, selectlags = c("AIC"))
+#define die sectoral time series en kry overlap
+#rearrange die file
+#1) define alle time series
+#2) maak vars en irfs
 
 #====================================================#
 # ------------------ VAR ANALYSIS ------------------ #
 #====================================================#
 
-library(vars)
+#Start with estimating the reduced form by OLS.
+#But before estimation:
+    #Determine whether or not data is stationary
+    #Determine the optimal lag length of the VAR
+    #Determine stability conditions (roots of the system inside the unit circle)
+#After estimating the reduced form:
+    #Hypothesis testing (including Granger causality)
+    #Impulse response function
+    #Variance decomposition
+#Identification of Structural VAR
 
-VAR(y, p = 1, type = c("const", "trend", "both", "none"),
-    season = NULL, exogen = NULL, lag.max = NULL,
-    ic = c("AIC", "HQ", "SC", "FPE"))
+#Interpoleer NAs
+ts.indicators <- na.approx(ts.indicators)
+ts.indicators[95,5] <- 0.7706558*0.6829110/0.6509620
 
-SVAR(x, estmethod = c("scoring", "direct"), Amat = NULL, Bmat = NULL,
-     start = NULL, max.iter = 100, conv.crit = 1e-07, maxls = 1,
-     lrtest = TRUE, ...)
+#Test for Stationarity
+toets <- data.frame()
+for(i in 1:ncol(ts.all_indices)) {
+    toets[i,1] <- adf.test(ts.all_indices[,i], alternative = "stationary")$p.value  #Dickey-Fuller test for unit roots
+    toets[i,2] <- pp.test(ts.all_indices[,i])$p.value                               #Phillips-Perron test for unit roots
+}
+kpss.test(ts.all_indices[,6])                                                       #null is other way around
+toets <- ur.df(ts.all_indices[,1], c("trend"), selectlags = c("AIC"))
+summary(toets)
+##They all seem to be stationary - but Conf_CC and Growth only marginally depending on the test employed
+##Vir die sectoral indices - kry die overlapping periods (maklik met ts objects)
 
-arch.test(x, lags.single = 16, lags.multi = 5, multivariate.only = TRUE)
+#---------------------------------------------------------------------------------------------------
+vardat <- cbind(ts.all_indices[,5], ts.all_indices[,6])                            
+#vardat <- as.data.frame(vardat)
+colnames(vardat) <- c("Conf_CC","GDPGrowth")
 
-normality.test(x, multivariate.only = TRUE)
+###Select Optimal Lags
+infocrit <- VARselect(vardat, lag.max = 12, type = "const")
+k_aic <- infocrit$selection[1]
+k_hq  <- infocrit$selection[2]
+k_sic <- infocrit$selection[3]
+k <- min(k_aic,k_sic,k_hq)
 
-serial.test(x, lags.pt = 16, lags.bg = 5,
-            type = c("PT.asymptotic", "PT.adjusted", "BG", "ES"))
+##Estimating the model
+var <- VAR(vardat,p=k,type="const")
+#var <- VAR(vardat,type="const", lag.max = 12, ic = c("AIC", "HQ", "SC", "FPE"))
 
-stability(x, type = c("OLS-CUSUM", "Rec-CUSUM", "Rec-MOSUM",
-                      "OLS-MOSUM", "RE", "ME", "Score-CUSUM", "Score-MOSUM", "fluctuation"),
-          h = 0.15, dynamic = FALSE, rescale = TRUE)
+#-----------------------
+##Diagnostic Checking
+#Checking the roots
+roots <- roots(var) #all inside unit circle
+roots
 
-predict(object, ..., n.ahead = 10, ci = 0.95, dumvar = NULL)
+##testing serial correlation
+var.serial <- serial.test(var,lags.pt=12,type="PT.asymptotic")
+#var.serial <- serial.test(var,lags.bg=4,type="BG")
+var.serial #do not reject H0 of no serial correlation
 
-fanchart(x, colors = NULL, cis = NULL, names = NULL, main = NULL,
-         ylab = NULL, xlab = NULL, col.y = NULL, nc, 
-         plot.type = c("multiple","single"), mar = par("mar"), oma = par("oma"), ...)
+##testing heteroscedasticity
+var.arch <- arch.test(var,lags.multi=5,multivariate.only=TRUE)
+var.arch #do not reject H0 of no heteroscedasticity
 
-irf(x, impulse = NULL, response = NULL, n.ahead = 10, ortho = TRUE,
-    cumulative = FALSE, boot = TRUE, ci = 0.95, runs = 100, seed = NULL, ...)
+##testing for normality
+var.norm <- normality.test(var,multivariate.only=TRUE)
+var.norm  #do not reject H0 of normality
 
-fevd(x, n.ahead = 10, ...)
+##Plot of objects "varcheck"
+plot(var.serial,names="Conf_CC")
+plot(var.serial,names="GDPGrowth")
+
+##Stability tests
+reccusum <- stability(var,type = "OLS-CUSUM") 
+plot(reccusum)
+fluctuation <- stability(var,type = "fluctuation")
+plot(fluctuation)
+#---------------------------------------------------------------
+
+##Test for Block Exogeneity/Granger Causality
+#Granger and instantaneous causality
+var.causal1 <- causality(var,cause = "Conf_CC")   #Reject H0 that the lagged variables are 0
+var.causal1
+var.causal2 <- causality(var,cause = "GDPGrowth")
+var.causal2
 
 
+#Impulse Response Function
+irf.y1 <- irf(var, impulse = "Conf_CC", response = "GDPGrowth", n.ahead = 16,runs = 1000, seed=12345) 
+plot(irf.y1)
 
+irf.y2 <- irf(var,impulse= "GDPGrowth", response = "Conf_CC", n.ahead = 16,runs = 1000, seed=12345)
+plot(irf.y2)
+
+#irf.y2 <- irf(varsimest,impulse= "y2", response= "y1", n.ahead = 10,
+#              ortho= TRUE, cumulative= FALSE, boot = FALSE, seed = 12345)
+
+
+##Forecast Error Variance Decoposition
+fevd.var <- fevd(var, n.ahead = 16)
+plot(fevd.var, addbars = 2)
+
+
+#----------------------------------------------------------------------------------
+##FUNCTION 2 Variable VAR
+#----------------------------------------------------------------------------------
+variable.2 <- function(y1, name1, y2, name2) {
+    vardat <- cbind(y1, y2)  
+    colnames(vardat) <- c(name1,name2)
+    vardat <- na.approx(vardat)
+    infocrit <- VARselect(vardat, lag.max = 12, type = "const")
+    k_aic <- infocrit$selection[1]
+    k_hq  <- infocrit$selection[2]
+    k_sic <- infocrit$selection[3]
+    k <- min(k_aic,k_sic,k_hq)
+    var <- VAR(vardat,p=k,type="const")
+    #Impulse Response Function
+    irf.y1 <- irf(var,impulse = name1, response = name2, n.ahead = 16,runs = 100, seed=12345) 
+    irf.y2 <- irf(var,impulse = name2, response = name1, n.ahead = 16,runs = 100, seed=12345)
+    
+    plot(irf.y1)
+    #p1 <- recordPlot()
+    plot(irf.y2)
+    #p2 <- recordPlot()
+    return(var)
+}
+
+var <- variable.2(indicators$Conf_GBC,"Confidence",rGDPgrowth4$RealGDP_sa,"RGDPGrowth")
+var <- variable.2(rGDPgrowth4$RealGDP_sa[-95],"RGDPGrowth",indicators$Uncert_ee.GBC[-95],"Uncert_EE")
+
+#var <- variable.2(indicators$Conf_GBC,"Confidence",rGDPgrowth1$RealGDP_sa[-1:-3],"RGDPGrowth")
+#var <- variable.2(rGDPgrowth1$RealGDP_sa[c(-1:-3,-95)],"RGDPGrowth",indicators$Uncert_fl.GBC[-95],"Uncert_EE")
+
+#var <- variable.2(indicators.T$Conf_GBC,"Confidence",rGDPgrowth4$TradeVol_sa[-1],"RGDPGrowth")
+#var <- variable.2(indicators.T$Uncert_ee.GBC[-94],"Uncert_EE",rGDPgrowth4$TradeVol_sa[c(-1,-95)],"RGDPGrowth")
+
+#var <- variable.2(indicators.B$Conf_GBC,"Confidence",rGDPgrowth4$ConstRGDP[-1:-5],"RGDPGrowth")
+#var <- variable.2(indicators.B$Uncert_ee.GBC[-90],"Uncert_EE",rGDPgrowth4$ConstRGDP[c(-1:-5,-95)],"RGDPGrowth")
+
+#irfnos <- rbind(irf.y1$irf,irf.y1$Lower, irf.y1$Upper)
+y2 <- indicators$Uncert_ee.GBC[-95]
+y1 <- rGDPgrowth4$RealGDP_sa[-95]
+name2 <- "Uncert_EE"
+name1 <- "RGDPGrowth"   
+
+roots(var) #all inside unit circle
+serial.test(var,lags.pt=12,type="PT.asymptotic")
+arch.test(var,lags.multi=5,multivariate.only=TRUE)
+normality.test(var,multivariate.only=TRUE)
+causality(var,cause = name1)   #Reject H0 that the lagged variables are 0
+causality(var,cause = name2)
+
+
+##=============================================================================================
+##3-Variable VARs
+##=============================================================================================
+vardat <- cbind(ts.all_indices[,3], ts.all_indices[,5], ts.dlnGDP4)                            
+#vardat <- as.data.frame(vardat)
+colnames(vardat) <- c("Conf_GBC","Uncert_EE","GDPGrowth")
+
+###Select Optimal Lags
+infocrit <- VARselect(vardat, lag.max = 12, type = "const")
+k_aic <- infocrit$selection[1]
+k_hq  <- infocrit$selection[2]
+k_sic <- infocrit$selection[3]
+k <- min(k_aic,k_sic,k_hq)
+
+##Estimating the model
+var <- VAR(vardat,p=k,type="const")
+#var <- VAR(vardat,type="const", lag.max = 12, ic = c("AIC", "HQ", "SC", "FPE"))
+
+#-----------------------
+##Diagnostic Checking
+#Checking the roots
+roots <- roots(var) #all inside unit circle
+roots
+
+##testing serial correlation
+var.serial <- serial.test(var,lags.pt=12,type="PT.asymptotic")
+#var.serial <- serial.test(var,lags.bg=4,type="BG")
+var.serial #do not reject H0 of no serial correlation
+
+##testing heteroscedasticity
+var.arch <- arch.test(var,lags.multi=5,multivariate.only=TRUE)
+var.arch #do not reject H0 of no heteroscedasticity
+
+##testing for normality
+var.norm <- normality.test(var,multivariate.only=TRUE)
+var.norm  #do not reject H0 of normality
+
+##Plot of objects "varcheck"
+plot(var.serial,names="Conf_GBC")
+plot(var.serial,names="Uncert_EE")
+plot(var.serial,names="GDPGrowth")
+
+##Stability tests
+reccusum <- stability(var,type = "OLS-CUSUM") 
+plot(reccusum)
+fluctuation <- stability(var,type = "fluctuation")
+plot(fluctuation)
+#---------------------------------------------------------------
+
+##Test for Block Exogeneity/Granger Causality
+#Granger and instantaneous causality
+var.causal1 <- causality(var,cause = "Conf_GBC")   #Reject H0 that the lagged variables are 0
+var.causal1
+var.causal2 <- causality(var,cause = "Uncert_EE")   #Reject H0 that the lagged variables are 0
+var.causal2
+var.causal3 <- causality(var,cause = "GDPGrowth")
+var.causal3
+
+
+#Impulse Response Function
+irf.y1 <- irf(var, impulse = "Conf_GBC", response = c("Uncert_EE","GDPGrowth"), n.ahead = 16,runs = 1000, seed=12345) 
+plot(irf.y1)
+
+irf.y2 <- irf(var,impulse= "Uncert_EE", response = c("Conf_GBC","GDPGrowth"), n.ahead = 16,runs = 1000, seed=12345)
+plot(irf.y2)
+
+irf.y3 <- irf(var,impulse= "GDPGrowth", response = c("Conf_GBC","Uncert_EE"), n.ahead = 16,runs = 1000, seed=12345)
+plot(irf.y3)
+
+fevd.var <- fevd(var, n.ahead = 16)
+plot(fevd.var, addbars = 2)
+
+
+#----------------------------------------------------------------------------------
+##FUNCTION 3 Variable VAR
+#----------------------------------------------------------------------------------
+variable.3 <- function(y1, name1, y2, name2, y3, name3) {
+    vardat <- cbind(y1, y2, y3)  
+    colnames(vardat) <- c(name1,name2,name3)
+    vardat <- na.approx(vardat)
+    infocrit <- VARselect(vardat, lag.max = 12, type = "const")
+    k_aic <- min(infocrit$selection[1])
+    k_hq  <- min(infocrit$selection[2])
+    k_sic <- min(infocrit$selection[3])
+    k_fpe <- min(infocrit$selection[4])
+    
+    k <- min(k_aic,k_sic,k_hq)
+    var <- VAR(vardat,p=k,type="const")
+    #Impulse Response Function
+    irf.y1 <- irf(var,impulse = name1, response = c(name2), n.ahead = 12,runs = 100, seed=12345) 
+    irf.y2 <- irf(var,impulse = name1, response = c(name3), n.ahead = 12,runs = 100, seed=12345)
+    irf.y3 <- irf(var,impulse = name2, response = c(name3), n.ahead = 12,runs = 100, seed=12345)
+    
+    plot(irf.y1)
+    #p1 <- recordPlot()
+    plot(irf.y2)
+    #p2 <- recordPlot()
+    plot(irf.y3)
+    return(var)
+}
+
+var <- variable.3(indicators$Conf_GBC[-95],"Confidence",
+                  rGDPgrowth4$RealGDP_sa[-95],"RGDPGrowth",
+                  indicators$Uncert_ee.GBC[-95],"Uncert_ee")
+
+name1 <- "Confidence"
+name2 <- "Uncert_ee"
+name3 <- "RGDP"
+y1 <- indicators$Conf_GBC[-95]
+y2 <- indicators$Uncert_ee.GBC[-95]
+y3 <- rGDPgrowth4$RealGDP_sa[-95]
+
+#Impulse Response Function
+irf.y1 <- irf(var,impulse = name3, response = name1, n.ahead = 12,runs = 100, seed=12345)
+plot(irf.y1)
+
+#var <- variable.2(indicators.T$Conf_GBC,"Confidence",rGDPgrowth4$TradeVol_sa[-1],"RGDPGrowth")
+#var <- variable.2(indicators.T$Uncert_ee.GBC[-94],"Uncert_EE",rGDPgrowth4$TradeVol_sa[c(-1,-95)],"RGDPGrowth")
+
+#var <- variable.2(indicators.B$Conf_GBC,"Confidence",rGDPgrowth4$ConstRGDP[-1:-5],"RGDPGrowth")
+#var <- variable.2(indicators.B$Uncert_ee.GBC[-90],"Uncert_EE",rGDPgrowth4$ConstRGDP[c(-1:-5,-95)],"RGDPGrowth")
+
+#irfnos <- rbind(irf.y1$irf,irf.y1$Lower, irf.y1$Upper)
+#y1 <- w.indicators$Uncert_ee.GBC[-95]
+#y2 <- rGDPgrowth4$RealGDP_sa[-95]
+#name1 <- "Uncert_EE"
+#name2 <- "RGDPGrowth"   
+
+roots(var) #all inside unit circle
+serial.test(var,lags.pt=12,type="PT.asymptotic")
+arch.test(var,lags.multi=5,multivariate.only=TRUE)
+normality.test(var,multivariate.only=TRUE)
+causality(var,cause = name1)   #Reject H0 that the lagged variables are 0
+causality(var,cause = name2)
+
+
+##=========================================================================
+##Extended VAR
+##=========================================================================
+
+nuwedata <- read.csv("ExVAR.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE, 
+                      colClasses=c("factor","numeric","numeric","numeric","numeric","numeric",
+                                   "numeric","numeric","numeric","numeric"))
+nuwedata$Date <- as.Date(nuwedata$Date, format = "%Y/%m/%d")
+
+vardat <- cbind(nuwedata$lnJSE,indicators$Conf_GBC,indicators$Uncert_ee.GBC,nuwedata$Spread,nuwedata$lnCPI, 
+                nuwedata$lnRGDP,nuwedata$lnProduction,nuwedata$lnRInvestment,nuwedata$Employment)  
+colnames(vardat) <- c("JSE","Conf","Unc","Spread","CPI","RGDP","Prod","Inv","Empl")
+vardat <- na.approx(vardat)
+vardat <- vardat[-94:-95,]
+
+infocrit <- VARselect(vardat, lag.max = 8, type = "both")
+k_aic <- min(infocrit$selection[1])
+k_hq  <- min(infocrit$selection[2])
+k_sic <- min(infocrit$selection[3])
+k_fpe <- min(infocrit$selection[4])
+
+k <- min(k_aic,k_sic,k_hq)
+
+var <- VAR(vardat,p=8,type="both")
+#Impulse Response Function
+irf.y1 <- irf(var,impulse = "Conf", response = c("RGDP"), n.ahead = 12,runs = 1000, seed=12345) 
+irf.y2 <- irf(var,impulse = "Unc", response = c("RGDP"), n.ahead = 12,runs = 1000, seed=12345)
+irf.y3 <- irf(var,impulse = "Spread", response = c("RGDP"), n.ahead = 12,runs = 1000, seed=12345)
+
+plot(irf.y1)
+#p1 <- recordPlot()
+plot(irf.y2)
+#p2 <- recordPlot()
+plot(irf.y3)
+return(var)

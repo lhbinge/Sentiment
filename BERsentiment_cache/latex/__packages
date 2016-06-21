@@ -10,3 +10,7 @@ survival
 Formula
 Hmisc
 scales
+zoo
+xts
+TTR
+quantmod

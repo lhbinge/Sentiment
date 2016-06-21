@@ -10,9 +10,21 @@ suppressMessages(library(reshape2))
 suppressMessages(library(stargazer))
 suppressMessages(library(xtable))
 suppressMessages(library(scales))
+suppressMessages(library(quantmod))
+suppressMessages(library(vars))
+suppressMessages(library(tseries))
+suppressMessages(library(urca))
 
 GDPdata <- read.csv("GDP Data.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
 GDPdata$X <- as.Date(GDPdata$X, format = "%Y/%m/%d")
+
+##For Grpahing Business cycles
+recessions.df = read.table(textConnection(
+    "Peak, Trough
+    1989-02-28, 1993-05-30
+    1996-11-30, 1999-08-31
+    2007-11-30, 2009-08-31"), sep=',',
+    colClasses=c('Date', 'Date'), header=TRUE)
 
 ##====================================================================================##
 ## -------------------------------- CONFIDENCE ---------------------------------------##
@@ -432,18 +444,6 @@ for(i in 1:95) {
 w.indicators$Date <- GDPdata[,1]
 
 
-indicator_plot <- w.indicators[,c(1,2,5,6)]
-colnames(indicator_plot) <- c("Date","Current1","Current2","Forward-looking")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g <- g + geom_line()
-g <- g + ylab("Confidence")
-g <- g + xlab("")
-g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + theme(legend.position="bottom")
-g
-
 indicator_plot <- cbind(w.indicators[,c(1,2)],(GDPdata$Confidence-50)/50)
 colnames(indicator_plot) <- c("Date","Current1","BER Confidence")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -480,6 +480,20 @@ g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format
 g <- g + theme(legend.position="bottom")
 g
 
+indicator_plot <- indicators[,c(1,2,5,6)]
+g <- ggplot(indicator_plot) 
+g <- g + geom_line(aes(x=Date, y=Conf_cc, colour="Current_1"), size = 1)
+g <- g + geom_line(aes(x=Date, y=Act_GBC, colour="Current_2"), size = 1)
+g <- g + geom_line(aes(x=Date, y=Conf_GBC, colour="Forward-looking"), size = 1)
+g <- g + theme_bw()
+g <- g + labs(color="Legend text")
+g <- g + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
+g <- g + ylab("Confidence")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
 
 ##====================================================================================##
 ## -------------------------------- UNCERTAINTY --------------------------------------##
@@ -1332,22 +1346,12 @@ g <- g + theme(legend.position="bottom")
 g
 
 indicator_plot <- uncert.norm[,c(1,3,5)]
-colnames(indicator_plot) <- c("Date","Forward-looking","Expectation Errors")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g <- g + geom_line()
-g <- g + ylab("Uncertainty")
-g <- g + xlab("")
-g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + theme(legend.position="bottom")
-g
-
-indicator_plot <- w.uncert.norm[,c(1,3,5)]
-colnames(indicator_plot) <- c("Date","Forward-looking","Expectation Errors")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g <- g + geom_line()
+g <- ggplot(indicator_plot) 
+g <- g + geom_line(aes(x=Date, y=Uncert_fl.GBC, colour="Forward_looking"), size = 1)
+g <- g + geom_line(aes(x=Date, y=Uncert_ee.GBC, colour="Expectation Errors"), size = 1)
+g <- g + theme_bw()
+g <- g + labs(color="Legend text")
+g <- g + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
 g <- g + ylab("Uncertainty")
 g <- g + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
