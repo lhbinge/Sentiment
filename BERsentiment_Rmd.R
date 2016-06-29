@@ -78,8 +78,6 @@ altBER$Q8A <- replace(altBER$Q8A, altBER$Q8A==-1,1) # replace -1 (Down) response
 indicators.M <- cbind(indicators.M, Empl_turn = aggregate(altBER$Q8A, by=list(altBER$surveyQ), FUN=mean, na.rm=TRUE)[,2])
 
 
-
-
 ##===============================##
 ## READING IN THE DATA: BUILDING ##
 ##===============================##
@@ -1371,5 +1369,54 @@ xt <- xtable(corstarsl(ts.all_indices), caption="Correlations in Levels")
 print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"))
 
 
+##==============================================================================================
+##COMOVEMENT------------------------------------------------------------------------------------
+##==============================================================================================
+ts.indicators <- ts(indicators[,c(2,3,4,5,6,9,10,11,12)],start =c(1992,1),end=c(2015,3),frequency=4) 
+ts.indicators.M <- ts(indicators.M[,c(2,4,5,6,7,12,13,15,16)],start =c(1992,1),end=c(2015,3),frequency=4) 
+ts.indicators.B <- ts(indicators.B[,c(2,3,4,5,6,9,10,11,12)],start =c(1993,2),end=c(2015,3),frequency=4) 
+ts.indicators.T <- ts(indicators.T[,c(2,3,4,5,6,9,10,11,12)],start =c(1992,2),end=c(2015,3),frequency=4) 
+
+ts.windicators <- ts(w.indicators[,c(2,3,4,5,6,9,10,11,12)],start =c(1992,1),end=c(2015,3),frequency=4) 
+ts.windicators.M <- ts(w.indicators.M[,c(2,4,5,6,7,11,12,14,15)],start =c(1992,1),end=c(2015,3),frequency=4) 
+ts.windicators.B <- ts(w.indicators.B[,c(2,3,4,5,6,8,9,10,11)],start =c(1993,2),end=c(2015,3),frequency=4) 
+ts.windicators.T <- ts(w.indicators.T[,c(2,3,4,5,6,8,9,10,11)],start =c(1992,2),end=c(2015,3),frequency=4) 
+
+realGDP <- read.csv("RealGDP.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+realGDP$X <- as.Date(realGDP$X, format = "%Y/%m/%d")
+ts.realGDP <- ts(realGDP,start =c(1991,1),end=c(2015,3),frequency=4)
+GDPgrowth4 <- sapply(log(ts.realGDP[,-1]), diff, lag =4)
+ts.GDPgrowth4 <- ts(GDPgrowth4,start =c(1992,1),end=c(2015,3),frequency=4)
+GDPgrowth1 <- sapply(log(ts.realGDP[,-1]), diff, lag =1)
+ts.GDPgrowth1 <- ts(GDPgrowth1,start =c(1991,2),end=c(2015,3),frequency=4)
+
+dum94 <- ts(0,start =c(1992,1),end=c(2015,3),frequency=4)
+dum94[10] <- 1
+dum94 <- as.data.frame(dum94)
+names(dum94) <- "dum94"
+
+#plot hulle saam
+temp_indices <- cbind(indicators[,c(1,6,12)],GDPgrowth=GDPgrowth4[,1])
+ts.temp_indices <- ts(temp_indices[,-1],start =c(1992,1),end=c(2015,3),frequency=4) 
+plot(ts.temp_indices,plot.type = "m",main="")
 
 
+all_indices <- cbind(Date=GDPdata$X,w.indicators[,c(2,5,6,10,12)],GDPgrowth4[,1])
+colnames(all_indices) <- c("Date", "Conf_CC", "Act_GBC", "Conf_FL", "Uncert_FL", "Uncert_EE", "GDPgrowth")
+
+Conf_cc <- all_indices[,2]
+Act_GBC <- all_indices[,3]
+Conf_GBC <- all_indices[,4]
+Unc_fl <- all_indices[,5] 
+Unc_ee <- all_indices[,6]
+GDPgrowth <- all_indices[,7]
+
+par(mfrow=c(2,2))
+ccf(Act_GBC, GDPgrowth, na.action = na.pass)
+ccf(Conf_GBC, GDPgrowth, na.action = na.pass)
+ccf(Unc_fl, GDPgrowth, na.action = na.pass)
+ccf(Unc_ee, GDPgrowth, na.action = na.pass)
+
+#====================================================#
+# ------------------ VAR ANALYSIS ------------------ #
+#====================================================#
