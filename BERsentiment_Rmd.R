@@ -1369,9 +1369,9 @@ xt <- xtable(corstarsl(ts.all_indices), caption="Correlations in Levels")
 print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"))
 
 
-##==============================================================================================
-##COMOVEMENT------------------------------------------------------------------------------------
-##==============================================================================================
+##========================================================
+##COMOVEMENT----------------------------------------------
+##========================================================
 ts.indicators <- ts(indicators[,c(2,3,4,5,6,9,10,11,12)],start =c(1992,1),end=c(2015,3),frequency=4) 
 ts.indicators.M <- ts(indicators.M[,c(2,4,5,6,7,12,13,15,16)],start =c(1992,1),end=c(2015,3),frequency=4) 
 ts.indicators.B <- ts(indicators.B[,c(2,3,4,5,6,9,10,11,12)],start =c(1993,2),end=c(2015,3),frequency=4) 
@@ -1396,10 +1396,9 @@ dum94 <- as.data.frame(dum94)
 names(dum94) <- "dum94"
 
 #plot hulle saam
-temp_indices <- cbind(indicators[,c(1,6,12)],GDPgrowth=GDPgrowth4[,1])
+temp_indices <- cbind(indicators[,c(1,6)],Uncert_EE=indicators[,12],GDPgr=GDPgrowth4[,1])
 ts.temp_indices <- ts(temp_indices[,-1],start =c(1992,1),end=c(2015,3),frequency=4) 
 plot(ts.temp_indices,plot.type = "m",main="")
-
 
 all_indices <- cbind(Date=GDPdata$X,w.indicators[,c(2,5,6,10,12)],GDPgrowth4[,1])
 colnames(all_indices) <- c("Date", "Conf_CC", "Act_GBC", "Conf_FL", "Uncert_FL", "Uncert_EE", "GDPgrowth")
@@ -1417,6 +1416,217 @@ ccf(Conf_GBC, GDPgrowth, na.action = na.pass)
 ccf(Unc_fl, GDPgrowth, na.action = na.pass)
 ccf(Unc_ee, GDPgrowth, na.action = na.pass)
 
-#====================================================#
-# ------------------ VAR ANALYSIS ------------------ #
-#====================================================#
+##========================================================
+##-------------VAR Analysis-------------------------------
+##========================================================
+y1 <- ts.windicators[,1]
+y2 <- ts.GDPgrowth4[,1]
+name1 <- "Conf_CC"
+name2 <- "RGDPGrowth"  
+y1 <- na.approx(y1)
+y2 <- na.approx(y2)
+vardat <- ts.intersect(y1, y2)  
+colnames(vardat) <- c(name1,name2)
+infocrit <- VARselect(vardat, lag.max = 12, type = "const",exogen = dum94)
+k_aic <- infocrit$selection[1]
+k_hq  <- infocrit$selection[2]
+k_sic <- infocrit$selection[3]
+k <- min(k_aic,k_sic,k_hq)
+var1 <- VAR(vardat,p=k,type="const",exogen = dum94)
+
+y1 <- ts.windicators[,4]
+y2 <- ts.GDPgrowth4[,1]
+name1 <- "Act_GBC"
+name2 <- "RGDPGrowth"  
+y1 <- na.approx(y1)
+y2 <- na.approx(y2)
+vardat <- ts.intersect(y1, y2)  
+colnames(vardat) <- c(name1,name2)
+infocrit <- VARselect(vardat, lag.max = 12, type = "const",exogen = dum94)
+k_aic <- infocrit$selection[1]
+k_hq  <- infocrit$selection[2]
+k_sic <- infocrit$selection[3]
+k <- min(k_aic,k_sic,k_hq)
+var2 <- VAR(vardat,p=k,type="const",exogen = dum94)
+
+y1 <- ts.windicators[,5]
+y2 <- ts.GDPgrowth4[,1]
+name1 <- "Conf_GBC"
+name2 <- "RGDPGrowth"  
+y1 <- na.approx(y1)
+y2 <- na.approx(y2)
+vardat <- ts.intersect(y1, y2)  
+colnames(vardat) <- c(name1,name2)
+infocrit <- VARselect(vardat, lag.max = 12, type = "const",exogen = dum94)
+k_aic <- infocrit$selection[1]
+k_hq  <- infocrit$selection[2]
+k_sic <- infocrit$selection[3]
+k <- min(k_aic,k_sic,k_hq)
+var3 <- VAR(vardat,p=k,type="const",exogen = dum94)
+
+y1 <- ts.windicators[,7]
+y2 <- ts.GDPgrowth4[,1]
+name1 <- "Uncert_fl"
+name2 <- "RGDPGrowth"  
+y1 <- na.approx(y1)
+y2 <- na.approx(y2)
+vardat <- ts.intersect(y1, y2)  
+colnames(vardat) <- c(name1,name2)
+infocrit <- VARselect(vardat, lag.max = 12, type = "const")
+k_aic <- infocrit$selection[1]
+k_hq  <- infocrit$selection[2]
+k_sic <- infocrit$selection[3]
+k <- min(k_aic,k_sic,k_hq)
+var4 <- VAR(vardat,p=k,type="const")
+
+y1 <- ts.windicators[,9]
+y2 <- ts.GDPgrowth4[,1]
+name1 <- "Uncert_ee"
+name2 <- "RGDPGrowth"  
+y1 <- na.approx(y1)
+y2 <- na.approx(y2)
+vardat <- ts.intersect(y1, y2)  
+colnames(vardat) <- c(name1,name2)
+infocrit <- VARselect(vardat, lag.max = 12, type = "const")
+k_aic <- infocrit$selection[1]
+k_hq  <- infocrit$selection[2]
+k_sic <- infocrit$selection[3]
+k <- min(k_aic,k_sic,k_hq)
+var5 <- VAR(vardat,p=k,type="const")
+
+y1 <- ts.indicators[,9]
+y2 <- ts.GDPgrowth4[,1]
+name1 <- "unw.Uncert_ee"
+name2 <- "RGDPGrowth"  
+y1 <- na.approx(y1)
+y2 <- na.approx(y2)
+vardat <- ts.intersect(y1, y2)  
+colnames(vardat) <- c(name1,name2)
+infocrit <- VARselect(vardat, lag.max = 12, type = "const")
+k_aic <- infocrit$selection[1]
+k_hq  <- infocrit$selection[2]
+k_sic <- infocrit$selection[3]
+k <- min(k_aic,k_sic,k_hq)
+var6 <- VAR(vardat,p=k,type="const")
+
+
+##Granger causality tests
+G <- data.frame()
+G[1,1] <- causality(var1,cause = "Conf_CC")$Granger[4]
+G[1,2] <- as.numeric(as.character(causality(var1,cause = "Conf_CC")$Granger[1]))
+G[1,3] <- as.numeric(as.character(causality(var1,cause = "Conf_CC")$Granger[3]))
+G[2,1] <- causality(var1,cause = "RGDPGrowth")$Granger[4]
+G[2,2] <- as.numeric(as.character(causality(var1,cause = "RGDPGrowth")$Granger[1]))
+G[2,3] <- as.numeric(as.character(causality(var1,cause = "RGDPGrowth")$Granger[3]))
+
+G[3,1] <- causality(var2,cause = "Act_GBC")$Granger[4]
+G[3,2] <- as.numeric(as.character(causality(var2,cause = "Act_GBC")$Granger[1]))
+G[3,3] <- as.numeric(as.character(causality(var2,cause = "Act_GBC")$Granger[3]))
+G[4,1] <- causality(var2,cause = "RGDPGrowth")$Granger[4]
+G[4,2] <- as.numeric(as.character(causality(var2,cause = "RGDPGrowth")$Granger[1]))
+G[4,3] <- as.numeric(as.character(causality(var2,cause = "RGDPGrowth")$Granger[3]))
+
+G[5,1] <- causality(var3,cause = "Conf_GBC")$Granger[4]
+G[5,2] <- as.numeric(as.character(causality(var3,cause = "Conf_GBC")$Granger[1]))
+G[5,3] <- as.numeric(as.character(causality(var3,cause = "Conf_GBC")$Granger[3]))
+G[6,1] <- causality(var3,cause = "RGDPGrowth")$Granger[4]
+G[6,2] <- as.numeric(as.character(causality(var3,cause = "RGDPGrowth")$Granger[1]))
+G[6,3] <- as.numeric(as.character(causality(var3,cause = "RGDPGrowth")$Granger[3]))
+
+G[8,1] <- causality(var4,cause = "Uncert_fl")$Granger[4]
+G[8,2] <- as.numeric(as.character(causality(var4,cause = "Uncert_fl")$Granger[1]))
+G[8,3] <- as.numeric(as.character(causality(var4,cause = "Uncert_fl")$Granger[3]))
+G[9,1] <- causality(var4,cause = "RGDPGrowth")$Granger[4]
+G[9,2] <- as.numeric(as.character(causality(var4,cause = "RGDPGrowth")$Granger[1]))
+G[9,3] <- as.numeric(as.character(causality(var4,cause = "RGDPGrowth")$Granger[3]))
+
+G[10,1] <- causality(var5,cause = "Uncert_ee")$Granger[4]
+G[10,2] <- as.numeric(as.character(causality(var5,cause = "Uncert_ee")$Granger[1]))
+G[10,3] <- as.numeric(as.character(causality(var5,cause = "Uncert_ee")$Granger[3]))
+G[11,1] <- causality(var5,cause = "RGDPGrowth")$Granger[4]
+G[11,2] <- as.numeric(as.character(causality(var5,cause = "RGDPGrowth")$Granger[1]))
+G[11,3] <- as.numeric(as.character(causality(var5,cause = "RGDPGrowth")$Granger[3]))
+
+G[12,1] <- causality(var6,cause = "unw.Uncert_ee")$Granger[4]
+G[12,2] <- as.numeric(as.character(causality(var6,cause = "unw.Uncert_ee")$Granger[1]))
+G[12,3] <- as.numeric(as.character(causality(var6,cause = "unw.Uncert_ee")$Granger[3]))
+G[13,1] <- causality(var6,cause = "RGDPGrowth")$Granger[4]
+G[13,2] <- as.numeric(as.character(causality(var6,cause = "RGDPGrowth")$Granger[1]))
+G[13,3] <- as.numeric(as.character(causality(var6,cause = "RGDPGrowth")$Granger[3]))
+
+G[,2:3] <- round(G[,2:3],3)
+mystars <- ifelse(G[,3] < .01, "***", ifelse(G[,3] < .05, "** ", ifelse(G[,3] < .1, "* ", " ")))
+Gnew <- matrix(paste(G[,2], mystars, sep=""), ncol=1) 
+Gnew[7] <- ""
+G[,1] <- sub(".*: ", "", G[,1])
+G[,2] <- Gnew
+colnames(G) <- c("Granger causality H0:","statistic","p-value")
+
+xt <- xtable(G, caption="Granger causality tests")
+print(xt, "latex", include.rownames=FALSE,comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8)
+
+#----------------------------------------------------------
+##IRFs
+#----------------------------------------------------------
+irf.y1 <- irf(var3,impulse = "Conf_GBC", response = "RGDPGrowth", n.ahead = 12,runs = 1000, seed=12345) 
+irf.y2 <- irf(var3,impulse = "RGDPGrowth", response = "Conf_GBC", n.ahead = 12,runs = 1000, seed=12345)
+
+par(mfrow=c(1,2),mar=c(7,5,7,2), cex=0.6, new=FALSE)
+plot(irf.y1,plot.type = c("single"))
+par(mfrow=c(1,2),mar=c(6,4,4.2,1), cex=0.6, new = TRUE)
+plot(irf.y2,plot.type = c("single"))
+
+irf.y1 <- irf(var5,impulse = "Uncert_ee", response = "RGDPGrowth", n.ahead = 12,runs = 1000, seed=12345) 
+irf.y2 <- irf(var5,impulse = "RGDPGrowth", response = "Uncert_ee", n.ahead = 12,runs = 1000, seed=12345)
+
+par(mfrow=c(1,2),mar=c(7,5,7,2), cex=0.6, new=FALSE)
+plot(irf.y1,plot.type = c("single"))
+par(mfrow=c(1,2),mar=c(6,4,4.2,1), cex=0.6, new = TRUE)
+plot(irf.y2,plot.type = c("single"))
+
+irf.y1 <- irf(var6,impulse = "unw.Uncert_ee", response = "RGDPGrowth", n.ahead = 12,runs = 1000, seed=12345) 
+irf.y2 <- irf(var6,impulse = "RGDPGrowth", response = "unw.Uncert_ee", n.ahead = 12,runs = 1000, seed=12345)
+
+par(mfrow=c(1,2),mar=c(7,5,7,2), cex=0.6, new=FALSE)
+plot(irf.y1,plot.type = c("single"))
+par(mfrow=c(1,2),mar=c(6,4,4.2,1), cex=0.6, new = TRUE)
+plot(irf.y2,plot.type = c("single"))
+
+#Three-variable VAR
+
+variable.3 <- function(y1, name1, y2, name2, y3, name3) {
+    y1 <- na.approx(y1)
+    y2 <- na.approx(y2)
+    y3 <- na.approx(y3)
+    vardat <- ts.intersect(y1, y2, y3)  
+    colnames(vardat) <- c(name1,name2,name3)
+    #infocrit <- VARselect(vardat, lag.max = 12, type = "const",exogen = dum94)
+    infocrit <- VARselect(vardat, lag.max = 12, type = "const")
+    k_aic <- infocrit$selection[1]
+    k_hq  <- infocrit$selection[2]
+    k_sic <- infocrit$selection[3]
+    k <- min(k_aic,k_sic,k_hq)
+    #var <- VAR(vardat,p=k,type="const",exogen = dum94)
+    var <- VAR(vardat,p=k,type="const")
+    return(var)
+}
+
+var <- variable.3(ts.indicators[,5],"Confidence",
+                  ts.indicators[,9],"Uncertainty",
+                  ts.GDPgrowth4[,1],"RGDPGrowth")
+
+name1 <- "Confidence"
+name2 <- "Uncertainty"   
+name3 <- "RGDPGrowth"
+
+irf.y1 <- irf(var,impulse = c(name1,name2), response = name3, n.ahead = 12,runs = 1000, seed=12345) 
+par(mfrow=c(1,2),mar=c(5,4,4,2), cex=0.5)
+plot(irf.y1,plot.type = c("single"))
+
+irf.y2 <- irf(var,impulse = name3, response = c(name1,name2), n.ahead = 12,runs = 1000, seed=12345)
+par(mfrow=c(1,2),mar=c(5,4,4,2), cex=0.5)
+plot(irf.y2,plot.type = c("single"))
+
+
+
+

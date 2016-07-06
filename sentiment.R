@@ -1744,14 +1744,14 @@ variable.2 <- function(y1, name1, y2, name2) {
     vardat <- ts.intersect(y1, y2)  
     colnames(vardat) <- c(name1,name2)
     #infocrit <- VARselect(vardat, lag.max = 12, type = "const",exogen = dum94)
-    infocrit <- VARselect(vardat, lag.max = 12, type = "const")
+    infocrit <- VARselect(vardat, lag.max = 12, type = "both")
     
     k_aic <- infocrit$selection[1]
     k_hq  <- infocrit$selection[2]
     k_sic <- infocrit$selection[3]
     k <- min(k_aic,k_sic,k_hq)
     #var <- VAR(vardat,p=k,type="const",exogen = dum94)
-    var <- VAR(vardat,p=k,type="const")
+    var <- VAR(vardat,p=4,type="both")
     #var <- VAR(vardat,p=k,type="const")
     return(var)
 }
@@ -1760,7 +1760,7 @@ var1 <- variable.2(ts.windicators[,1],"Conf_CC",ts.GDPgrowth4[,1],"RGDPGrowth")
 
 var2 <- variable.2(ts.windicators[,4],"Act_GBC",ts.GDPgrowth4[,1],"RGDPGrowth")
 
-var3 <- variable.2(ts.indicators[,7],"Conf_GBC",ts.GDPgrowth4[,1],"RGDPGrowth")
+var3 <- variable.2(ts.windicators[,9],"Conf_GBC",ts.GDPgrowth4[,1],"RGDPGrowth")
 
 
 irf.y1 <- irf(var3,impulse = "Conf_GBC", response = "RGDPGrowth", n.ahead = 12,runs = 1000, seed=12345) 
@@ -1824,15 +1824,58 @@ plot(irf.y2,plot.type = c("multiple"))
 dev.off()
 
 G <- data.frame()
-G[1,1] <- causality(var1,cause = "Conf_CC")$Granger[3]
-G[1,2] <- causality(var1,cause = "RGDPGrowth")$Granger[3]
-G[1,3] <- causality(var1,cause = "Conf_CC")$Instant[3]
-G[2,1] <- causality(var2,cause = "Act_GBC")$Granger[3]
-G[2,2] <- causality(var2,cause = "RGDPGrowth")$Granger[3]
-G[2,3] <- causality(var2,cause = "Act_GBC")$Instant[3]
-G[3,1] <- causality(var3,cause = "Conf_GBC")$Granger[3]
-G[3,2] <- causality(var3,cause = "RGDPGrowth")$Granger[3]
-G[3,3] <- causality(var3,cause = "Conf_GBC")$Instant[3]
+G[1,1] <- causality(var1,cause = "Conf_CC")$Granger[4]
+G[1,2] <- as.numeric(as.character(causality(var1,cause = "Conf_CC")$Granger[1]))
+G[1,3] <- as.numeric(as.character(causality(var1,cause = "Conf_CC")$Granger[3]))
+G[2,1] <- causality(var1,cause = "RGDPGrowth")$Granger[4]
+G[2,2] <- as.numeric(as.character(causality(var1,cause = "RGDPGrowth")$Granger[1]))
+G[2,3] <- as.numeric(as.character(causality(var1,cause = "RGDPGrowth")$Granger[3]))
+
+G[3,1] <- causality(var2,cause = "Act_GBC")$Granger[4]
+G[3,2] <- as.numeric(as.character(causality(var2,cause = "Act_GBC")$Granger[1]))
+G[3,3] <- as.numeric(as.character(causality(var2,cause = "Act_GBC")$Granger[3]))
+G[4,1] <- causality(var2,cause = "RGDPGrowth")$Granger[4]
+G[4,2] <- as.numeric(as.character(causality(var2,cause = "RGDPGrowth")$Granger[1]))
+G[4,3] <- as.numeric(as.character(causality(var2,cause = "RGDPGrowth")$Granger[3]))
+
+G[5,1] <- causality(var3,cause = "Conf_GBC")$Granger[4]
+G[5,2] <- as.numeric(as.character(causality(var3,cause = "Conf_GBC")$Granger[1]))
+G[5,3] <- as.numeric(as.character(causality(var3,cause = "Conf_GBC")$Granger[3]))
+G[6,1] <- causality(var3,cause = "RGDPGrowth")$Granger[4]
+G[6,2] <- as.numeric(as.character(causality(var3,cause = "RGDPGrowth")$Granger[1]))
+G[6,3] <- as.numeric(as.character(causality(var3,cause = "RGDPGrowth")$Granger[3]))
+
+G[8,1] <- causality(var4,cause = "Uncert_fl")$Granger[4]
+G[8,2] <- as.numeric(as.character(causality(var4,cause = "Uncert_fl")$Granger[1]))
+G[8,3] <- as.numeric(as.character(causality(var4,cause = "Uncert_fl")$Granger[3]))
+G[9,1] <- causality(var4,cause = "RGDPGrowth")$Granger[4]
+G[9,2] <- as.numeric(as.character(causality(var4,cause = "RGDPGrowth")$Granger[1]))
+G[9,3] <- as.numeric(as.character(causality(var4,cause = "RGDPGrowth")$Granger[3]))
+
+G[10,1] <- causality(var5,cause = "Uncert_ee")$Granger[4]
+G[10,2] <- as.numeric(as.character(causality(var5,cause = "Uncert_ee")$Granger[1]))
+G[10,3] <- as.numeric(as.character(causality(var5,cause = "Uncert_ee")$Granger[3]))
+G[11,1] <- causality(var5,cause = "RGDPGrowth")$Granger[4]
+G[11,2] <- as.numeric(as.character(causality(var5,cause = "RGDPGrowth")$Granger[1]))
+G[11,3] <- as.numeric(as.character(causality(var5,cause = "RGDPGrowth")$Granger[3]))
+
+G[12,1] <- causality(var6,cause = "unw.Uncert_ee")$Granger[4]
+G[12,2] <- as.numeric(as.character(causality(var6,cause = "unw.Uncert_ee")$Granger[1]))
+G[12,3] <- as.numeric(as.character(causality(var6,cause = "unw.Uncert_ee")$Granger[3]))
+G[13,1] <- causality(var6,cause = "RGDPGrowth")$Granger[4]
+G[13,2] <- as.numeric(as.character(causality(var6,cause = "RGDPGrowth")$Granger[1]))
+G[13,3] <- as.numeric(as.character(causality(var6,cause = "RGDPGrowth")$Granger[3]))
+
+G[,2:3] <- round(G[,2:3],3)
+mystars <- ifelse(G[,3] < .01, "***", ifelse(G[,3] < .05, "** ", ifelse(G[,3] < .1, "* ", " ")))
+Gnew <- matrix(paste(G[,2], mystars, sep=""), ncol=1) 
+Gnew[7] <- ""
+G[,1] <- sub(".*: ", "", G[,1])
+G[,2] <- Gnew
+colnames(G) <- c("Granger causality H0:","statistic","p-value")
+
+xt <- xtable(G, caption="Granger causality tests")
+print(xt, "latex", include.rownames=FALSE,comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"))
 
 #---------------------------------------------------------------------------------------------------
 vardat <- cbind(ts.all_indices[,5], ts.all_indices[,6])                            
@@ -1900,7 +1943,7 @@ plot(irf.y2)
 
 
 ##Forecast Error Variance Decoposition
-fevd.var <- fevd(var5, n.ahead = 16)
+fevd.var <- fevd(var2, n.ahead = 16)
 plot(fevd.var, addbars = 2)
 
 
@@ -1982,43 +2025,40 @@ plot(fevd.var, addbars = 2)
 ##FUNCTION 3 Variable VAR
 #----------------------------------------------------------------------------------
 variable.3 <- function(y1, name1, y2, name2, y3, name3) {
-    
     y1 <- na.approx(y1)
     y2 <- na.approx(y2)
     y3 <- na.approx(y3)
     vardat <- ts.intersect(y1, y2, y3)  
-    #vardat <-cbind(y1,y2)
-    #vardat <- na.approx(vardat)
     colnames(vardat) <- c(name1,name2,name3)
-    
     #infocrit <- VARselect(vardat, lag.max = 12, type = "const",exogen = dum94)
     infocrit <- VARselect(vardat, lag.max = 12, type = "const")
     k_aic <- infocrit$selection[1]
     k_hq  <- infocrit$selection[2]
     k_sic <- infocrit$selection[3]
-    k_fpe <- infocrit$selection[3]
     k <- min(k_aic,k_sic,k_hq)
     #var <- VAR(vardat,p=k,type="const",exogen = dum94)
     var <- VAR(vardat,p=k,type="const")
-    
-    #Impulse Response Function
-    irf.y1 <- irf(var,impulse = c(name1,name2), response = name3, n.ahead = 12,runs = 100, seed=12345) 
-    irf.y2 <- irf(var,impulse = name2, response = name3, n.ahead = 12,runs = 100, seed=12345)
-    
-    par(mfrow=c(1,2),mar=c(5.1,4.1,4.1,2.1), cex=0.70)
-    plot(irf.y1,plot.type = c("single"))
-    
-    #plot(irf.y1,plot.type = c("single"))
-    
-    #irf.y3 <- irf(var,impulse = name2, response = c(name3), n.ahead = 12,runs = 100, seed=12345)
-    
-    #plot(irf.y1)
-    #p1 <- recordPlot()
-    #plot(irf.y2)
-    #p2 <- recordPlot()
-    #plot(irf.y3)
     return(var)
 }
+
+var <- variable.3(ts.indicators[,5],"Confidence",
+                  ts.indicators[,9],"Uncertainty",
+                  ts.GDPgrowth4[,1],"RGDPGrowth")
+
+name1 <- "Confidence"
+name2 <- "Uncertainty"   
+name3 <- "RGDPGrowth"
+
+
+#Impulse Response Function
+irf.y1 <- irf(var,impulse = c(name1,name2), response = name3, n.ahead = 12,runs = 1000, seed=12345) 
+irf.y2 <- irf(var,impulse = name3, response = c(name1,name2), n.ahead = 12,runs = 1000, seed=12345)
+
+par(mfrow=c(1,2),mar=c(5,4,4,2), cex=0.5)
+plot(irf.y1,plot.type = c("single"))
+
+par(mfrow=c(1,2),mar=c(5,4,4,2), cex=0.5)
+plot(irf.y2,plot.type = c("single"))
 
 
 ## S3 method for class 'varirf'
@@ -2028,19 +2068,10 @@ plot(x, plot.type = c("multiple", "single"), names =
      oma.multi = c(6, 4, 6, 4), adj.mtext = NA, padj.mtext = NA, col.mtext =
          NA, ...)
 
-
 #Total: 1,5,14,15
 #Manufacturing: 4,9,11,16
 #Construction: 3,8,13,17
 ##Trade: 2,6,7,12,18
-
-name1 <- "Confidence"
-name2 <- "Uncertainty"   
-name3 <- "RGDPGrowth"
-
-var <- variable.3(ts.indicators[,5],"Confidence",
-                  ts.indicators[,9],"Uncertainty",
-                  ts.GDPgrowth4[,1],"RGDPGrowth")
 
 var <- variable.3(ts.indicators[,5],"Confidence",
                   ts.GDPgrowth4[,1],"RGDPGrowth",
@@ -2059,7 +2090,7 @@ var <- variable.3(ts.indicators[,9],"Uncertainty",
 irf.y1 <- irf(var,impulse = name3, response = name1, n.ahead = 12,runs = 100, seed=12345)
 plot(irf.y1)
 
-par(mfrow=c(1,2))
+par(mfrow=c(1,2), cex=0.5)
 plot(irf.y1,plot.type = c("single"))
 
 roots(var) #all inside unit circle
