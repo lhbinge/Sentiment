@@ -1246,21 +1246,39 @@ countNR <- function(data) { sum(is.na(data))/NROW(data) }
 NRR.S <- aggregate(BER.S, by=list(BER.S$surveyQ), FUN=countNR)
 
 
+
 ##=================================##
 ## AGGREGATING as much as possible ##
 ##=================================##
 
 #Rename BER.B$Q5A temporarily and create NAs for BER.V$empl
-tempBER.M <- BER.M[,c("id","surveyQ","Q20","Q3A","Q3P","Q7A","Q7P","Q8A")]
-colnames(tempBER.M) <- c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A")
-tempBER.T <- BER.T[,c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q5A")]
-colnames(tempBER.T) <- c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A")
-tempBER.V <- BER.V[,c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A")]
+tempBER.M <- cbind(BER.M[,c("id","surveyQ","Q20","Q3A","Q3P","Q7A","Q7P","Q8A")],"Manufaturing")
+colnames(tempBER.M) <- c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A","Sector")
+tempBER.B <- cbind(BER.B[,c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A")],"Construction")
+colnames(tempBER.B) <- c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A","Sector")
+tempBER.T <- cbind(BER.T[,c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q5A")],"Trade")
+colnames(tempBER.T) <- c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A","Sector")
+tempBER.V <- cbind(BER.V[,c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A")],"Motor")
 tempBER.V[,"Q4A"] <- NA
+colnames(tempBER.V) <- c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A","Sector")
+tempBER.S <- cbind(BER.S[,c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A")],"Services")
+colnames(tempBER.S) <- c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A","Sector")
 
 BER <- tempBER.M
-BER <- rbind(BER,BER.B[,c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A")],tempBER.T,tempBER.V,
-             BER.S[,c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A")])
+BER <- rbind(BER,tempBER.B,tempBER.T,tempBER.V,tempBER.S)
+
+BERplot <- aggregate(BER$id, by=list(BER$surveyQ,BER$Sector), FUN = length)
+g <- ggplot(BERplot, aes(x=Group.1, y=x,fill=Group.2))
+g <- g + geom_bar(stat="identity")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + scale_fill_discrete(name="Sector")
+g <- g + scale_y_continuous(labels=comma)
+g <- g + scale_x_discrete(breaks=levels(BERplot$Group.1)[c(T, rep(F, 1))])
+g <- g + ylab("Nuymber of Respondents")
+g <- g + xlab("Date")
+g
+
+#scale_x_discrete(breaks = levels(BERplot$Group.1)[c(T, rep(F, 3))])
 
 indicators <- aggregate(BER$Q1, by=list(BER$surveyQ), FUN=mean, na.rm=TRUE)
 colnames(indicators) <- c("Date","Conf_cc")
@@ -1615,6 +1633,105 @@ ts.all_indices <- as.ts(temp_indices[,-1],start =c(1992,1),end=c(2015,3),frequen
 #cor(temp_indices[,-1],use="complete.obs")
 xt <- xtable(corstarsl(ts.all_indices), caption="Correlations in Levels")
 print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"))
+
+
+
+
+
+##=============================================================================================
+#Semi-weighted versions
+##=============================================================================================
+sw.indicators <- merge(indicators.M[,c("Group.1","Conf_cc.M","Conf_fl.M")], indicators.B[,c("Group.1","Conf_cc.B","Conf_fl.B")], 
+                       by.x="Group.1", by.y="Group.1",all.x=TRUE)
+sw.indicators <- merge(sw.indicators, indicators.T[,c("Group.1","Conf_cc.T","Conf_fl.T")], by.x="Group.1", by.y="Group.1",all.x=TRUE)
+sw.indicators <- merge(sw.indicators, indicators.V[,c("Group.1","Conf_cc.V","Conf_fl.V")], by.x="Group.1", by.y="Group.1",all.x=TRUE)
+sw.indicators <- merge(sw.indicators, indicators.S[,c("Group.1","Conf_cc.S","Conf_fl.S")], by.x="Group.1", by.y="Group.1",all.x=TRUE)
+colnames(sw.indicators)[1] <- "Date"
+
+sw.indicators$Conf_cc <- sapply(sw.indicators$Date, function(x) weighted.mean(sw.indicators[which(sw.indicators$Date==x),c(2,4,6,8,10)], 
+                                                                              weights[weights$Date==x,-1],na.rm=TRUE))
+sw.indicators$Conf_fl <- sapply(sw.indicators$Date, function(x) weighted.mean(sw.indicators[which(sw.indicators$Date==x),c(3,5,7,9,11)], 
+                                                                              weights[weights$Date==x,-1],na.rm=TRUE))
+
+
+##=================================##
+## AGGREGATING
+##=================================##
+##Weighted versions
+weights <- cbind(Date=levels(BER.M$surveyQ),GDPdata[,2:6])
+
+w.indicators <- merge(w.indicators.M[,c("Q7A","Q7P","Conf_cc.M","Conf_fl.M")], w.indicators.B[,c("Q2A","Q2P","Conf_cc.B","Conf_fl.B")], 
+                      by.x="row.names", by.y="row.names",all.x=TRUE)
+w.indicators <- merge(w.indicators, w.indicators.T[,c("Q2A","Q2P","Conf_cc.T","Conf_fl.T")], by.x="Row.names", by.y="row.names",all.x=TRUE)
+w.indicators <- merge(w.indicators, w.indicators.V[,c("Q2A","Q2P","Conf_cc.V","Conf_fl.V")], by.x="Row.names", by.y="row.names",all.x=TRUE)
+w.indicators <- merge(w.indicators, w.indicators.S[,c("Q2A","Q2P","Conf_cc.S","Conf_fl.S")], by.x="Row.names", by.y="row.names",all.x=TRUE)
+colnames(w.indicators)[1] <- "Date"
+
+w.indicators$Conf_cc <- sapply(w.indicators$Date, function(x) weighted.mean(w.indicators[which(w.indicators$Date==x),c(4,8,12,16,20)], 
+                                                                            weights[weights$Date==x,-1],na.rm=TRUE))
+w.indicators$Conf_fl <- sapply(w.indicators$Date, function(x) weighted.mean(w.indicators[which(w.indicators$Date==x),c(5,9,13,17,21)], 
+                                                                            weights[weights$Date==x,-1],na.rm=TRUE))
+w.indicators$Conf_2A <- sapply(w.indicators$Date, function(x) weighted.mean(w.indicators[which(w.indicators$Date==x),c(2,6,10,14,18)], 
+                                                                            weights[weights$Date==x,-1],na.rm=TRUE))
+w.indicators$Conf_2P <- sapply(w.indicators$Date, function(x) weighted.mean(w.indicators[which(w.indicators$Date==x),c(3,7,11,15,19)], 
+                                                                            weights[weights$Date==x,-1],na.rm=TRUE))
+w.indicators$Date <- GDPdata[,1]
+#-------------------
+#Unweighted versions
+indicators <- aggregate(BER[,(match("surveyQ",colnames(BER))+1):ncol(BER)], by=list(BER$surveyQ), FUN=mean, na.rm=TRUE)
+indicators$Conf_cc <- rowMeans(indicators[,c("Q2A","Q3A","Q4A","Q5A","Q6A")],na.rm = TRUE, dims = 1)
+indicators$Conf_fl <- rowMeans(indicators[,c("Q2P","Q3P","Q4P","Q5P","Q6P")],na.rm = TRUE, dims = 1)
+
+##--------------------------------------------------------------------------------
+
+indicator_plot <- w.indicators[,c("Date","Conf_cc","Conf_fl")]
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Indicator")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) 
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+
+indicator_plot <- cbind(w.indicators[,c("Date","Conf_cc","Conf_fl")],indicators[,c("Conf_cc","Conf_fl")])
+colnames(indicator_plot) <- c("Date","Weighted.Conf_cc","Weighted.Conf_fl","Unw.Conf_cc","Unw.Conf_fl")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Indicator")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) 
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+
+indicator_plot <- w.indicators[,c("Date","Conf_cc","Conf_2A")]
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Indicator")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+
+indicator_plot <- w.indicators[,c("Date","Conf_fl","Conf_2P")]
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Indicator")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+
+
 
 ##==============================================================================================
 ##COMOVEMENT------------------------------------------------------------------------------------

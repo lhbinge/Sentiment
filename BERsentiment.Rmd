@@ -65,13 +65,177 @@ suppressMessages(library(urca))
 GDPdata <- read.csv("GDP Data.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
 GDPdata$X <- as.Date(GDPdata$X, format = "%Y/%m/%d")
 
-##For Grpahing Business cycles
+##For Graphing Business cycles
 recessions.df = read.table(textConnection(
     "Peak, Trough
     1989-02-28, 1993-05-30
     1996-11-30, 1999-08-31
     2007-11-30, 2009-08-31"), sep=',',
     colClasses=c('Date', 'Date'), header=TRUE)
+
+##====================================##
+## READING IN THE DATA: MANUFACTURING ##
+##====================================##
+BER.M <- rbind.fill(read.csv("Manufacturing.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE),
+                    read.csv("Manufacturing_pre2001.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
+BER.M <- BER.M[,1:62]
+colnames(BER.M)[1:7] <- c("region","id","sector","weight","turnover","factor","surveyQ")
+
+BER.M$surveyQ <- toupper(BER.M$surveyQ)
+BER.M[nrow(BER.M)+1,1:6] <- BER.M[nrow(BER.M),1:6] 
+BER.M[nrow(BER.M),"surveyQ"] <- "2005Q4" 
+BER.M[nrow(BER.M)+1,1:6] <- BER.M[nrow(BER.M),1:6] 
+BER.M[nrow(BER.M),"surveyQ"] <- "1997Q4" 
+BER.M[nrow(BER.M)+1,1:6] <- BER.M[nrow(BER.M),1:6] 
+BER.M[nrow(BER.M),"surveyQ"] <- "2000Q1" 
+
+BER.M$region <- factor(BER.M$region)
+BER.M$sector <- factor(BER.M$sector) #could include labels
+BER.M$id <- factor(BER.M$id)
+BER.M$surveyQ <- factor(BER.M$surveyQ)
+
+# replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
+for(i in 8:62) {
+    BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==2, 0)
+    BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==3,-1)
+}
+BER.M$Q19 <- replace(BER.M$Q19, BER.M$Q19==0,-1) # replace 0 (No) responses with -1
+BER.M$Q20 <- replace(BER.M$Q20, BER.M$Q20==0,-1) # replace 0 (Unsatisfactory) with -1
+
+##===============================##
+## READING IN THE DATA: BUILDING ##
+##===============================##
+#BER.B1 <- read.csv("Building.csv", header=TRUE, sep=";",na.strings = "", skipNul = TRUE)
+#BER.B2 <- read.csv("Building_pre2001.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+BER.B <- rbind.fill(read.csv("Building.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE),
+                    read.csv("Building_pre2001.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
+BER.B <- BER.B[,1:22]
+colnames(BER.B)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
+
+BER.B$surveyQ <- toupper(BER.B$surveyQ)
+BER.B[nrow(BER.B)+1,1:5] <- BER.B[nrow(BER.B),1:5] 
+BER.B[nrow(BER.B),"surveyQ"] <- "2005Q4" 
+BER.B[nrow(BER.B)+1,1:5] <- BER.B[nrow(BER.B),1:5] 
+BER.B[nrow(BER.B),"surveyQ"] <- "1998Q3" 
+BER.B[nrow(BER.B)+1,1:5] <- BER.B[nrow(BER.B),1:5] 
+BER.B[nrow(BER.B),"surveyQ"] <- "1993Q4" 
+BER.B[nrow(BER.B)+1,1:5] <- BER.B[nrow(BER.B),1:5] 
+BER.B[nrow(BER.B),"surveyQ"] <- "2000Q2" 
+
+BER.B$region <- factor(BER.B$region)
+BER.B$sector <- factor(BER.B$sector) #could include labels
+BER.B$id <- factor(BER.B$id)
+BER.B$surveyQ <- factor(BER.B$surveyQ)
+#BER.B$surveyQ <- factor(BER.B$surveyQ, levels=c(levels(BER.B$surveyQ),"05Q4"))
+
+# replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
+for(i in 7:22) {
+    BER.B[,i] <- replace(BER.B[,i], BER.B[,i]==2, 0)
+    BER.B[,i] <- replace(BER.B[,i], BER.B[,i]==3,-1)
+}
+BER.B$Q1 <- replace(BER.B$Q1, BER.B$Q1==0,-1) # replace 0 (Unsatisfactory) responses with -1
+
+##============================##
+## READING IN THE DATA: TRADE ##
+##============================##
+BER.R <- read.csv("Retail.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+BER.W <- read.csv("Wholesale.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+BER.T <- rbind(BER.R,BER.W)
+BER.T <- rbind.fill(BER.T,read.csv("Trade_pre2001.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
+BER.T <- BER.T[,1:21]
+colnames(BER.T)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
+
+BER.T$surveyQ <- toupper(BER.T$surveyQ)
+BER.T[nrow(BER.T)+1,1:5] <- BER.T[nrow(BER.T),1:5] 
+BER.T[nrow(BER.T),"surveyQ"] <- "2005Q4" 
+BER.T[nrow(BER.T)+1,1:5] <- BER.T[nrow(BER.T),1:5] 
+BER.T[nrow(BER.T),"surveyQ"] <- "1993Q3"
+BER.T[nrow(BER.T)+1,1:5] <- BER.T[nrow(BER.T),1:5] 
+BER.T[nrow(BER.T),"surveyQ"] <- "1992Q4"
+
+BER.T$region <- factor(BER.T$region)
+BER.T$sector <- factor(BER.T$sector) #could include labels
+BER.T$id <- factor(BER.T$id)
+BER.T$surveyQ <- factor(BER.T$surveyQ)
+
+# replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
+for(i in 7:21) {
+    BER.T[,i] <- replace(BER.T[,i], BER.T[,i]==2, 0)
+    BER.T[,i] <- replace(BER.T[,i], BER.T[,i]==3,-1)
+}
+BER.T$Q1 <- replace(BER.T$Q1, BER.T$Q1==0,-1) # replace 0 (Unsatisfactory) responses with -1
+
+##=====================================##
+## READING IN THE DATA: Motor Vehicles ##
+##=====================================##
+BER.V <- rbind.fill(read.csv("Motor.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE),
+                    read.csv("Motor_pre2001.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
+BER.V <- BER.V[,1:28]
+colnames(BER.V)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
+
+BER.V$surveyQ <- toupper(BER.V$surveyQ)
+BER.V[nrow(BER.V)+1,1:5] <- BER.V[nrow(BER.V),1:5] 
+BER.V[nrow(BER.V),"surveyQ"] <- "2005Q4"
+BER.V[nrow(BER.V)+1,1:5] <- BER.V[nrow(BER.V),1:5] 
+BER.V[nrow(BER.V),"surveyQ"] <- "1992Q4"
+BER.V[nrow(BER.V)+1,1:5] <- BER.V[nrow(BER.V),1:5] 
+BER.V[nrow(BER.V),"surveyQ"] <- "1993Q3"
+
+BER.V$region <- factor(BER.V$region)
+BER.V$sector <- factor(BER.V$sector) #could include labels
+BER.V$id <- factor(BER.V$id)
+BER.V$surveyQ <- factor(BER.V$surveyQ)
+
+# replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
+for(i in 7:28) {
+    BER.V[,i] <- replace(BER.V[,i], BER.V[,i]==2, 0)
+    BER.V[,i] <- replace(BER.V[,i], BER.V[,i]==3,-1)
+}
+BER.V$Q1 <- replace(BER.V$Q1, BER.V$Q1==0,-1) # replace 0 (Unsatisfactory) responses with -1
+BER.V$Q6 <- replace(BER.V$Q6, BER.V$Q6==0,-1) # replace 0 (Unsatisfactory) responses with -1
+BER.V$Q10 <- replace(BER.V$Q10, BER.V$Q10==0,-1) # replace 0 (Unsatisfactory) responses with -1
+
+##===============================##
+## READING IN THE DATA: SERVICES ##
+##===============================##
+BER.S <- read.csv("Services.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+colnames(BER.S)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
+
+BER.S$surveyQ <- toupper(BER.S$surveyQ)
+BER.S[nrow(BER.S)+1,1:5] <- BER.S[nrow(BER.S),1:5] 
+BER.S[nrow(BER.S),"surveyQ"] <- "2005Q4" 
+
+BER.S$region <- factor(BER.S$region)
+BER.S$sector <- factor(BER.S$sector) #could include labels
+BER.S$id <- factor(BER.S$id)
+BER.S$surveyQ <- factor(BER.S$surveyQ)
+#BER.S$surveyQ <- factor(BER.S$surveyQ, levels=c(levels(BER.S$surveyQ),"05Q4"))
+
+# replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
+for(i in 7:21) {
+    BER.S[,i] <- replace(BER.S[,i], BER.S[,i]==2, 0)
+    BER.S[,i] <- replace(BER.S[,i], BER.S[,i]==3,-1)
+}
+BER.S$Q1 <- replace(BER.S$Q1, BER.S$Q1==0,-1) # replace 0 (Unsatisfactory) responses with -1
+
+#==================
+#AGGREGATING
+#==================
+#Rename BER.B$Q5A temporarily and create NAs for BER.V$empl
+tempBER.M <- cbind(BER.M[,c("id","surveyQ","Q20","Q3A","Q3P","Q7A","Q7P","Q8A")],"Manufaturing")
+colnames(tempBER.M) <- c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A","Sector")
+tempBER.B <- cbind(BER.B[,c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A")],"Construction")
+colnames(tempBER.B) <- c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A","Sector")
+tempBER.T <- cbind(BER.T[,c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q5A")],"Trade")
+colnames(tempBER.T) <- c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A","Sector")
+tempBER.V <- cbind(BER.V[,c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A")],"Motor")
+tempBER.V[,"Q4A"] <- NA
+colnames(tempBER.V) <- c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A","Sector")
+tempBER.S <- cbind(BER.S[,c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A")],"Services")
+colnames(tempBER.S) <- c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A","Sector")
+
+BER <- tempBER.M
+BER <- rbind(BER,tempBER.B,tempBER.T,tempBER.V,tempBER.S)
 ```
 
 #The Concepts of Confidence and Uncertainty
@@ -206,13 +370,28 @@ Panels are useful for conducting business tendency surveys, as changes in the su
 
 In accordance with the international norm, stratified deliberate sampling is used to design the BER's survey panels. Participants are selected to be representative of particular sectors, regions and firm sizes. The list of participants is reviewed every few years to ensure reasonable representation of the population universe [@Kershoff2000]. The exact number of firms in the universe is unknown to the BER as censuses of the business sector in South Africa are not conducted regularly [@Kershoff2002].   
 
-Panel sizes and response rates determine the representativeness of the sample. Panels have to consist of a certain minimum number of participants in order to be regarded as fair representations of the universe. The minimum size depends on the size of the universe and the level of aggregation [@Kershoff2002]. The overall panel sizes and response rates have remained relatively stable over time, although they are relatively low by international standards [@Kershoff2015]. @Kershoff2002 found that the BER's trade and building panels were fair reflections of the universe, taking response rates into account and comparing the composition of the survey panels with census and other official data. However, the number of participants per sector was too low to consider subsectors as sub-panels. Thus, the degree of representation was adequate to validate the overall results, but the responses per subsector and per province should be interpreted with caution. The survey responses are therefore not disaggregated further into subsectors below.[^9]
+Panel sizes and response rates determine the representativeness of the sample. Panels have to consist of a certain minimum number of participants in order to be regarded as fair representations of the universe. The minimum size depends on the size of the universe and the level of aggregation [@Kershoff2002]. Figure 1 illustrates the number of respondents over time per sector. The sample runs from 1992Q1 to 2015Q3, although the survey of the services sector only started in 2005. Around 1,000 completed questionnaires were received every quarter, leading to an overall sample size of 106,274. The overall panel sizes and response rates have remained relatively stable over time, although they are relatively low by international standards [@Kershoff2015]. 
 
-[^9]: We could include some descriptive statistics here, such as the panel sizes and response rates for the various surveys over time? For instance, we could plot the number of responses by sector?
+```{r figure1, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="The number of respondents over time per sector"}
+BERplot <- aggregate(BER$id, by=list(BER$surveyQ,BER$Sector), FUN = length)
+g <- ggplot(BERplot, aes(x=Group.1, y=x,fill=Group.2))
+g <- g + geom_bar(stat="identity")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + scale_fill_discrete(name="Sector")
+g <- g + scale_y_continuous(labels=comma)
+g <- g + scale_x_discrete(breaks=levels(BERplot$Group.1)[c(T, rep(F, 1))])
+g <- g + ylab("Number of Respondents")
+g <- g + xlab("Date")
+g
+```
+
+@Kershoff2002 found that the BER's trade and building panels were fair reflections of the universe, taking response rates into account and comparing the composition of the survey panels with census and other official data. However, the number of participants per sector was too low to consider subsectors as sub-panels. Thus, the degree of representation was adequate to validate the overall results, but the responses per subsector and per province should be interpreted with caution. The survey responses are therefore not disaggregated further into subsectors below.[^9]
+
+[^9]: We could include some more descriptive statistics here, such as the panel sizes and response rates for the various surveys over time? For instance, we could plot the response rates by sector?
 
 Unfortunately, conventional statistical measures cannot be calculated to measure the representativeness of non-probability samples. @Kershoff2015 argued that the BER's sampling errors (which arise when information is obtained from a sample instead of the entire population) are probably larger than usual, because it does not use random sampling, employs a panel, has a relatively low response rate and, in the case of some subsectors has less than the ideal minimum number of completed responses. However, the representativeness of sampling units has a substantially smaller impact on qualitative survey results than quantitative surveys. In the case of a qualitative surveys, the purpose of the research is to establish the majority view of the direction of change of a particular activity, rather than the quantitative size of the change. The majority view is taken as an indication of the direction and intensity of the trend of the activity in question. As the majority of firms usually share the same experience, a slightly unrepresentative panel will likely produce similar results as a fully representative one [@Kershoff2002]. 
 
-The @OECD2003 notes that there is considerable practical experience which shows that for business tendency surveys non-random samples can give acceptable results. Business survey results tend to remain valid even if the sample size and response rate is relatively low. According to the @OECD2003, a rule of thumb is that around 30 reporting units is sufficient to obtain an acceptable level of precision for each strata. In practice this is a maximum because some kinds of activity will be dominated by a few very large enterprises. The reason is that the required sample size depends mainly on the variance of the responses. Changes in results between consecutive surveys based on a stable panel sample have smaller variance than results derived from completely independent surveys and the variance of ordinal-scaled data is usually significantly lower than that of quantitative data.
+The @OECD2003 notes that there is considerable practical experience which shows that for business tendency surveys non-random samples can give acceptable results. Business survey results tend to remain valid even if the sample size is small and response rate is relatively low. According to the @OECD2003, a rule of thumb is that around 30 reporting units is sufficient to obtain an acceptable level of precision for each strata. In practice this is a maximum because some kinds of activity will be dominated by a few very large enterprises. The reason is that the required sample size depends mainly on the variance of the responses. Changes in results between consecutive surveys based on a stable panel sample have smaller variance than results derived from completely independent surveys and the variance of ordinal-scaled data is usually significantly lower than that of quantitative data. The sample sizes illustrated in Figure 1 therefore seem adequate to uncover trends in the data.
 
 In the case of most qualitative surveys, no provision is made for firms that were not selected or did not respond during sampling, as it is implicitly assumed that their performance corresponds with those of the participants. This corresponds to the @OECD2003 suggestion of the "missing at random" assumption, which assumes the non-participating or non-responding firms have the same distribution as the responding firms for the period. @Kershoff2015 argues that this is a reasonable assumption, given that the same factors impact on firms in the same sector (they tend to follow the same trend) and the responses cannot vary infinitely (as is the case with a quantitative survey), but are limited to "up", "the same" or "down". He found evidence for this assumption when the inclusion of the latecomers had almost no effect on the volatility and tracking record (i.e. the correlation between the survey data and the corresponding quantitative series) of the survey results, even at higher levels of disaggregation.[^10]
 
@@ -259,7 +438,7 @@ Respondents use the same quarter in the previous year as the reference period, w
 
 [^16]: A common difficulty is that respondents may not actually use the reference period specified in the questionnaire in answering the question (OECD 2003). It is possible that this is the case in the BER survey responses. For example, answers to the forward-looking questions may compare the next quarter t+1 to period t, instead of period t-3.
 
-Many institutions calculate confidence measures based on a set of survey variables. These composite indicators may achieve a better trade-off between responsiveness and stability. Composite indicators can be constructed to have fewer false alarms and fewer missed turning points than individual components and tend to have more stable lead-times. They also have the capacity to react to various sources of economic fluctuations, while being resilient to fluctuations affecting single components [@ECB2013]. The EC builds composite indicators by aggregating the survey responses from combinations of questions for five sectors. For instance, the industrial indicator is an average of the balances of questions relating to production expectations, order books and stocks of finished goods (with an inverted sign), while the retail trade indicator is an average of the balances to questions relating to present and future business situation and stocks (with an inverted sign) [@OECD2003].[^17]
+Many institutions calculate confidence measures based on a set of survey variables. These composite indicators may achieve a better trade-off between responsiveness and stability. Composite indicators can be constructed to have fewer false alarms and fewer missed turning points than individual components and tend to have more stable lead-times. They also have the capacity to react to various sources of economic fluctuations, while being resilient to fluctuations affecting single components [@ECB2013]. The European Commission builds composite indicators by aggregating the survey responses from combinations of questions for five sectors. For instance, the industrial indicator is an average of the balances of questions relating to production expectations, order books and stocks of finished goods (with an inverted sign), while the retail trade indicator is an average of the balances to questions relating to present and future business situation and stocks (with an inverted sign) [@OECD2003].[^17]
 
 [^17]: We could easily make similar composite indicators? For instance, we could combine the balances for the questions on production volumes, order, etc. Otherwise, we could just exclude this reference.
 
@@ -274,35 +453,6 @@ For each of the surveyed sectors, confidence measures of current conditions (act
 [^19]: Should I combine responses to new cars, used cars and spare parts for motor trade, or just use new vehicles as the BER does? Where can I get Motor vehicles GDP shares? At the moment I just assume they are 5% of the trade sector.
 
 ```{r manufacturing.conf, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
-##====================================##
-## READING IN THE DATA: MANUFACTURING ##
-##====================================##
-BER.M <- rbind.fill(read.csv("Manufacturing.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE),
-                     read.csv("Manufacturing_pre2001.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
-BER.M <- BER.M[,1:62]
-colnames(BER.M)[1:7] <- c("region","id","sector","weight","turnover","factor","surveyQ")
-
-BER.M$surveyQ <- toupper(BER.M$surveyQ)
-BER.M[nrow(BER.M)+1,1:6] <- BER.M[nrow(BER.M),1:6] 
-BER.M[nrow(BER.M),"surveyQ"] <- "2005Q4" 
-BER.M[nrow(BER.M)+1,1:6] <- BER.M[nrow(BER.M),1:6] 
-BER.M[nrow(BER.M),"surveyQ"] <- "1997Q4" 
-BER.M[nrow(BER.M)+1,1:6] <- BER.M[nrow(BER.M),1:6] 
-BER.M[nrow(BER.M),"surveyQ"] <- "2000Q1" 
-
-BER.M$region <- factor(BER.M$region)
-BER.M$sector <- factor(BER.M$sector) #could include labels
-BER.M$id <- factor(BER.M$id)
-BER.M$surveyQ <- factor(BER.M$surveyQ)
-
-# replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
-for(i in 8:62) {
-    BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==2, 0)
-    BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==3,-1)
-}
-BER.M$Q19 <- replace(BER.M$Q19, BER.M$Q19==0,-1) # replace 0 (No) responses with -1
-BER.M$Q20 <- replace(BER.M$Q20, BER.M$Q20==0,-1) # replace 0 (Unsatisfactory) with -1
-
 ##=====================================##
 ## CALCULATE INDICATORS: MANUFACTURING ##
 ##=====================================##
@@ -347,39 +497,6 @@ w.indicators.M <- cbind(Date=levels(BER.M$surveyQ),w.indicators.M)
 ```
 
 ```{r building.conf, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
-##===============================##
-## READING IN THE DATA: BUILDING ##
-##===============================##
-#BER.B1 <- read.csv("Building.csv", header=TRUE, sep=";",na.strings = "", skipNul = TRUE)
-#BER.B2 <- read.csv("Building_pre2001.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-BER.B <- rbind.fill(read.csv("Building.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE),
-                    read.csv("Building_pre2001.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
-BER.B <- BER.B[,1:22]
-colnames(BER.B)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
-
-BER.B$surveyQ <- toupper(BER.B$surveyQ)
-BER.B[nrow(BER.B)+1,1:5] <- BER.B[nrow(BER.B),1:5] 
-BER.B[nrow(BER.B),"surveyQ"] <- "2005Q4" 
-BER.B[nrow(BER.B)+1,1:5] <- BER.B[nrow(BER.B),1:5] 
-BER.B[nrow(BER.B),"surveyQ"] <- "1998Q3" 
-BER.B[nrow(BER.B)+1,1:5] <- BER.B[nrow(BER.B),1:5] 
-BER.B[nrow(BER.B),"surveyQ"] <- "1993Q4" 
-BER.B[nrow(BER.B)+1,1:5] <- BER.B[nrow(BER.B),1:5] 
-BER.B[nrow(BER.B),"surveyQ"] <- "2000Q2" 
-
-BER.B$region <- factor(BER.B$region)
-BER.B$sector <- factor(BER.B$sector) #could include labels
-BER.B$id <- factor(BER.B$id)
-BER.B$surveyQ <- factor(BER.B$surveyQ)
-#BER.B$surveyQ <- factor(BER.B$surveyQ, levels=c(levels(BER.B$surveyQ),"05Q4"))
-
-# replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
-for(i in 7:22) {
-    BER.B[,i] <- replace(BER.B[,i], BER.B[,i]==2, 0)
-    BER.B[,i] <- replace(BER.B[,i], BER.B[,i]==3,-1)
-}
-BER.B$Q1 <- replace(BER.B$Q1, BER.B$Q1==0,-1) # replace 0 (Unsatisfactory) responses with -1
-
 ##================================##
 ## CALCULATE INDICATORS: BUILDING ##
 ##================================##
@@ -418,36 +535,6 @@ w.indicators.B <- cbind(Date=levels(BER.B$surveyQ),w.indicators.B)
 ```
 
 ```{r trade.conf, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
-##============================##
-## READING IN THE DATA: TRADE ##
-##============================##
-BER.R <- read.csv("Retail.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-BER.W <- read.csv("Wholesale.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-BER.T <- rbind(BER.R,BER.W)
-BER.T <- rbind.fill(BER.T,read.csv("Trade_pre2001.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
-BER.T <- BER.T[,1:21]
-colnames(BER.T)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
-
-BER.T$surveyQ <- toupper(BER.T$surveyQ)
-BER.T[nrow(BER.T)+1,1:5] <- BER.T[nrow(BER.T),1:5] 
-BER.T[nrow(BER.T),"surveyQ"] <- "2005Q4" 
-BER.T[nrow(BER.T)+1,1:5] <- BER.T[nrow(BER.T),1:5] 
-BER.T[nrow(BER.T),"surveyQ"] <- "1993Q3"
-BER.T[nrow(BER.T)+1,1:5] <- BER.T[nrow(BER.T),1:5] 
-BER.T[nrow(BER.T),"surveyQ"] <- "1992Q4"
-
-BER.T$region <- factor(BER.T$region)
-BER.T$sector <- factor(BER.T$sector) #could include labels
-BER.T$id <- factor(BER.T$id)
-BER.T$surveyQ <- factor(BER.T$surveyQ)
-
-# replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
-for(i in 7:21) {
-    BER.T[,i] <- replace(BER.T[,i], BER.T[,i]==2, 0)
-    BER.T[,i] <- replace(BER.T[,i], BER.T[,i]==3,-1)
-}
-BER.T$Q1 <- replace(BER.T$Q1, BER.T$Q1==0,-1) # replace 0 (Unsatisfactory) responses with -1
-
 ##=============================##
 ## CALCULATE INDICATORS: TRADE ##
 ##=============================##
@@ -485,38 +572,7 @@ w.indicators.T <- as.data.frame(cbind(w.Conf_cc,w.Act_prod,w.Conf_prod,w.Act_GBC
 w.indicators.T <- cbind(Date=levels(BER.T$surveyQ),w.indicators.T)
 ```
 
-
 ```{r motor.conf, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
-##=====================================##
-## READING IN THE DATA: Motor Vehicles ##
-##=====================================##
-BER.V <- rbind.fill(read.csv("Motor.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE),
-                    read.csv("Motor_pre2001.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
-BER.V <- BER.V[,1:28]
-colnames(BER.V)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
-
-BER.V$surveyQ <- toupper(BER.V$surveyQ)
-BER.V[nrow(BER.V)+1,1:5] <- BER.V[nrow(BER.V),1:5] 
-BER.V[nrow(BER.V),"surveyQ"] <- "2005Q4"
-BER.V[nrow(BER.V)+1,1:5] <- BER.V[nrow(BER.V),1:5] 
-BER.V[nrow(BER.V),"surveyQ"] <- "1992Q4"
-BER.V[nrow(BER.V)+1,1:5] <- BER.V[nrow(BER.V),1:5] 
-BER.V[nrow(BER.V),"surveyQ"] <- "1993Q3"
-
-BER.V$region <- factor(BER.V$region)
-BER.V$sector <- factor(BER.V$sector) #could include labels
-BER.V$id <- factor(BER.V$id)
-BER.V$surveyQ <- factor(BER.V$surveyQ)
-
-# replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
-for(i in 7:28) {
-    BER.V[,i] <- replace(BER.V[,i], BER.V[,i]==2, 0)
-    BER.V[,i] <- replace(BER.V[,i], BER.V[,i]==3,-1)
-}
-BER.V$Q1 <- replace(BER.V$Q1, BER.V$Q1==0,-1) # replace 0 (Unsatisfactory) responses with -1
-BER.V$Q6 <- replace(BER.V$Q6, BER.V$Q6==0,-1) # replace 0 (Unsatisfactory) responses with -1
-BER.V$Q10 <- replace(BER.V$Q10, BER.V$Q10==0,-1) # replace 0 (Unsatisfactory) responses with -1
-
 ##======================================##
 ## CALCULATE INDICATORS: Motor Vehicles ##
 ##======================================##
@@ -562,29 +618,6 @@ w.indicators.V <- cbind(Date=levels(BER.V$surveyQ),w.indicators.V)
 ```
 
 ```{r services.conf, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
-##===============================##
-## READING IN THE DATA: SERVICES ##
-##===============================##
-BER.S <- read.csv("Services.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-colnames(BER.S)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
-
-BER.S$surveyQ <- toupper(BER.S$surveyQ)
-BER.S[nrow(BER.S)+1,1:5] <- BER.S[nrow(BER.S),1:5] 
-BER.S[nrow(BER.S),"surveyQ"] <- "2005Q4" 
-
-BER.S$region <- factor(BER.S$region)
-BER.S$sector <- factor(BER.S$sector) #could include labels
-BER.S$id <- factor(BER.S$id)
-BER.S$surveyQ <- factor(BER.S$surveyQ)
-#BER.S$surveyQ <- factor(BER.S$surveyQ, levels=c(levels(BER.S$surveyQ),"05Q4"))
-
-# replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
-for(i in 7:21) {
-    BER.S[,i] <- replace(BER.S[,i], BER.S[,i]==2, 0)
-    BER.S[,i] <- replace(BER.S[,i], BER.S[,i]==3,-1)
-}
-BER.S$Q1 <- replace(BER.S$Q1, BER.S$Q1==0,-1) # replace 0 (Unsatisfactory) responses with -1
-
 ##================================##
 ## CALCULATE INDICATORS: SERVICES ##
 ##================================##
@@ -622,24 +655,10 @@ w.indicators.S <- as.data.frame(cbind(w.Conf_cc,w.Act_prod,w.Conf_prod,w.Act_GBC
 w.indicators.S <- cbind(Date=levels(BER.S$surveyQ),w.indicators.S)
 ```
 
-
 ```{r total.conf, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
 ##=================================##
 ## AGGREGATING as much as possible ##
 ##=================================##
-
-#Rename BER.B$Q5A temporarily and create NAs for BER.V$empl
-tempBER.M <- BER.M[,c("id","surveyQ","Q20","Q3A","Q3P","Q7A","Q7P","Q8A")]
-colnames(tempBER.M) <- c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A")
-tempBER.T <- BER.T[,c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q5A")]
-colnames(tempBER.T) <- c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A")
-tempBER.V <- BER.V[,c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A")]
-tempBER.V[,"Q4A"] <- NA
-
-BER <- tempBER.M
-BER <- rbind(BER,BER.B[,c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A")],tempBER.T,tempBER.V,
-             BER.S[,c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A")])
-
 indicators <- aggregate(BER$Q1, by=list(BER$surveyQ), FUN=mean, na.rm=TRUE)
 colnames(indicators) <- c("Date","Conf_cc")
 indicators <- cbind(indicators, Act_prod = aggregate(BER$Q3A, by=list(BER$surveyQ), FUN=mean, na.rm=TRUE)[,2])
@@ -695,9 +714,9 @@ GDPdata$X <- as.Date(GDPdata$X, format = "%Y/%m/%d")
 w.indicators$Date <- GDPdata[,1]
 ```
 
-Figure 1 compares the RMB/BER Business Confidence Index to the confidence indicator derived from the same question. The results for the first activity indicator and the published index are very similar, even though the BER uses a slightly ad hoc weighting procedure. The difference is probably due to altered weightings and the BER's exclusion of latecomers. The same is true of the indicators for the respective sectors, not illustrated here.
+Figure 2 compares the RMB/BER Business Confidence Index to the confidence indicator derived from the same question on current conditions. The first confidence (or activity) indicator and the published confidence index are very similar, even though the BER uses a slightly ad hoc weighting procedure. The difference is probably due to altered weightings and the BER's exclusion of latecomers. The indicators for the respective sectors based on this question, not illustrated here, are also very similar to the published sector confidence indices.
 
-```{r figure1, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted Confidence compared to the RMB/BER Confidence Index"}
+```{r figure2, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted Confidence compared to the RMB/BER Confidence Index"}
 indicator_plot <- cbind(w.indicators[,c(1,2)],(GDPdata$Confidence-50)/50)
 colnames(indicator_plot) <- c("Date","Confidence Current1","RMB/BER Business Confidence")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -711,9 +730,9 @@ g <- g + theme(legend.position="bottom")
 g
 ```
 
-Figure 2 and Figure 3 compare the aggregate weighted and unweighted versions of two of the confidence indicators: the first activity indicator and the forward-looking indicator. The unweighted versions are calculated by stacking all of the available responses from all of the surveys, and are therefore completely unweighted. In both cases they are very similar, with the weighted versions slightly more volatile than the unweighted indicators. Thus, the specific weighting turns out to have very little impact on the confidence indices. This should give us confidence that the specific weighting adopted does not significantly alter the results. The same is true of the respective sector indices, not illustrated here.
+Figure 3 and Figure 4 compare the aggregate weighted and unweighted versions of two of the confidence indicators: the first activity indicator and the forward-looking indicator. The unweighted versions are calculated by stacking all of the available responses from all of the surveys, and are therefore completely unweighted. In both cases they are very similar, with the weighted versions slightly more volatile than the unweighted indicators. Thus, the specific weighting turns out to have very little impact on the confidence indices. This should give us confidence that the specific weighting adopted does not significantly alter the results. The same is true of the respective sector indices, not illustrated here.
 
-```{r figure2, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted and Unweighted Confidence - Current Conditions"}
+```{r figure3, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted and Unweighted Confidence - Current Conditions"}
 indicator_plot <- cbind(indicators[,c(1,2)],w.indicators[,2])
 colnames(indicator_plot) <- c("Date","Unweighted Confidence (CC)","Weighted Confidence (CC)")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -727,7 +746,7 @@ g <- g + theme(legend.position="bottom")
 g
 ```
 
-```{r figure3, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted and Unweighted Confidence - Forward-looking"}
+```{r figure4, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted and Unweighted Confidence - Forward-looking"}
 indicator_plot <- cbind(indicators[,c(1,6)],w.indicators[,6])
 colnames(indicator_plot) <- c("Date","Unweighted Confidence (FL)","Weighted Confidence (FL)")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -741,11 +760,11 @@ g <- g + theme(legend.position="bottom")
 g
 ```
 
-Figure 4 illustrates the two unweighted aggregate confidence indicators for current conditions, as well as the aggregate forward-looking confidence index.[^20] The shaded areas denote the recessionary periods according to the official turning points provided by the SARB. The indices follow a similar cyclical trend over the business cycle and are very highly correlated. They seem to match up closely to the different phases of the business cycle and appear to be useful as leading or coincident indicators. The forward-looking index seems to lead the two current conditions indices to some extent. The same is true of the respective sectoral indicators, even though their trends are slightly different (and they have some missing quarters). The two indicators generated from the question on general business conditions do not increase as substantially as the other indicator (derived from the BER question) over the protracted upswing phase from around 2003 to 2007, which is a feature of all of the respective sectoral indicators. Nevertheless, these survey-based measures appear to be plausible and potentially useful indicators of business confidence in South Africa.   
+Figure 5 illustrates the two unweighted aggregate confidence indicators for current conditions, as well as the aggregate forward-looking confidence index.[^20] The shaded areas denote the recessionary periods according to the official turning points provided by the SARB. The indices follow a similar cyclical trend over the business cycle and are very highly correlated. They seem to match up closely to the different phases of the business cycle and appear to be useful as leading or coincident indicators. The forward-looking index seems to lead the two current conditions indices to some extent. The same is true of the respective sectoral indicators, even though their trends are slightly different (and they have some missing quarters). The two indicators generated from the question on general business conditions do not increase as substantially as the other indicator (derived from the BER question) over the protracted upswing phase from around 2003 to 2007, which is a feature of all of the respective sectoral indicators. Nevertheless, these survey-based measures appear to be plausible and potentially useful indicators of business confidence in South Africa.   
 
 [^20]: We could also take the geometric mean of the indices and then normalise it to the average of the base year, as the Ifo does? I also generated the indicators from firm-specific questions on production, instead of the question on general business conditions. As found in the literature, the indicators generated from the more firm-specific questions are very highly correlated to the indicators for general business conditions. Previous studies have concluded that answers on general business conditions are essentially indicators of firm-specific business conditions.
 
-```{r figure4, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Unweighted Confidence Indicators"}
+```{r figure5, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Unweighted Confidence Indicators"}
 indicator_plot <- indicators[,c(1,2,5,6)]
 g <- ggplot(indicator_plot) 
 g <- g + geom_line(aes(x=Date, y=Conf_cc, colour="Current_1"), size = 1)
@@ -1592,11 +1611,11 @@ w.uncert.norm <- cbind(Date=w.indicators[,1],as.data.frame(scale(w.indicators[,9
 uncert.norm <- cbind(Date=indicators[,1],as.data.frame(scale(indicators[,9:12])))
 ```
 
-Figure 5 illustrates the centred[^21] weighted and unweighted uncertainty indicators, based on *ex ante* disagreement in forward-looking responses. As was the case for the confidence indicators, the unweighted versions are calculated by stacking all of the available responses from all of the surveys. Again, the weighted and unweighted versions are similar, with the weighted indicator slightly more volatile. However, there are two substantial differences between the two measures. The weighted index exhibits a large trough in 2004, not mirrored by the unweighted index, while the unweighted index has a larger dip and subsequent recovery around the financial crisis in 2008. The sectoral uncertainty indicators (not illustrated here) exhibit similar trends, although there are some idiosyncratic spikes and troughs.
+Figure 6 illustrates the centred[^21] weighted and unweighted uncertainty indicators, based on *ex ante* disagreement in forward-looking responses. As was the case for the confidence indicators, the unweighted versions are calculated by stacking all of the available responses from all of the surveys. Again, the weighted and unweighted versions are similar, with the weighted indicator slightly more volatile. However, there are two substantial differences between the two measures. The weighted index exhibits a large trough in 2004, not mirrored by the unweighted index, while the unweighted index has a larger dip and subsequent recovery around the financial crisis in 2008. The sectoral uncertainty indicators (not illustrated here) exhibit similar trends, although there are some idiosyncratic spikes and troughs.
 
 [^21]: I normalised/standardised them for easier and clearer graphical presentation.
 
-```{r figure5, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Uncertainty from forward-looking dispersion: Unweighted and Weighted"}
+```{r figure6, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Uncertainty from forward-looking dispersion: Unweighted and Weighted"}
 indicator_plot <- cbind(uncert.norm[,c(1,3)],w.uncert.norm[,3])
 colnames(indicator_plot) <- c("Date","Unweighted Uncertainty (FL)","Weighted Uncertainty (FL)")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -1635,9 +1654,9 @@ The panel dimension of the survey is exploited to construct qualitative measures
 
 Uncertainty was then measured as the cross-sectional standard deviation of the expectation errors in each quarter: $U_t = STD(Error_{t+1})$. Although it is based on the realised expectation errors in the next quarter, this is dependent on the knowledge and level of uncertainty in the current period. Thus, the standard deviation of realised expectation errors at time $t+1$ constitutes uncertainty in $t$ [@Bachmann2010]. This timing does not require decision-makers to know anything about the future, other than that it is more or less uncertain.  
 
-Figure 6 illustrates the centred weighted and unweighted uncertainty indicators, based on the *ex post* dispersion in expectations errors. The weighted and unweighted versions are similar, with the weighted indicator slightly more volatile. Again, the unweighted index has a larger dip and subsequent recovery around the financial crisis in 2008. The sectoral uncertainty indicators (not illustrated here), exhibit similar trends, although there are a few idiosyncratic spikes and troughs.
+Figure 7 illustrates the centred weighted and unweighted uncertainty indicators, based on the *ex post* dispersion in expectations errors. The weighted and unweighted versions are similar, with the weighted indicator slightly more volatile. Again, the unweighted index has a larger dip and subsequent recovery around the financial crisis in 2008. The sectoral uncertainty indicators (not illustrated here), exhibit similar trends, although there are a few idiosyncratic spikes and troughs.
 
-```{r figure6, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Uncertainty from Expectation Error dispersion: Unweighted and Weighted"}
+```{r figure7, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Uncertainty from Expectation Error dispersion: Unweighted and Weighted"}
 indicator_plot <- cbind(uncert.norm[,c(1,5)],w.uncert.norm[,5])
 colnames(indicator_plot) <- c("Date","Unweighted Uncertainty (EE)","Weighted Uncertainty (EE)")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -1667,11 +1686,11 @@ xt <- xtable(corstarsl(ts.all_indices), caption="Correlations in Uncertainty Ind
 print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8)
 ```
 
-Figure 7 compares the two unweighted uncertainty indicators, with the shaded areas again representing recessionary periods in South Africa. The indicators exhibit similar cyclical patterns over the business cycle. They point to three troughs in uncertainty around 1993, 1999 and 2009, all of which were followed by large increases. The three troughs occurred towards the end of the three official downswing phases in the business cycle over the period. Uncertainty then spiked around the lower turning points (i.e. troughs) in output. The first episode coincides with the recessionary period around South Africa's Democratic transition. The second spike is associated with the recession following the Asian crisis, and financial distress associated with Russia's default on its sovereign debt and the collapse of Long Term Capital Management. The third episode is related to the financial crisis and the subsequent Great Recession.[^26] Interestingly, the increase in uncertainty around the financial crisis in 2008, particularly for the weighted measures, is not as pronounced as has been found for many developed countries [e.g. @Bachmann2013; @Bloom2014].
+Figure 8 compares the two unweighted uncertainty indicators, with the shaded areas again representing recessionary periods in South Africa. The indicators exhibit similar cyclical patterns over the business cycle. They point to three troughs in uncertainty around 1993, 1999 and 2009, all of which were followed by large increases. The three troughs occurred towards the end of the three official downswing phases in the business cycle over the period. Uncertainty then spiked around the lower turning points (i.e. troughs) in output. The first episode coincides with the recessionary period around South Africa's Democratic transition. The second spike is associated with the recession following the Asian crisis, and financial distress associated with Russia's default on its sovereign debt and the collapse of Long Term Capital Management. The third episode is related to the financial crisis and the subsequent Great Recession.[^26] Interestingly, the increase in uncertainty around the financial crisis in 2008, particularly for the weighted measures, is not as pronounced as has been found for many developed countries [e.g. @Bachmann2013; @Bloom2014].
 
 [^26]: In addition, there seems to be some increases around 2002-2003, which corresponds to the period when some South African business cycle indicators signalled a potential turning point. This was ultimately not considered an official reference turning point by the SARB, because the criteria in terms of amplitude and duration were not met. There are a few smaller spikes in 1996, 2003 and at the end of 2011. According to Redl (2015), 1996 may relate to EU/South African free trade area talks, the new Constitution and political unrest; 2003 may be related to the stagflation induced by the large and persistent exchange rate depreciation (of 50%); 2011 may be related to the Eurozone crisis, chicanery around raising the US federal debt ceiling, and the earthquake in Japan.
 
-```{r figure7, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Unweighted Uncertainty Indicators"}
+```{r figure8, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Unweighted Uncertainty Indicators"}
 indicator_plot <- uncert.norm[,c(1,3,5)]
 g <- ggplot(indicator_plot) 
 g <- g + geom_line(aes(x=Date, y=Uncert_fl.GBC, colour="Forward_looking"), size = 1)
@@ -1690,7 +1709,7 @@ g
 Given that the peaks and troughs in the uncertainty indicators coincide with potentially relevant political and economic events, the indicators seem plausible. They also broadly correspond to the significant events reflected in @Redl2015's uncertainty measure for South Africa based on forecaster disagreement, although their large movements seem to occur a few quarters later. In general the uncertainty indicators tend to decrease as the economy enters a recessionary period and then to increase towards the end of the recession and into the start of the recovery phase. This is probably because the majority of agents expect poorer general conditions with more certainty as the recession takes hold. Uncertainty about the future then increases around the trough, as expectations became more disperse and more uncertain.
 
 #Cyclical Analysis and Comovement
-This section investigates the extent to which these confidence and uncertainty measures are associated with fluctuations in real activity.[^27] Figure 8 illustrates the aggregate (unweighted) forward-looking confidence indicator, the uncertainty indicator based on expectations errors, and real GDP growth over the period. Real GDP growth is measures as annual quarter-on-quarter growth, i.e. 2015Q1 over 2014Q1, which corresponds to the reference period in the surveys. OECD sectoral production indices are also used as an alternative measure of real activity for the sectors. 
+This section investigates the extent to which these confidence and uncertainty measures are associated with fluctuations in real activity.[^27] Figure 9 illustrates the aggregate (unweighted) forward-looking confidence indicator, the uncertainty indicator based on expectations errors, and real GDP growth over the period. Real GDP growth is measures as annual quarter-on-quarter growth, i.e. 2015Q1 over 2014Q1, which corresponds to the reference period in the surveys. OECD sectoral production indices are also used as an alternative measure of real activity for the sectors. 
 
 [^27]: George has also suggested looking at the non-response rate for a cyclical trend. Hart (2015) calculated the non-response rate by taking the number of firms which did not respond to a specific question as a fraction of the number of firms which returned the survey in each quarter. But I think George was perhaps referring the non-response rate in terms of questionnaires answered? In other words, the non-responses in terms of missing values or in terms of number of respondents out of total (1,500) mailed? We could investigate whether there a correlation between non-responses and uncertainty?
 
@@ -1722,7 +1741,7 @@ dum94 <- as.data.frame(dum94)
 names(dum94) <- "dum94"
 ```
 
-```{r figure8, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Confidence and uncertainty indicators and real GDP growth"}
+```{r figure9, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Confidence and uncertainty indicators and real GDP growth"}
 #plot hulle saam
 temp_indices <- cbind(indicators[,c(1,6)],Uncert_EE=indicators[,12],GDPgr=GDPgrowth4[,1])
 ts.temp_indices <- ts(temp_indices[,-1],start =c(1992,1),end=c(2015,3),frequency=4) 
@@ -1731,11 +1750,11 @@ plot(ts.temp_indices,plot.type = "m",main="")
 
 These survey-based measures appear to plausibly capture confidence and uncertainty in South Africa. The confidence indicators appear to strongly pro-cyclical, and follow real GDP growth closely. The uncertainty indicators appear to fall sharply at the beginning of the recessionary period, and to rise sharply towards the end of the recession and into the recovery period. Surprisingly, these indicators of uncertainty do not appear to be contemporaneously counter-cyclical, as was the case for the majority of the uncertainty indicators in the international literature [e.g. @Bloom2014]. Indeed, they do not have a negative contemporaneous correlation with either real activity or confidence indicators as is the case in most of the literature.
 
-Figure 9 illustrates the cross-correlograms for 4 of the (weighted) indicators and real GDFP growth. Confidence is significantly correlated with real GDP growth. The forward-looking measure seems to lead the activity measure and GDP growth. The highest correlation coefficient for the forward-looking measure occurs at 1 lag, whereas for the activity measure it occurs contemporaneously. As one would expect, the forward-looking confidence indicator seems to be a better candidate leading indicator. 
+Figure 10 illustrates the cross-correlograms for 4 of the (weighted) indicators and real GDFP growth. Confidence is significantly correlated with real GDP growth. The forward-looking measure seems to lead the activity measure and GDP growth. The highest correlation coefficient for the forward-looking measure occurs at 1 lag, whereas for the activity measure it occurs contemporaneously. As one would expect, the forward-looking confidence indicator seems to be a better candidate leading indicator. 
 
 The uncertainty indicators do not exhibit a negative contemporaneous correlation with real GDP growth. They are significantly negatively correlated with lagged real economic growth at 3-7 lags. This confirms the pattern exhibited above. Uncertainty seems to decrease significantly as the economy enters a recession, and spike towards the end of the recession or the beginning of the recovery period. The patterns are very similar for the unweighted versions of the indicators, although they often exhibit positive and mildly significant contemporaneous correlations. The patterns are also generally similar for the sectoral indicators and sectoral real GDP growth. In addition, the relationships between the sentiment indicators and both employment and investment exhibit very similar patterns.
 
-```{r figure9, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Cross-correlograms of confidence, uncertainty and real GDP growth"}
+```{r figure10, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Cross-correlograms of confidence, uncertainty and real GDP growth"}
 all_indices <- cbind(Date=GDPdata$X,w.indicators[,c(2,5,6,10,12)],GDPgrowth4[,1])
 colnames(all_indices) <- c("Date", "Conf_CC", "Act_GBC", "Conf_FL", "Uncert_FL", "Uncert_EE", "GDPgrowth")
 
@@ -1938,13 +1957,13 @@ print(xt, "latex", include.rownames=FALSE,comment=FALSE, caption.placement = get
 ```
 
 ###Results: Confidence
-Figure 10 illustrates the IRFs of a bivariate VAR with the forward-looking confidence measure and real GDP growth. The left panel plots the responses of real GDP growth to an orthogonal shock in the confidence measure, with 95% bootstrap confidence intervals. Following an increase in confidence, real GDP growth increases by almost 0.2% on impact, with a peak at 1 year. The effect on the growth rate is transitory, dying out after approximately 7 quarters. This is equivalent to a permanent increase in the level of output, which confirms the findings in the literature (e.g. @Barsky2012).[^30] The right panel plots the responses of confidence to an orthogonal shock in real GDP growth. Following an increase in real GDP growth, there is a significant increase in confidence of around 2% in the following quarter. The results are similar for alternative orderings (as the correlations in errors are only around 0.3).
+Figure 11 illustrates the IRFs of a bivariate VAR with the forward-looking confidence measure and real GDP growth. The left panel plots the responses of real GDP growth to an orthogonal shock in the confidence measure, with 95% bootstrap confidence intervals. Following an increase in confidence, real GDP growth increases by almost 0.2% on impact, with a peak at 1 year. The effect on the growth rate is transitory, dying out after approximately 7 quarters. This is equivalent to a permanent increase in the level of output, which confirms the findings in the literature (e.g. @Barsky2012).[^30] The right panel plots the responses of confidence to an orthogonal shock in real GDP growth. Following an increase in real GDP growth, there is a significant increase in confidence of around 2% in the following quarter. The results are similar for alternative orderings (as the correlations in errors are only around 0.3).
 
 [^30]: As I discuss below, the next step would probably be to include confidence in a larger VAR system that controls for a number of economic fundamentals, to see if it still has a significant impact.
 
 The IRFs for the other two confidence indicators based on current conditions (not illustrated here) are almost identical. The impact is also positive and significant for all of the sectoral measures on real output growth, based on sectoral GDP and production indices. The IRFs when using growth in employment and investment as the measures of real activity are also qualitatively similar. 
 
-```{r figure10, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4, fig.width=7.5, fig.cap="IRFs of confidence (forward-looking) and real GDP growth"}
+```{r figure11, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4, fig.width=7.5, fig.cap="IRFs of confidence (forward-looking) and real GDP growth"}
 irf.y1 <- irf(var3,impulse = "Conf_GBC", response = "RGDPGrowth", n.ahead = 12,runs = 1000, seed=12345) 
 irf.y2 <- irf(var3,impulse = "RGDPGrowth", response = "Conf_GBC", n.ahead = 12,runs = 1000, seed=12345)
 
@@ -1976,11 +1995,11 @@ A related avenue for investigation would be to assess the usefulness of the indi
 An extension would be to test whether the relationship is non-linear and asymmetric, depending on the size or duration of the change in confidence. The forecasting ability of confidence indicators might be completely offset by other indicators during ordinary times, while increasing notably in the presence of unusual events. Moreover, the relation during a recovery (and potentially late stages of a recession) may be different from the relation during the rest of an expansion.
 
 ###Results: Uncertainty
-Figure 11 illustrates the IRFs of a bivariate VAR with the uncertainty indicator based on expectations errors and real GDP growth. The left panel plots the responses of real GDP growth to an orthogonal shock in the uncertainty measure, with 95% bootstrap confidence intervals. A shock to uncertainty is followed by a positive but insignificant increase in real GDP growth. This is contrary to most of the literature (e.g. @Bachmann2013 and @Redl2015), which finds that in bivariate VARs, innovations to uncertainty have protracted negative effects on economic activity. 
+Figure 12 illustrates the IRFs of a bivariate VAR with the uncertainty indicator based on expectations errors and real GDP growth. The left panel plots the responses of real GDP growth to an orthogonal shock in the uncertainty measure, with 95% bootstrap confidence intervals. A shock to uncertainty is followed by a positive but insignificant increase in real GDP growth. This is contrary to most of the literature (e.g. @Bachmann2013 and @Redl2015), which finds that in bivariate VARs, innovations to uncertainty have protracted negative effects on economic activity. 
 
 The right panel plots the responses of uncertainty to an orthogonal shock in real GDP growth. Following a shock to real GDP growth, there is a significant negative response in uncertainty, but only between 4 and 8 quarters later. This confirms more formally the graphical results above, as well as the findings for the correlation analysis and the Granger causality tests. When real GDP growth decreases, as in a recession, uncertainty increases after around 4 quarters, with the impact dying out at around 8 quarters. The results are similar for alternative orderings (as the correlations in errors are only around 0.1).  
 
-```{r figure11, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4, fig.width=7.5, fig.cap="IRFs of weighted uncertainty (expectations errors) and real GDP growth"}
+```{r figure12, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4, fig.width=7.5, fig.cap="IRFs of weighted uncertainty (expectations errors) and real GDP growth"}
 irf.y1 <- irf(var5,impulse = "Uncert_ee", response = "RGDPGrowth", n.ahead = 12,runs = 1000, seed=12345) 
 irf.y2 <- irf(var5,impulse = "RGDPGrowth", response = "Uncert_ee", n.ahead = 12,runs = 1000, seed=12345)
 
@@ -1992,9 +2011,9 @@ plot(irf.y2,plot.type = c("single"))
 
 The IRFs for the forward-looking uncertainty indicators look almost identical, as do the IRFs when using growth in employment and investment as measures of economic activity. The IRFs for the sectoral uncertainty indicators are usually insignificant. The FEVDs show that the contributions of the different uncertainty series to the variance decomposition of real GDP growth are relatively small, at around 10% over longer forecast horizons, and vice versa.
 
-These uncertainty indicators do not exhibit the typical timing of the relationship with real economic activity found elsewhere. Indeed, the results are even more contrary when the unweighted uncertainty indicators are used. Figure 12 illustrates the IRFs of a bivariate VAR with the unweighted uncertainty indicator based on expectations errors and real GDP growth. The response of uncertainty to an orthogonal shock in real GDP growth (right pane) is very similar. However, the response of real GDP growth to an orthogonal shock in the uncertainty measure is now even more positive and significant at 2-3 lags. The timing of the relationship does not provide any evidence for a causal impact from uncertainty to real GDP growth and are not consistent with the wait-and-see mechanism. If anything, the results imply that GDP growth negatively affects uncertainty with a lag.
+These uncertainty indicators do not exhibit the typical timing of the relationship with real economic activity found elsewhere. Indeed, the results are even more contrary when the unweighted uncertainty indicators are used. Figure 13 illustrates the IRFs of a bivariate VAR with the unweighted uncertainty indicator based on expectations errors and real GDP growth. The response of uncertainty to an orthogonal shock in real GDP growth (right pane) is very similar. However, the response of real GDP growth to an orthogonal shock in the uncertainty measure is now even more positive and significant at 2-3 lags. The timing of the relationship does not provide any evidence for a causal impact from uncertainty to real GDP growth and are not consistent with the wait-and-see mechanism. If anything, the results imply that GDP growth negatively affects uncertainty with a lag.
 
-```{r figure12, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4, fig.width=7.5, fig.cap="IRFs of unweighted uncertainty (expectations errors) and real GDP growth"}
+```{r figure13, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4, fig.width=7.5, fig.cap="IRFs of unweighted uncertainty (expectations errors) and real GDP growth"}
 irf.y1 <- irf(var6,impulse = "unw.Uncert_ee", response = "RGDPGrowth", n.ahead = 12,runs = 1000, seed=12345) 
 irf.y2 <- irf(var6,impulse = "RGDPGrowth", response = "unw.Uncert_ee", n.ahead = 12,runs = 1000, seed=12345)
 
@@ -2013,7 +2032,7 @@ An extension would then be to follow @Bachmann2010, by restricting the long run 
 
 Some authors have added measures of confidence to estimate three-variable VARs. @Girardi2015 argued that uncertainty (or "second moment") shocks may coincide with confidence (or "first moment") shocks. To address whether uncertainty simply picked up the effect of changes in confidence, they included a measure of confidence in a three-variable VAR system, with confidence ordered first under a recursive identification scheme. @Bachmann2010 argued that confidence is informative about economic activity in the long-run. Making uncertainty orthogonal with respect to confidence could control for the long-run predictive component of uncertainty, thereby making it more likely to reflect the high-frequency impact of uncertainty.
 
-Figure 13 and Figure 14 illustrate preliminary results from three-variable VARs including (forward-looking) confidence, (expectation error) uncertainty and real GDP growth. The results are very similar to the IRFs for the bivariate VARs reported earlier. A shock to confidence is followed by a significant positive increase in real GDP growth, whereas a shock to uncertainty is not followed by lower output growth. In contrast, a shock to real GDP growth is not followed by a significant increase in confidence, but is followed by a decrease in uncertainty around 4 quarters later. In other words, recessions are followed by an increase in uncertainty with a lag. According to @Bachmann2010, recessions are times of severed relationships and failing business models. Bad economic outcomes breed uncertainty, as these relationships have to be re-established and business practices have to be re-arranged. Thus, uncertainty could be interpreted as an epiphenomenon that accompanies poor economic outcomes.
+Figure 14 and Figure 15 illustrate preliminary results from three-variable VARs including (forward-looking) confidence, (expectation error) uncertainty and real GDP growth. The results are very similar to the IRFs for the bivariate VARs reported earlier. A shock to confidence is followed by a significant positive increase in real GDP growth, whereas a shock to uncertainty is not followed by lower output growth. In contrast, a shock to real GDP growth is not followed by a significant increase in confidence, but is followed by a decrease in uncertainty around 4 quarters later. In other words, recessions are followed by an increase in uncertainty with a lag. According to @Bachmann2010, recessions are times of severed relationships and failing business models. Bad economic outcomes breed uncertainty, as these relationships have to be re-established and business practices have to be re-arranged. Thus, uncertainty could be interpreted as an epiphenomenon that accompanies poor economic outcomes.
 
 ```{r var.sent, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
 variable.3 <- function(y1, name1, y2, name2, y3, name3) {
@@ -2042,13 +2061,13 @@ name2 <- "Uncertainty"
 name3 <- "RGDPGrowth"
 ```
 
-```{r figure13, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4, fig.width=7.5, fig.cap="IRFs of real GDP growth to confidence and uncertainty"}
+```{r figure14, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4, fig.width=7.5, fig.cap="IRFs of real GDP growth to confidence and uncertainty"}
 irf.y1 <- irf(var,impulse = c(name1,name2), response = name3, n.ahead = 12,runs = 1000, seed=12345) 
 par(mfrow=c(1,2),mar=c(5,4,4,2), cex=0.5)
 plot(irf.y1,plot.type = c("single"))
 ```
 
-```{r figure14, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4, fig.width=7.5, fig.cap="IRFs of confidence and uncertainty to real GDP growth"}
+```{r figure15, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4, fig.width=7.5, fig.cap="IRFs of confidence and uncertainty to real GDP growth"}
 irf.y2 <- irf(var,impulse = name3, response = c(name1,name2), n.ahead = 12,runs = 1000, seed=12345)
 par(mfrow=c(1,2),mar=c(5,4,4,2), cex=0.5)
 plot(irf.y2,plot.type = c("single"))

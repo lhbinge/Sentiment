@@ -26,9 +26,6 @@ recessions.df = read.table(textConnection(
     2007-11-30, 2009-08-31"), sep=',',
     colClasses=c('Date', 'Date'), header=TRUE)
 
-##====================================================================================##
-## -------------------------------- CONFIDENCE ---------------------------------------##
-##====================================================================================##
 
 ##====================================##
 ## READING IN THE DATA: MANUFACTURING ##
@@ -58,25 +55,6 @@ for(i in 8:62) {
 }
 BER.M$Q19 <- replace(BER.M$Q19, BER.M$Q19==0,-1) # replace 0 (No) responses with -1
 BER.M$Q20 <- replace(BER.M$Q20, BER.M$Q20==0,-1) # replace 0 (Unsatisfactory) with -1
-
-
-##=====================================##
-## CALCULATE INDICATORS: MANUFACTURING ##
-##=====================================##
-indicators.M <- aggregate(BER.M$Q20, by=list(BER.M$surveyQ), FUN=mean, na.rm=TRUE)
-colnames(indicators.M) <- c("Date","Conf_cc")
-indicators.M <- cbind(indicators.M, Conf_fl = aggregate(BER.M$Q31, by=list(BER.M$surveyQ), FUN=mean, na.rm=TRUE)[,2])
-indicators.M <- cbind(indicators.M, Act_prod = aggregate(BER.M$Q3A, by=list(BER.M$surveyQ), FUN=mean, na.rm=TRUE)[,2])
-indicators.M <- cbind(indicators.M, Conf_prod = aggregate(BER.M$Q3P, by=list(BER.M$surveyQ), FUN=mean, na.rm=TRUE)[,2])
-indicators.M <- cbind(indicators.M, Act_GBC = aggregate(BER.M$Q7A, by=list(BER.M$surveyQ), FUN=mean, na.rm=TRUE)[,2])
-indicators.M <- cbind(indicators.M, Conf_GBC = aggregate(BER.M$Q7P, by=list(BER.M$surveyQ), FUN=mean, na.rm=TRUE)[,2])
-indicators.M <- cbind(indicators.M, Invest = aggregate(BER.M$Q10A, by=list(BER.M$surveyQ), FUN=mean, na.rm=TRUE)[,2])
-indicators.M <- cbind(indicators.M, Empl = aggregate(BER.M$Q8A, by=list(BER.M$surveyQ), FUN=mean, na.rm=TRUE)[,2])
-
-altBER <- BER.M
-altBER$Q8A <- replace(altBER$Q8A, altBER$Q8A==-1,1) # replace -1 (Down) responses with 1
-indicators.M <- cbind(indicators.M, Empl_turn = aggregate(altBER$Q8A, by=list(altBER$surveyQ), FUN=mean, na.rm=TRUE)[,2])
-
 
 ##===============================##
 ## READING IN THE DATA: BUILDING ##
@@ -111,6 +89,141 @@ for(i in 7:22) {
 }
 BER.B$Q1 <- replace(BER.B$Q1, BER.B$Q1==0,-1) # replace 0 (Unsatisfactory) responses with -1
 
+##============================##
+## READING IN THE DATA: TRADE ##
+##============================##
+BER.R <- read.csv("Retail.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+BER.W <- read.csv("Wholesale.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+BER.T <- rbind(BER.R,BER.W)
+BER.T <- rbind.fill(BER.T,read.csv("Trade_pre2001.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
+BER.T <- BER.T[,1:21]
+colnames(BER.T)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
+
+BER.T$surveyQ <- toupper(BER.T$surveyQ)
+BER.T[nrow(BER.T)+1,1:5] <- BER.T[nrow(BER.T),1:5] 
+BER.T[nrow(BER.T),"surveyQ"] <- "2005Q4" 
+BER.T[nrow(BER.T)+1,1:5] <- BER.T[nrow(BER.T),1:5] 
+BER.T[nrow(BER.T),"surveyQ"] <- "1993Q3"
+BER.T[nrow(BER.T)+1,1:5] <- BER.T[nrow(BER.T),1:5] 
+BER.T[nrow(BER.T),"surveyQ"] <- "1992Q4"
+
+BER.T$region <- factor(BER.T$region)
+BER.T$sector <- factor(BER.T$sector) #could include labels
+BER.T$id <- factor(BER.T$id)
+BER.T$surveyQ <- factor(BER.T$surveyQ)
+
+# replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
+for(i in 7:21) {
+    BER.T[,i] <- replace(BER.T[,i], BER.T[,i]==2, 0)
+    BER.T[,i] <- replace(BER.T[,i], BER.T[,i]==3,-1)
+}
+BER.T$Q1 <- replace(BER.T$Q1, BER.T$Q1==0,-1) # replace 0 (Unsatisfactory) responses with -1
+
+##=====================================##
+## READING IN THE DATA: Motor Vehicles ##
+##=====================================##
+BER.V <- rbind.fill(read.csv("Motor.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE),
+                    read.csv("Motor_pre2001.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
+BER.V <- BER.V[,1:28]
+colnames(BER.V)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
+
+BER.V$surveyQ <- toupper(BER.V$surveyQ)
+BER.V[nrow(BER.V)+1,1:5] <- BER.V[nrow(BER.V),1:5] 
+BER.V[nrow(BER.V),"surveyQ"] <- "2005Q4"
+BER.V[nrow(BER.V)+1,1:5] <- BER.V[nrow(BER.V),1:5] 
+BER.V[nrow(BER.V),"surveyQ"] <- "1992Q4"
+BER.V[nrow(BER.V)+1,1:5] <- BER.V[nrow(BER.V),1:5] 
+BER.V[nrow(BER.V),"surveyQ"] <- "1993Q3"
+
+BER.V$region <- factor(BER.V$region)
+BER.V$sector <- factor(BER.V$sector) #could include labels
+BER.V$id <- factor(BER.V$id)
+BER.V$surveyQ <- factor(BER.V$surveyQ)
+
+# replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
+for(i in 7:28) {
+    BER.V[,i] <- replace(BER.V[,i], BER.V[,i]==2, 0)
+    BER.V[,i] <- replace(BER.V[,i], BER.V[,i]==3,-1)
+}
+BER.V$Q1 <- replace(BER.V$Q1, BER.V$Q1==0,-1) # replace 0 (Unsatisfactory) responses with -1
+BER.V$Q6 <- replace(BER.V$Q6, BER.V$Q6==0,-1) # replace 0 (Unsatisfactory) responses with -1
+BER.V$Q10 <- replace(BER.V$Q10, BER.V$Q10==0,-1) # replace 0 (Unsatisfactory) responses with -1
+
+##===============================##
+## READING IN THE DATA: SERVICES ##
+##===============================##
+BER.S <- read.csv("Services.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+colnames(BER.S)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
+
+BER.S$surveyQ <- toupper(BER.S$surveyQ)
+BER.S[nrow(BER.S)+1,1:5] <- BER.S[nrow(BER.S),1:5] 
+BER.S[nrow(BER.S),"surveyQ"] <- "2005Q4" 
+
+BER.S$region <- factor(BER.S$region)
+BER.S$sector <- factor(BER.S$sector) #could include labels
+BER.S$id <- factor(BER.S$id)
+BER.S$surveyQ <- factor(BER.S$surveyQ)
+#BER.S$surveyQ <- factor(BER.S$surveyQ, levels=c(levels(BER.S$surveyQ),"05Q4"))
+
+# replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
+for(i in 7:21) {
+    BER.S[,i] <- replace(BER.S[,i], BER.S[,i]==2, 0)
+    BER.S[,i] <- replace(BER.S[,i], BER.S[,i]==3,-1)
+}
+BER.S$Q1 <- replace(BER.S$Q1, BER.S$Q1==0,-1) # replace 0 (Unsatisfactory) responses with -1
+
+#==================
+#AGGREGATING
+#==================
+#Rename BER.B$Q5A temporarily and create NAs for BER.V$empl
+tempBER.M <- cbind(BER.M[,c("id","surveyQ","Q20","Q3A","Q3P","Q7A","Q7P","Q8A")],"Manufaturing")
+colnames(tempBER.M) <- c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A","Sector")
+tempBER.B <- cbind(BER.B[,c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A")],"Construction")
+colnames(tempBER.B) <- c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A","Sector")
+tempBER.T <- cbind(BER.T[,c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q5A")],"Trade")
+colnames(tempBER.T) <- c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A","Sector")
+tempBER.V <- cbind(BER.V[,c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A")],"Motor")
+tempBER.V[,"Q4A"] <- NA
+colnames(tempBER.V) <- c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A","Sector")
+tempBER.S <- cbind(BER.S[,c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A")],"Services")
+colnames(tempBER.S) <- c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A","Sector")
+
+BER <- tempBER.M
+BER <- rbind(BER,tempBER.B,tempBER.T,tempBER.V,tempBER.S)
+
+
+#Plot Data
+BERplot <- aggregate(BER$id, by=list(BER$surveyQ,BER$Sector), FUN = length)
+g <- ggplot(BERplot, aes(x=Group.1, y=x,fill=Group.2))
+g <- g + geom_bar(stat="identity")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + scale_fill_discrete(name="Sector")
+g <- g + scale_y_continuous(labels=comma)
+g <- g + scale_x_discrete(breaks=levels(BERplot$Group.1)[c(T, rep(F, 1))])
+g <- g + ylab("Nuymber of Respondents")
+g <- g + xlab("Date")
+g
+
+##====================================================================================##
+## -------------------------------- CONFIDENCE ---------------------------------------##
+##====================================================================================##
+
+##=====================================##
+## CALCULATE INDICATORS: MANUFACTURING ##
+##=====================================##
+indicators.M <- aggregate(BER.M$Q20, by=list(BER.M$surveyQ), FUN=mean, na.rm=TRUE)
+colnames(indicators.M) <- c("Date","Conf_cc")
+indicators.M <- cbind(indicators.M, Conf_fl = aggregate(BER.M$Q31, by=list(BER.M$surveyQ), FUN=mean, na.rm=TRUE)[,2])
+indicators.M <- cbind(indicators.M, Act_prod = aggregate(BER.M$Q3A, by=list(BER.M$surveyQ), FUN=mean, na.rm=TRUE)[,2])
+indicators.M <- cbind(indicators.M, Conf_prod = aggregate(BER.M$Q3P, by=list(BER.M$surveyQ), FUN=mean, na.rm=TRUE)[,2])
+indicators.M <- cbind(indicators.M, Act_GBC = aggregate(BER.M$Q7A, by=list(BER.M$surveyQ), FUN=mean, na.rm=TRUE)[,2])
+indicators.M <- cbind(indicators.M, Conf_GBC = aggregate(BER.M$Q7P, by=list(BER.M$surveyQ), FUN=mean, na.rm=TRUE)[,2])
+indicators.M <- cbind(indicators.M, Invest = aggregate(BER.M$Q10A, by=list(BER.M$surveyQ), FUN=mean, na.rm=TRUE)[,2])
+indicators.M <- cbind(indicators.M, Empl = aggregate(BER.M$Q8A, by=list(BER.M$surveyQ), FUN=mean, na.rm=TRUE)[,2])
+
+altBER <- BER.M
+altBER$Q8A <- replace(altBER$Q8A, altBER$Q8A==-1,1) # replace -1 (Down) responses with 1
+indicators.M <- cbind(indicators.M, Empl_turn = aggregate(altBER$Q8A, by=list(altBER$surveyQ), FUN=mean, na.rm=TRUE)[,2])
 
 ##Weighted versions---------------------------------------------------------------------------------
 w.Conf_cc <- NULL
@@ -136,7 +249,6 @@ for(kwartaal in levels(BER.M$surveyQ)) {
 }
 w.indicators.M <- as.data.frame(cbind(w.Conf_cc,w.Conf_fl,w.Act_prod,w.Conf_prod,w.Act_GBC,w.Conf_GBC,w.Invest,w.Empl))
 w.indicators.M <- cbind(Date=levels(BER.M$surveyQ),w.indicators.M)
-
 
 
 ##================================##
@@ -175,36 +287,6 @@ for(kwartaal in levels(BER.B$surveyQ)) {
 w.indicators.B <- as.data.frame(cbind(w.Conf_cc,w.Act_prod,w.Conf_prod,w.Act_GBC,w.Conf_GBC,w.Empl))
 w.indicators.B <- cbind(Date=levels(BER.B$surveyQ),w.indicators.B)
 
-##============================##
-## READING IN THE DATA: TRADE ##
-##============================##
-BER.R <- read.csv("Retail.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-BER.W <- read.csv("Wholesale.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-BER.T <- rbind(BER.R,BER.W)
-BER.T <- rbind.fill(BER.T,read.csv("Trade_pre2001.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
-BER.T <- BER.T[,1:21]
-colnames(BER.T)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
-
-BER.T$surveyQ <- toupper(BER.T$surveyQ)
-BER.T[nrow(BER.T)+1,1:5] <- BER.T[nrow(BER.T),1:5] 
-BER.T[nrow(BER.T),"surveyQ"] <- "2005Q4" 
-BER.T[nrow(BER.T)+1,1:5] <- BER.T[nrow(BER.T),1:5] 
-BER.T[nrow(BER.T),"surveyQ"] <- "1993Q3"
-BER.T[nrow(BER.T)+1,1:5] <- BER.T[nrow(BER.T),1:5] 
-BER.T[nrow(BER.T),"surveyQ"] <- "1992Q4"
-
-BER.T$region <- factor(BER.T$region)
-BER.T$sector <- factor(BER.T$sector) #could include labels
-BER.T$id <- factor(BER.T$id)
-BER.T$surveyQ <- factor(BER.T$surveyQ)
-
-# replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
-for(i in 7:21) {
-    BER.T[,i] <- replace(BER.T[,i], BER.T[,i]==2, 0)
-    BER.T[,i] <- replace(BER.T[,i], BER.T[,i]==3,-1)
-}
-BER.T$Q1 <- replace(BER.T$Q1, BER.T$Q1==0,-1) # replace 0 (Unsatisfactory) responses with -1
-
 ##=============================##
 ## CALCULATE INDICATORS: TRADE ##
 ##=============================##
@@ -241,35 +323,6 @@ for(kwartaal in levels(BER.T$surveyQ)) {
 w.indicators.T <- as.data.frame(cbind(w.Conf_cc,w.Act_prod,w.Conf_prod,w.Act_GBC,w.Conf_GBC,w.Empl))
 w.indicators.T <- cbind(Date=levels(BER.T$surveyQ),w.indicators.T)
 
-##=====================================##
-## READING IN THE DATA: Motor Vehicles ##
-##=====================================##
-BER.V <- rbind.fill(read.csv("Motor.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE),
-                    read.csv("Motor_pre2001.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
-BER.V <- BER.V[,1:28]
-colnames(BER.V)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
-
-BER.V$surveyQ <- toupper(BER.V$surveyQ)
-BER.V[nrow(BER.V)+1,1:5] <- BER.V[nrow(BER.V),1:5] 
-BER.V[nrow(BER.V),"surveyQ"] <- "2005Q4"
-BER.V[nrow(BER.V)+1,1:5] <- BER.V[nrow(BER.V),1:5] 
-BER.V[nrow(BER.V),"surveyQ"] <- "1992Q4"
-BER.V[nrow(BER.V)+1,1:5] <- BER.V[nrow(BER.V),1:5] 
-BER.V[nrow(BER.V),"surveyQ"] <- "1993Q3"
-
-BER.V$region <- factor(BER.V$region)
-BER.V$sector <- factor(BER.V$sector) #could include labels
-BER.V$id <- factor(BER.V$id)
-BER.V$surveyQ <- factor(BER.V$surveyQ)
-
-# replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
-for(i in 7:28) {
-    BER.V[,i] <- replace(BER.V[,i], BER.V[,i]==2, 0)
-    BER.V[,i] <- replace(BER.V[,i], BER.V[,i]==3,-1)
-}
-BER.V$Q1 <- replace(BER.V$Q1, BER.V$Q1==0,-1) # replace 0 (Unsatisfactory) responses with -1
-BER.V$Q6 <- replace(BER.V$Q6, BER.V$Q6==0,-1) # replace 0 (Unsatisfactory) responses with -1
-BER.V$Q10 <- replace(BER.V$Q10, BER.V$Q10==0,-1) # replace 0 (Unsatisfactory) responses with -1
 
 ##======================================##
 ## CALCULATE INDICATORS: Motor Vehicles ##
@@ -314,29 +367,6 @@ for(kwartaal in levels(BER.V$surveyQ)) {
 w.indicators.V <- as.data.frame(cbind(w.Conf_cc,w.Act_prod,w.Conf_prod,w.Act_GBC,w.Conf_GBC,w.Empl))
 w.indicators.V <- cbind(Date=levels(BER.V$surveyQ),w.indicators.V)
 
-##===============================##
-## READING IN THE DATA: SERVICES ##
-##===============================##
-BER.S <- read.csv("Services.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-colnames(BER.S)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
-
-BER.S$surveyQ <- toupper(BER.S$surveyQ)
-BER.S[nrow(BER.S)+1,1:5] <- BER.S[nrow(BER.S),1:5] 
-BER.S[nrow(BER.S),"surveyQ"] <- "2005Q4" 
-
-BER.S$region <- factor(BER.S$region)
-BER.S$sector <- factor(BER.S$sector) #could include labels
-BER.S$id <- factor(BER.S$id)
-BER.S$surveyQ <- factor(BER.S$surveyQ)
-#BER.S$surveyQ <- factor(BER.S$surveyQ, levels=c(levels(BER.S$surveyQ),"05Q4"))
-
-# replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
-for(i in 7:21) {
-    BER.S[,i] <- replace(BER.S[,i], BER.S[,i]==2, 0)
-    BER.S[,i] <- replace(BER.S[,i], BER.S[,i]==3,-1)
-}
-BER.S$Q1 <- replace(BER.S$Q1, BER.S$Q1==0,-1) # replace 0 (Unsatisfactory) responses with -1
-
 ##================================##
 ## CALCULATE INDICATORS: SERVICES ##
 ##================================##
@@ -376,18 +406,6 @@ w.indicators.S <- cbind(Date=levels(BER.S$surveyQ),w.indicators.S)
 ##=================================##
 ## AGGREGATING as much as possible ##
 ##=================================##
-
-#Rename BER.B$Q5A temporarily and create NAs for BER.V$empl
-tempBER.M <- BER.M[,c("id","surveyQ","Q20","Q3A","Q3P","Q7A","Q7P","Q8A")]
-colnames(tempBER.M) <- c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A")
-tempBER.T <- BER.T[,c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q5A")]
-colnames(tempBER.T) <- c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A")
-tempBER.V <- BER.V[,c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A")]
-tempBER.V[,"Q4A"] <- NA
-
-BER <- tempBER.M
-BER <- rbind(BER,BER.B[,c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A")],tempBER.T,tempBER.V,
-             BER.S[,c("id","surveyQ","Q1","Q3A","Q3P","Q2A","Q2P","Q4A")])
 
 indicators <- aggregate(BER$Q1, by=list(BER$surveyQ), FUN=mean, na.rm=TRUE)
 colnames(indicators) <- c("Date","Conf_cc")
