@@ -40,7 +40,7 @@ BER.M <- BER.M[,1:62]
 colnames(BER.M)[1:7] <- c("region","id","sector","weight","turnover","factor","surveyQ")
 
 BER.M$surveyQ <- toupper(BER.M$surveyQ)
-BER.M[nrow(BER.M)+1,1:6] <- BER.M[nrow(BER.M),1:6] 
+BER.M[nrow(BER.M)+1,1:6] <- BER.M[nrow(BER.M),1:6]   #fill in missing dates for easier aggregation.
 BER.M[nrow(BER.M),"surveyQ"] <- "2005Q4" 
 BER.M[nrow(BER.M)+1,1:6] <- BER.M[nrow(BER.M),1:6] 
 BER.M[nrow(BER.M),"surveyQ"] <- "1997Q4" 
@@ -60,6 +60,10 @@ for(i in 8:62) {
 BER.M$Q19 <- replace(BER.M$Q19, BER.M$Q19==0,-1) # replace 0 (No) responses with -1
 BER.M$Q20 <- replace(BER.M$Q20, BER.M$Q20==0,-1) # replace 0 (Unsatisfactory) with -1
 
+#remove duplicates
+dups <- BER.M[duplicated(BER.M[,c("id","surveyQ")]) | duplicated(BER.M[,c("id","surveyQ")], fromLast = TRUE),]
+BER.M <- BER.M[!duplicated(BER.M[,c("id","surveyQ")]),]
+
 ##---------------------##
 ## BUILDING 
 ##---------------------##
@@ -69,7 +73,7 @@ BER.B <- BER.B[,1:22]
 colnames(BER.B)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
 
 BER.B$surveyQ <- toupper(BER.B$surveyQ)
-BER.B[nrow(BER.B)+1,1:5] <- BER.B[nrow(BER.B),1:5] 
+BER.B[nrow(BER.B)+1,1:5] <- BER.B[nrow(BER.B),1:5] #fill in missing dates for easier aggregation.
 BER.B[nrow(BER.B),"surveyQ"] <- "2005Q4" 
 BER.B[nrow(BER.B)+1,1:5] <- BER.B[nrow(BER.B),1:5] 
 BER.B[nrow(BER.B),"surveyQ"] <- "1998Q3" 
@@ -174,7 +178,8 @@ BER.S$Q1 <- replace(BER.S$Q1, BER.S$Q1==0,-1) # replace 0 (Unsatisfactory) respo
 
 #---------
 
-#Rename BER.B$Q5A temporarily and create NAs for missing questions
+#Match the same or similar questions from the different surveys
+#Create NAs for missing questions
 tempBER.M <- cbind(BER.M[,c("id","surveyQ","Q20","Q7A","Q7P","Q1A","Q1P","Q8A","Q8P",              "Q4A","Q4P")],"Manucfaturing")
 colnames(tempBER.M) <-    c("id","surveyQ", "Q1","Q2A","Q2P","Q3A","Q3P","Q4A","Q4P",              "Q6A","Q6P",  "Sector")
 tempBER.M[,c("Q5A","Q5P")] <- NA
@@ -205,7 +210,7 @@ g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + scale_fill_discrete(name="Sector")
 g <- g + scale_y_continuous(labels=comma)
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + ylab("Nuymber of Respondents")
+g <- g + ylab("Number of Respondents")
 g <- g + xlab("Date")
 g
 
@@ -217,14 +222,17 @@ g
 confidence.M <- aggregate(BER.M[,(match("surveyQ",colnames(BER.M))+1):ncol(BER.M)], by=list(BER.M$surveyQ), FUN=mean, na.rm=TRUE)
 confidence.M$Conf_cc.M <- rowMeans(confidence.M[,c("Q1A","Q2A","Q3A","Q4A","Q5A","Q6A","Q7A","Q8A","Q9A","Q10A")],na.rm = TRUE, dims = 1)
 confidence.M$Conf_fl.M <- rowMeans(confidence.M[,c("Q1P","Q2P","Q3P","Q4P","Q5P","Q6P","Q7P","Q8P","Q9P","Q10P")],na.rm = TRUE, dims = 1)
+#Row means for simple composite indicators
 
 ##Weighted versions
 weeg <- function(temp) {
     temp <- cbind(factor=temp$factor,temp$factor*temp[(match("surveyQ",colnames(temp))+1):ncol(temp)])
-    temp <- colSums(temp, na.rm=TRUE, dims = 1)/
+    #temp <- colSums(temp, na.rm=TRUE, dims = 1)/sum(temp$factor, na.rm=TRUE)
+    temp <- colSums(temp, na.rm=TRUE, dims = 1)/         #weight only by those that responded to a specific question
             sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])]))
     return(temp)
 }
+
 w.confidence.M <- as.data.frame(t(sapply(levels(BER.M$surveyQ), function(kwartaal) weeg(BER.M[BER.M$surveyQ==kwartaal,]))))
 w.confidence.M$Conf_cc.M <- rowMeans(w.confidence.M[,c("Q1A","Q2A","Q3A","Q4A","Q5A","Q6A","Q7A","Q8A","Q9A","Q10A")],na.rm = TRUE, dims = 1)
 w.confidence.M$Conf_fl.M <- rowMeans(w.confidence.M[,c("Q1P","Q2P","Q3P","Q4P","Q5P","Q6P","Q7P","Q8P","Q9P","Q10P")],na.rm = TRUE, dims = 1)
@@ -278,21 +286,31 @@ w.confidence.S$Conf_cc.S <- rowMeans(w.confidence.S[,c("Q2A","Q3A","Q4A","Q5A")]
 w.confidence.S$Conf_fl.S <- rowMeans(w.confidence.S[,c("Q2P","Q3P","Q4P","Q5P")],na.rm = TRUE, dims = 1)
 
 ##=================================##
-## AGGREGATING                              ####Calculate single question indicators as well!!!
+## AGGREGATING                              
 ##=================================##
 ##Weighted versions
 weights <- cbind(Date=levels(BER.M$surveyQ),GDPdata[,2:6])
 
-w.confidence <- merge(w.confidence.M[,c("Conf_cc.M","Conf_fl.M")], w.confidence.B[,c("Conf_cc.B","Conf_fl.B")], 
-                      by.x="row.names", by.y="row.names",all.x=TRUE)
-w.confidence <- merge(w.confidence, w.confidence.T[,c("Conf_cc.T","Conf_fl.T")], by.x="Row.names", by.y="row.names",all.x=TRUE)
-w.confidence <- merge(w.confidence, w.confidence.V[,c("Conf_cc.V","Conf_fl.V")], by.x="Row.names", by.y="row.names",all.x=TRUE)
-w.confidence <- merge(w.confidence, w.confidence.S[,c("Conf_cc.S","Conf_fl.S")], by.x="Row.names", by.y="row.names",all.x=TRUE)
+names(w.confidence.M)[grep("Q7", colnames(w.confidence.M))] <- paste(names(w.confidence.M)[grep("Q7", colnames(w.confidence.M))],"M",sep=".")
+names(w.confidence.B)[grep("Q2", colnames(w.confidence.B))] <- paste(names(w.confidence.B)[grep("Q2", colnames(w.confidence.B))],"B",sep=".")
+names(w.confidence.T)[grep("Q2", colnames(w.confidence.T))] <- paste(names(w.confidence.T)[grep("Q2", colnames(w.confidence.T))],"T",sep=".")
+names(w.confidence.V)[grep("Q2", colnames(w.confidence.V))] <- paste(names(w.confidence.V)[grep("Q2", colnames(w.confidence.V))],"V",sep=".")
+names(w.confidence.S)[grep("Q2", colnames(w.confidence.S))] <- paste(names(w.confidence.S)[grep("Q2", colnames(w.confidence.S))],"S",sep=".")
+
+w.confidence <- merge(w.confidence.M[,c("Q7A.M","Q7P.M","Conf_cc.M","Conf_fl.M")], 
+                      w.confidence.B[,c("Q2A.B","Q2P.B","Conf_cc.B","Conf_fl.B")], by.x="row.names", by.y="row.names",all.x=TRUE)
+w.confidence <- merge(w.confidence, w.confidence.T[,c("Q2A.T","Q2P.T","Conf_cc.T","Conf_fl.T")], by.x="Row.names", by.y="row.names",all.x=TRUE)
+w.confidence <- merge(w.confidence, w.confidence.V[,c("Q2A.V","Q2P.V","Conf_cc.V","Conf_fl.V")], by.x="Row.names", by.y="row.names",all.x=TRUE)
+w.confidence <- merge(w.confidence, w.confidence.S[,c("Q2A.S","Q2P.S","Conf_cc.S","Conf_fl.S")], by.x="Row.names", by.y="row.names",all.x=TRUE)
 colnames(w.confidence)[1] <- "Date"
 
-w.confidence$Conf_cc <- sapply(w.confidence$Date, function(x) weighted.mean(w.confidence[which(w.confidence$Date==x),c(2,4,6,8,10)], 
+w.confidence$Conf_2A <- sapply(w.confidence$Date, function(x) weighted.mean(w.confidence[which(w.confidence$Date==x),c(2,6,10,14,18)], 
                                                                             weights[weights$Date==x,-1],na.rm=TRUE))
-w.confidence$Conf_fl <- sapply(w.confidence$Date, function(x) weighted.mean(w.confidence[which(w.confidence$Date==x),c(3,5,7,9,11)], 
+w.confidence$Conf_2P <- sapply(w.confidence$Date, function(x) weighted.mean(w.confidence[which(w.confidence$Date==x),c(3,7,11,15,19)], 
+                                                                            weights[weights$Date==x,-1],na.rm=TRUE))
+w.confidence$Conf_cc <- sapply(w.confidence$Date, function(x) weighted.mean(w.confidence[which(w.confidence$Date==x),c(4,8,12,16,20)], 
+                                                                            weights[weights$Date==x,-1],na.rm=TRUE))
+w.confidence$Conf_fl <- sapply(w.confidence$Date, function(x) weighted.mean(w.confidence[which(w.confidence$Date==x),c(5,9,13,17,21)], 
                                                                             weights[weights$Date==x,-1],na.rm=TRUE))
 w.confidence$Date <- GDPdata[,1]
 #-------------------
@@ -302,7 +320,6 @@ confidence$Conf_cc <- rowMeans(confidence[,c("Q2A","Q3A","Q4A","Q5A","Q6A")],na.
 confidence$Conf_fl <- rowMeans(confidence[,c("Q2P","Q3P","Q4P","Q5P","Q6P")],na.rm = TRUE, dims = 1)
 
 ##--------------------------------------------------------------------------------
-
 indicator_plot <- w.confidence[,c("Date","Conf_cc","Conf_fl")]
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -315,7 +332,20 @@ g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
 
-indicator_plot <- cbind(w.confidences[,c("Date","Conf_cc","Conf_fl")],confidence[,c("Conf_cc","Conf_fl")])
+indicator_plot <- w.confidence[,c("Date","Conf_cc","Conf_fl","Conf_2A","Conf_2P")]
+colnames(indicator_plot) <- c("Date","Composite.Conf_cc","Composite.Conf_fl","Conf_2A","Conf_2P")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Indicator")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) 
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+
+indicator_plot <- cbind(w.confidence[,c("Date","Conf_cc","Conf_fl")],confidence[,c("Conf_cc","Conf_fl")])
 colnames(indicator_plot) <- c("Date","Weighted.Conf_cc","Weighted.Conf_fl","Unw.Conf_cc","Unw.Conf_fl")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -333,19 +363,31 @@ g
 ##====================================================================================##
 se <- function(x) sqrt(var(x,na.rm=TRUE)/length(na.omit(x))*(length(na.omit(x))-1)) #adjust for (n-1)
 ##---------------------##
-## MANUFACTURING                    ####Calculate single question indicators as well!!!
+## MANUFACTURING                    
 ##---------------------##
-uncertainty.M <- aggregate(BER.M[,(match("surveyQ",colnames(BER.M))+1):ncol(BER.M)], by=list(BER.M$surveyQ), FUN=sd,na.rm = TRUE)
-####!!!!!!!!!!!se vs. sd
+uncertainty.M <- aggregate(BER.M[,(match("surveyQ",colnames(BER.M))+1):ncol(BER.M)], by=list(BER.M$surveyQ), FUN=se)
 uncertainty.M$Uncert_fl.M <- rowMeans(uncertainty.M[,c("Q1P","Q2P","Q3P","Q4P","Q5P","Q6P","Q7P","Q8P","Q9P","Q10P")],na.rm = TRUE, dims = 1)
+colnames(uncertainty.M)[1] <- "Date"
 
-#remove duplicates
-dups <- BER.M[duplicated(BER.M[,c("id","surveyQ")]) | duplicated(BER.M[,c("id","surveyQ")], fromLast = TRUE),]
-uniBER.M <- BER.M[!duplicated(BER.M[,c("id","surveyQ")]),]
+##Weighted versions
+weeg.2 <- function(temp) {
+    temp <- cbind(factor=temp$factor,temp$factor*temp[(match("surveyQ",colnames(temp))+1):ncol(temp)])
+    frac.up <- sapply(1:ncol(temp), function(x) sum(temp[which(temp[,x]>0),x],na.rm=TRUE))/
+        sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])]))
+    frac.dn <- sapply(1:ncol(temp), function(x) sum(temp[which(temp[,x]<0),x],na.rm=TRUE))/
+        sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])]))
+    #weight only by those that responded to a specific question 
+    ind <- sqrt(frac.up-frac.dn-(frac.up+frac.dn)^2)        #this is the standard devation
+    return(ind)
+}
+w.uncertainty.M <- as.data.frame(t(sapply(levels(BER.M$surveyQ), function(kwartaal) weeg.2(BER.M[BER.M$surveyQ==kwartaal,]))))[,-1]
+colnames(w.uncertainty.M) <- colnames(BER.M[(match("surveyQ",colnames(BER.M))+1):ncol(BER.M)])
+w.uncertainty.M$Uncert_fl.M <- rowMeans(w.uncertainty.M[,c("Q1P","Q2P","Q3P","Q4P","Q5P","Q6P","Q7P","Q8P","Q9P","Q10P")],na.rm = TRUE, dims = 1)
 
-#Compare the expectations of firms in Q3P & Q7P in period t to the realizations in Q3A & Q7A in period t+1.
+##Expectations Errors-----------------
+#Compare the expectations of firms in Q7P (forward-looking) in period t to the realizations in Q7A in period t+1.
 exp.error <- function(temp) {
-    error <- merge(uncertainty.M[,c(1,ncol(uncertainty.M))],temp,by.x="Group.1",by.y="surveyQ", all.x=TRUE)
+    error <- merge(uncertainty.M[,c(1,ncol(uncertainty.M))],temp,by.x="Date",by.y="surveyQ", all.x=TRUE)
     for(t in 1:nrow(error)) {
         error$eQ1[t]  <- error$Q1A[(t+1)] - error$Q1P[t]
         error$eQ2[t]  <- error$Q2A[(t+1)] - error$Q2P[t]
@@ -358,132 +400,70 @@ exp.error <- function(temp) {
         error$eQ9[t]  <- error$Q9A[(t+1)] - error$Q9P[t]
         error$eQ10[t] <- error$Q10A[(t+1)] - error$Q10P[t]
     }
-    return(error[,c(1,64:73)])
+    return(error[,c(1,8,grep("eQ", colnames(error)))])
 }
 
 errors <- data.frame()
-for(i in levels(uniBER.M$id)){
-    errors <- rbind(errors, exp.error(uniBER.M[which(uniBER.M$id==i),])) 
+for(i in levels(BER.M$id)){
+    errors <- rbind(errors, exp.error(BER.M[which(BER.M$id==i),])) 
+}
+exp.errors.M <- aggregate(errors, by=list(errors$Date), FUN=se)[-2]
+uncertainty.M$eQ7.M <- exp.errors.M$eQ7
+uncertainty.M$Uncert_ee.M <- rowMeans(exp.errors.M[,-1:-2],na.rm = TRUE, dims = 1)
+
+
+#-------------------------------------
+##Weighted versions
+weeg.3 <- function(errors) {
+    temp <- cbind(factor=errors$factor,errors$factor*errors[,3:ncol(errors)])
+    xbar <- colSums(temp, na.rm=TRUE, dims = 1)/
+            sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])]))
+    temp <- errors[,-1]
+    #this is the weighted standard devation
+    ind <- sqrt(sapply(colnames(temp), function(x) sum((temp[,x]-xbar[x])*(temp[,x]-xbar[x])*temp$factor,na.rm=TRUE))/
+                sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])]))) 
+    return(ind)
 }
 
-exp.errors.M <- aggregate(errors, by=list(errors$Group.1), FUN=sd,na.rm=TRUE)[-2]
-uncertainty.M$Uncert_ee.M <- rowMeans(exp.errors.M[,-1],na.rm = TRUE, dims = 1)
+w.errors <- as.data.frame(t(sapply(levels(BER.M$surveyQ), function(kwartaal) weeg.3(errors[errors$Date==kwartaal,]))))[,-1]
+w.uncertainty.M$eQ7.M <- w.errors$eQ7
+w.uncertainty.M$Uncert_ee.M <- rowMeans(w.errors,na.rm = TRUE, dims = 1)
 
-##Weighted versions-----------------------------------------------------------------------------------------------
 
-##Hoe werk die weightings!!!!!!
-# waneer weight mens????
 
-w.Uncert_fl <- NULL
-w.Uncert_fl.prod <- NULL
-w.Uncert_fl.GBC <- NULL
-i <- 0
-for(kwartaal in levels(BER.M$surveyQ)) {
-    i <- i+1
-    temp <- subset(BER.M,BER.M$surveyQ==kwartaal)
-    
-    fr.up <- sum((temp$Q3P*temp$factor)[temp$Q3P>0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)],na.rm=TRUE)
-    fr.down <- sum((temp$Q3P*temp$factor)[temp$Q3P<0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q3P)],na.rm=TRUE)
-    w.Uncert_fl.prod[i] <- sqrt(fr.up-fr.down-(fr.up+fr.down)^2)
-    
-    fr.up <- sum((temp$Q7P*temp$factor)[temp$Q7P>0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q7P)],na.rm=TRUE)
-    fr.down <- sum((temp$Q7P*temp$factor)[temp$Q7P<0], na.rm=TRUE)/sum(temp$factor[!is.na(temp$Q7P)],na.rm=TRUE)
-    w.Uncert_fl.GBC[i] <- sqrt(fr.up-fr.down-(fr.up+fr.down)^2)
-}
-w.indicators.M <- cbind(w.indicators.M,w.Uncert_fl,w.Uncert_fl.prod,w.Uncert_fl.GBC)
-#-------------------------------------------------------------------------------------------------------------------
 
-errors1 <- w.indicators.M[,c(1,11)]
-err.fac1 <- w.indicators.M[,c(1,11)]
-w.fact1 <- w.indicators.M[,c(1,11)]
-errors2 <- w.indicators.M[,c(1,11)]
-err.fac2 <- w.indicators.M[,c(1,11)]
-w.fact2 <- w.indicators.M[,c(1,11)]
-errors3 <- w.indicators.M[,c(1,11)]
-err.fac3 <- w.indicators.M[,c(1,11)]
-w.fact3 <- w.indicators.M[,c(1,11)]
-tel <- 2
-for(i in levels(uniBER.M$id)){
-    tel <- tel + 1
-    exp.error <- w.indicators.M[,c(1,11)]
-    data <- subset(uniBER.M, uniBER.M$id==i)
-    exp.error <- merge(exp.error, data, by.x="Date",by.y="surveyQ", all.x = TRUE)
-    for(t in 1:(nrow(exp.error))) {
-        exp.error$error1[t] <- exp.error$Q7A[t+4] - exp.error$Q31[t]
-        exp.error$error2[t] <- exp.error$Q3A[t+1] - exp.error$Q3P[t]
-        exp.error$error3[t] <- exp.error$Q7A[t+1] - exp.error$Q7P[t]
-    }
-    
-    errors1 <- cbind(errors1, exp.error$error1)
-    err.fac1 <- cbind(err.fac1, exp.error$error1*exp.error$factor)
-    w.fact1 <- cbind(w.fact1, exp.error$factor)
-    errors2 <- cbind(errors2, exp.error$error2)
-    err.fac2 <- cbind(err.fac2, exp.error$error2*exp.error$factor)
-    w.fact2 <- cbind(w.fact2, exp.error$factor)
-    errors3 <- cbind(errors3, exp.error$error3)
-    err.fac3 <- cbind(err.fac3, exp.error$error3*exp.error$factor)
-    w.fact3 <- cbind(w.fact3, exp.error$factor)
-    
-    colnames(errors1)[tel] <- as.character(i)
-    colnames(err.fac1)[tel] <- as.character(i)
-    colnames(w.fact1)[tel] <- as.character(i)
-    colnames(errors2)[tel] <- as.character(i)
-    colnames(err.fac2)[tel] <- as.character(i)
-    colnames(w.fact2)[tel] <- as.character(i)
-    colnames(errors3)[tel] <- as.character(i)
-    colnames(err.fac3)[tel] <- as.character(i)
-    colnames(w.fact3)[tel] <- as.character(i)
-}
 
-w.Uncert_ee <- NULL
-w.Uncert_ee.prod <- NULL
-w.Uncert_ee.GBC <- NULL
-i <- 0
-for(kwartaal in levels(err.fac1$Date)) {
-    i <- i+1
-    temp1 <- subset(err.fac1,err.fac1$Date==kwartaal)[,c(-1,-2)]
-    temp2 <- subset(errors1,errors1$Date==kwartaal)[,c(-1,-2)]
-    temp3 <- subset(w.fact1,w.fact1$Date==kwartaal)[,c(-1,-2)]
-    temp4 <- replace(temp2, temp2==0,1)
-    temp4 <- replace(temp4, temp4==-2,2)
-    temp4 <- replace(temp4, temp4==-1,1)
-    temp4 <- temp4*temp3
-    
-    fr.2 <- sum(temp1[temp2==2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
-    fr.1 <- sum(temp1[temp2==1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
-    fr.m1 <- sum(temp1[temp2==-1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
-    fr.m2 <- sum(temp1[temp2==-2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
-    w.Uncert_ee[i] <- sqrt(4*fr.2+fr.1-fr.m1-4*fr.m2-(2*fr.2+fr.1+fr.m1+2*fr.m2)^2)
-    
-    temp1 <- subset(err.fac2,err.fac2$Date==kwartaal)[,c(-1,-2)]
-    temp2 <- subset(errors2,errors2$Date==kwartaal)[,c(-1,-2)]
-    temp3 <- subset(w.fact2,w.fact2$Date==kwartaal)[,c(-1,-2)]
-    temp4 <- replace(temp2, temp2==0,1)
-    temp4 <- replace(temp4, temp4==-2,2)
-    temp4 <- replace(temp4, temp4==-1,1)
-    temp4 <- temp4*temp3
-    
-    fr.2 <- sum(temp1[temp2==2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
-    fr.1 <- sum(temp1[temp2==1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
-    fr.m1 <- sum(temp1[temp2==-1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
-    fr.m2 <- sum(temp1[temp2==-2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
-    w.Uncert_ee.prod[i] <- sqrt(4*fr.2+fr.1-fr.m1-4*fr.m2-(2*fr.2+fr.1+fr.m1+2*fr.m2)^2)
-    
-    temp1 <- subset(err.fac3,err.fac3$Date==kwartaal)[,c(-1,-2)]
-    temp2 <- subset(errors3,errors3$Date==kwartaal)[,c(-1,-2)]
-    temp3 <- subset(w.fact3,w.fact3$Date==kwartaal)[,c(-1,-2)]
-    temp4 <- replace(temp2, temp2==0,1)
-    temp4 <- replace(temp4, temp4==-2,2)
-    temp4 <- replace(temp4, temp4==-1,1)
-    temp4 <- temp4*temp3
-    
-    fr.2 <- sum(temp1[temp2==2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
-    fr.1 <- sum(temp1[temp2==1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
-    fr.m1 <- sum(temp1[temp2==-1], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
-    fr.m2 <- sum(temp1[temp2==-2], na.rm=TRUE)/sum(temp4[!is.na(temp2)],na.rm=TRUE)
-    w.Uncert_ee.GBC[i] <- sqrt(4*fr.2+fr.1-fr.m1-4*fr.m2-(2*fr.2+fr.1+fr.m1+2*fr.m2)^2)
-}
-w.indicators.M <- cbind(w.indicators.M,w.Uncert_ee,w.Uncert_ee.prod,w.Uncert_ee.GBC)
+
+
+
+
+
+indicator_plot <- cbind(w.confidence[,"Date"],w.uncertainty.M[,c("eQ7.M","Uncert_ee.M","Uncert_fl.M")])
+colnames(indicator_plot) <- c("Date","eQ7","wUncert_ee","wUncert_fl")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Indicator")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) 
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+
+indicator_plot <- cbind(w.confidence[,"Date"],uncertainty.M[,c("eQ7.M","Uncert_ee.M")],w.uncertainty.M[,c("eQ7.M","Uncert_ee.M")])
+colnames(indicator_plot) <- c("Date","unweQ7","unwUncert_ee","weQ7","wUncert_e")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Indicator")
+g <- g + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) 
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+
 
 
 

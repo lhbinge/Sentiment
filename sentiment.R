@@ -1430,7 +1430,8 @@ for(i in 1:95) {
     w.indicators$Uncert_ee.GBC[i] <- weighted.mean(Uncert_ee.GBC[i,], weights[i,],na.rm=TRUE)
 }
 
-
+library(xlsx)
+write.xlsx(mydata, "c:/mydata.xlsx")
 
 write.csv2(indicators,file="indicators.csv")
 write.csv2(indicators.M,file="indicators_M.csv")
