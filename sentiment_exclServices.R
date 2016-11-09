@@ -2,7 +2,6 @@
 ## -------------------------------- SENTIMENT ---------------------------------------------##
 ##=========================================================================================##
 setwd("C:\\Users\\Laurie\\OneDrive\\Documents\\BING\\BER Confidence Surveys\\Sentiment")
-#change the working directory
 
 suppressMessages(library(ggplot2))
 suppressMessages(library(plyr))
@@ -155,7 +154,6 @@ BER.V$Q10 <- replace(BER.V$Q10, BER.V$Q10==0,-1) # replace 0 (Unsatisfactory) re
 ## SERVICES 
 ##---------------------##
 BER.S <- read.csv("Services.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-BER.S <- BER.S[,1:21]
 colnames(BER.S)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
 
 BER.S$surveyQ <- toupper(BER.S$surveyQ)
@@ -175,8 +173,8 @@ for(i in 7:21) {
 BER.S$Q1 <- replace(BER.S$Q1, BER.S$Q1==0,-1) # replace 0 (Unsatisfactory) responses with -1
 
 #---------
-#Create an unweighted stacked version of all the surveys
-#Match the same or similar questions from the different surveys (see survey question examples)
+
+#Match the same or similar questions from the different surveys
 #Create NAs for missing questions
 tempBER.M <- cbind(BER.M[,c("id","surveyQ","Q20","Q7A","Q7P","Q1A","Q1P","Q8A","Q8P",            "Q4A","Q4P")],"Manucfaturing")
 colnames(tempBER.M) <-    c("id","surveyQ", "Q1","Q2A","Q2P","Q3A","Q3P","Q4A","Q4P",            "Q6A","Q6P",  "Sector")
@@ -195,7 +193,7 @@ colnames(tempBER.S) <-    c("id","surveyQ", "Q1","Q2A","Q2P","Q3A","Q3P","Q4A","
 tempBER.S[,c("Q6A","Q6P")] <- NA
 
 BER <- tempBER.M
-BER <- rbind(BER,tempBER.B,tempBER.T,tempBER.V,tempBER.S)
+BER <- rbind(BER,tempBER.B,tempBER.T,tempBER.V)
 BER <- BER[,c(12,1,2,3,4,5,6,7,8,9,10,11,13,14)]
 rm(tempBER.M,tempBER.B,tempBER.T,tempBER.V,tempBER.S)
 #--------------
@@ -220,16 +218,14 @@ g
 confidence.M <- aggregate(BER.M[,(match("surveyQ",colnames(BER.M))+1):ncol(BER.M)], by=list(BER.M$surveyQ), FUN=mean, na.rm=TRUE)
 confidence.M$Conf_cc.M <- rowMeans(confidence.M[,c("Q1A","Q4A","Q7A","Q8A","Q20")],na.rm = TRUE, dims = 1)
 confidence.M$Conf_fl.M <- rowMeans(confidence.M[,c("Q1P","Q4P","Q7P","Q8P")],na.rm = TRUE, dims = 1)
-#Row means for simple composite indicators (the question is which questions to include)
+#Row means for simple composite indicators
 
 ##Weighted versions
-weeg <- function(temp) {  #calculate weighted mean for each quarter for all columns
+weeg <- function(temp) {
     temp <- cbind(factor=temp$factor,temp$factor*temp[(match("surveyQ",colnames(temp))+1):ncol(temp)])
     #temp <- colSums(temp, na.rm=TRUE, dims = 1)/sum(temp$factor, na.rm=TRUE)
-    #calculate the sum(wi*xi)/sum(wi)
-    temp <- colSums(temp, na.rm=TRUE, dims = 1)/    
-            sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])]))
-    #weight only by those that responded to a specific question
+    temp <- colSums(temp, na.rm=TRUE, dims = 1)/         #weight only by those that responded to a specific question
+        sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])]))
     return(temp)
 }
 
@@ -289,29 +285,26 @@ w.confidence.S$Conf_fl.S <- rowMeans(w.confidence.S[,c("Q2P","Q3P","Q4P","Q5P")]
 ## AGGREGATING                              
 ##=================================##
 ##Weighted versions
-weights <- cbind(Date=levels(BER.M$surveyQ),GDPdata[,2:6])
+weights <- cbind(Date=levels(BER.M$surveyQ),GDPdata[,2:5])
 
 names(w.confidence.M)[grep("Q7", colnames(w.confidence.M))] <- paste(names(w.confidence.M)[grep("Q7", colnames(w.confidence.M))],"M",sep=".")
 names(w.confidence.B)[grep("Q2", colnames(w.confidence.B))] <- paste(names(w.confidence.B)[grep("Q2", colnames(w.confidence.B))],"B",sep=".")
 names(w.confidence.T)[grep("Q2", colnames(w.confidence.T))] <- paste(names(w.confidence.T)[grep("Q2", colnames(w.confidence.T))],"T",sep=".")
 names(w.confidence.V)[grep("Q2", colnames(w.confidence.V))] <- paste(names(w.confidence.V)[grep("Q2", colnames(w.confidence.V))],"V",sep=".")
-names(w.confidence.S)[grep("Q2", colnames(w.confidence.S))] <- paste(names(w.confidence.S)[grep("Q2", colnames(w.confidence.S))],"S",sep=".")
 
 w.confidence <- merge(w.confidence.M[,c("Q7A.M","Q7P.M","Conf_cc.M","Conf_fl.M")], 
                       w.confidence.B[,c("Q2A.B","Q2P.B","Conf_cc.B","Conf_fl.B")], by.x="row.names", by.y="row.names",all.x=TRUE)
 w.confidence <- merge(w.confidence, w.confidence.T[,c("Q2A.T","Q2P.T","Conf_cc.T","Conf_fl.T")], by.x="Row.names", by.y="row.names",all.x=TRUE)
 w.confidence <- merge(w.confidence, w.confidence.V[,c("Q2A.V","Q2P.V","Conf_cc.V","Conf_fl.V")], by.x="Row.names", by.y="row.names",all.x=TRUE)
-w.confidence <- merge(w.confidence, w.confidence.S[,c("Q2A.S","Q2P.S","Conf_cc.S","Conf_fl.S")], by.x="Row.names", by.y="row.names",all.x=TRUE)
 colnames(w.confidence)[1] <- "Date"
 
-#create weighted means by GDP share
-w.confidence$Q2A <- sapply(w.confidence$Date, function(x) weighted.mean(w.confidence[which(w.confidence$Date==x),c(2,6,10,14,18)], 
+w.confidence$Q2A <- sapply(w.confidence$Date, function(x) weighted.mean(w.confidence[which(w.confidence$Date==x),c(2,6,10,14)], 
                                                                         weights[weights$Date==x,-1],na.rm=TRUE))
-w.confidence$Q2P <- sapply(w.confidence$Date, function(x) weighted.mean(w.confidence[which(w.confidence$Date==x),c(3,7,11,15,19)], 
+w.confidence$Q2P <- sapply(w.confidence$Date, function(x) weighted.mean(w.confidence[which(w.confidence$Date==x),c(3,7,11,15)], 
                                                                         weights[weights$Date==x,-1],na.rm=TRUE))
-w.confidence$Conf_cc <- sapply(w.confidence$Date, function(x) weighted.mean(w.confidence[which(w.confidence$Date==x),c(4,8,12,16,20)], 
+w.confidence$Conf_cc <- sapply(w.confidence$Date, function(x) weighted.mean(w.confidence[which(w.confidence$Date==x),c(4,8,12,16)], 
                                                                             weights[weights$Date==x,-1],na.rm=TRUE))
-w.confidence$Conf_fl <- sapply(w.confidence$Date, function(x) weighted.mean(w.confidence[which(w.confidence$Date==x),c(5,9,13,17,21)], 
+w.confidence$Conf_fl <- sapply(w.confidence$Date, function(x) weighted.mean(w.confidence[which(w.confidence$Date==x),c(5,9,13,17)], 
                                                                             weights[weights$Date==x,-1],na.rm=TRUE))
 w.confidence$Date <- GDPdata[,1]
 #-------------------
@@ -319,7 +312,6 @@ w.confidence$Date <- GDPdata[,1]
 confidence <- aggregate(BER[,(match("surveyQ",colnames(BER))+1):ncol(BER)], by=list(BER$surveyQ), FUN=mean, na.rm=TRUE)
 confidence$Conf_cc <- rowMeans(confidence[,c("Q2A","Q3A","Q4A","Q5A","Q6A","Q1")],na.rm = TRUE, dims = 1)
 confidence$Conf_fl <- rowMeans(confidence[,c("Q2P","Q3P","Q4P","Q5P","Q6P")],na.rm = TRUE, dims = 1)
-#row means for simple composite indicators
 confidence[,1] <- GDPdata[,1]
 colnames(confidence)[1] <- "Date"
 
@@ -390,6 +382,7 @@ g <- g + theme(legend.position="bottom")
 g
 
 
+
 ##====================================================================================##
 ## -------------------------------- UNCERTAINTY --------------------------------------##
 ##====================================================================================##
@@ -400,22 +393,19 @@ se <- function(x) sqrt(var(x,na.rm=TRUE)/length(na.omit(x))*(length(na.omit(x))-
 uncertainty.M <- aggregate(BER.M[,(match("surveyQ",colnames(BER.M))+1):ncol(BER.M)], by=list(BER.M$surveyQ), FUN=se)
 uncertainty.M$Uncert_cc.M <- rowMeans(uncertainty.M[,c("Q1A","Q4A","Q7A","Q8A","Q20")],na.rm = TRUE, dims = 1)
 uncertainty.M$Uncert_fl.M <- rowMeans(uncertainty.M[,c("Q1P","Q4P","Q7P","Q8P")],na.rm = TRUE, dims = 1)
-#row means for simple composite indicators
 colnames(uncertainty.M)[1] <- "Date"
 
 ##Weighted versions
-weeg.2 <- function(temp) {  #calculate weighted standard deviation for each quarter for all columns
+weeg.2 <- function(temp) {
     temp <- cbind(factor=temp$factor,temp$factor*temp[(match("surveyQ",colnames(temp))+1):ncol(temp)])
-    #calculate total that responded up (1) and down (-1) over sum(wi) = fractions up and down
     frac.up <- sapply(1:ncol(temp), function(x) sum(temp[which(temp[,x]>0),x],na.rm=TRUE))/
-               sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])]))
+        sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])]))
     frac.dn <- sapply(1:ncol(temp), function(x) sum(temp[which(temp[,x]<0),x],na.rm=TRUE))/
-               sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])]))
+        sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])]))
     #weight only by those that responded to a specific question 
     ind <- sqrt(frac.up-frac.dn-(frac.up+frac.dn)^2)        #this is the standard devation
     return(ind)
 }
-
 w.uncertainty.M <- as.data.frame(t(sapply(levels(BER.M$surveyQ), function(kwartaal) weeg.2(BER.M[BER.M$surveyQ==kwartaal,]))))[,-1]
 colnames(w.uncertainty.M) <- colnames(BER.M[(match("surveyQ",colnames(BER.M))+1):ncol(BER.M)])
 w.uncertainty.M$Uncert_cc.M <- rowMeans(w.uncertainty.M[,c("Q1A","Q4A","Q7A","Q8A","Q20")],na.rm = TRUE, dims = 1)
@@ -426,10 +416,8 @@ w.uncertainty.M$Uncert_fl.M <- rowMeans(w.uncertainty.M[,c("Q1P","Q4P","Q7P","Q8
 dups <- BER.M[duplicated(BER.M[,c("id","surveyQ")]) | duplicated(BER.M[,c("id","surveyQ")], fromLast = TRUE),]
 BER.M <- BER.M[!duplicated(BER.M[,c("id","surveyQ")]),]
 
-#Compare the expectations of firms in Q7P (forward-looking) in period t to the realisations in Q7A in period t+1.
-#see example survey questions
-exp.error <- function(temp) { #calculate errors for each respondent
-    #merge to create easier format
+#Compare the expectations of firms in Q7P (forward-looking) in period t to the realizations in Q7A in period t+1.
+exp.error <- function(temp) {
     error <- merge(uncertainty.M[,c(1,ncol(uncertainty.M))],temp,by.x="Date",by.y="surveyQ", all.x=TRUE)
     for(t in 1:nrow(error)) {
         error$eQ1[t]  <- error$Q1A[(t+1)] - error$Q1P[t]
@@ -449,14 +437,14 @@ uncertainty.M$eQ7.M <- exp.errors.M$eQ7
 uncertainty.M$Uncert_ee.M <- rowMeans(exp.errors.M[,-1:-2],na.rm = TRUE, dims = 1)
 
 ##Weighted versions
-weeg.3 <- function(errors) {  #calculate weighted standard deviation for each quarter for all columns
+weeg.3 <- function(errors) {
     temp <- cbind(factor=errors$factor,errors$factor*errors[,3:ncol(errors)])
     xbar <- colSums(temp, na.rm=TRUE, dims = 1)/
-            sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])]))
+        sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])]))
     temp <- errors[,-1]
-    #this is the weighted standard devation: sum[wi*(xi-xbar)^2]/sum(wi) 
+    #this is the weighted standard devation
     ind <- sqrt(sapply(colnames(temp), function(x) sum((temp[,x]-xbar[x])*(temp[,x]-xbar[x])*temp$factor,na.rm=TRUE))/
-                sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])]))) 
+                    sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])]))) 
     return(ind)
 }
 
@@ -639,35 +627,32 @@ names(w.uncertainty.M)[grep("Q7", colnames(w.uncertainty.M))] <- paste(names(w.u
 names(w.uncertainty.B)[grep("Q2", colnames(w.uncertainty.B))] <- paste(names(w.uncertainty.B)[grep("Q2", colnames(w.uncertainty.B))],"B",sep=".")
 names(w.uncertainty.T)[grep("Q2", colnames(w.uncertainty.T))] <- paste(names(w.uncertainty.T)[grep("Q2", colnames(w.uncertainty.T))],"T",sep=".")
 names(w.uncertainty.V)[grep("Q2", colnames(w.uncertainty.V))] <- paste(names(w.uncertainty.V)[grep("Q2", colnames(w.uncertainty.V))],"V",sep=".")
-names(w.uncertainty.S)[grep("Q2", colnames(w.uncertainty.S))] <- paste(names(w.uncertainty.S)[grep("Q2", colnames(w.uncertainty.S))],"S",sep=".")
 
 w.uncertainty <- merge(w.uncertainty.M[,c("Uncert_cc.M","Q7P.M","Uncert_fl.M","eQ7.M","Uncert_ee.M")], 
                        w.uncertainty.B[,c("Uncert_cc.B","Q2P.B","Uncert_fl.B","eQ2.B","Uncert_ee.B")], by.x="row.names", by.y="row.names",all.x=TRUE)
 w.uncertainty <- merge(w.uncertainty, w.uncertainty.T[,c("Uncert_cc.T","Q2P.T","Uncert_fl.T","eQ2.T","Uncert_ee.T")], by.x="Row.names", by.y="row.names",all.x=TRUE)
 w.uncertainty <- merge(w.uncertainty, w.uncertainty.V[,c("Uncert_cc.V","Q2P.V","Uncert_fl.V","eQ2.V","Uncert_ee.V")], by.x="Row.names", by.y="row.names",all.x=TRUE)
-w.uncertainty <- merge(w.uncertainty, w.uncertainty.S[,c("Uncert_cc.S","Q2P.S","Uncert_fl.S","eQ2.S","Uncert_ee.S")], by.x="Row.names", by.y="row.names",all.x=TRUE)
 colnames(w.uncertainty)[1] <- "Date"
 
-#Calculate weighted means by GDP share
-w.uncertainty$Uncert_cc<- sapply(w.uncertainty$Date, function(x) weighted.mean(w.uncertainty[which(w.uncertainty$Date==x),c(2,7,12,17,22)], 
+w.uncertainty$Uncert_cc<- sapply(w.uncertainty$Date, function(x) weighted.mean(w.uncertainty[which(w.uncertainty$Date==x),c(2,7,12,17)], 
                                                                                weights[weights$Date==x,-1],na.rm=TRUE))
-w.uncertainty$Q2P      <- sapply(w.uncertainty$Date, function(x) weighted.mean(w.uncertainty[which(w.uncertainty$Date==x),c(3,8,13,18,23)], 
+w.uncertainty$Q2P      <- sapply(w.uncertainty$Date, function(x) weighted.mean(w.uncertainty[which(w.uncertainty$Date==x),c(3,8,13,18)], 
                                                                                weights[weights$Date==x,-1],na.rm=TRUE))
-w.uncertainty$Uncert_fl<- sapply(w.uncertainty$Date, function(x) weighted.mean(w.uncertainty[which(w.uncertainty$Date==x),c(4,9,14,19,24)], 
+w.uncertainty$Uncert_fl<- sapply(w.uncertainty$Date, function(x) weighted.mean(w.uncertainty[which(w.uncertainty$Date==x),c(4,9,14,19)], 
                                                                                weights[weights$Date==x,-1],na.rm=TRUE))
-w.uncertainty$eQ2      <- sapply(w.uncertainty$Date, function(x) weighted.mean(w.uncertainty[which(w.uncertainty$Date==x),c(5,10,15,20,25)], 
+w.uncertainty$eQ2      <- sapply(w.uncertainty$Date, function(x) weighted.mean(w.uncertainty[which(w.uncertainty$Date==x),c(5,10,15,20)], 
                                                                                weights[weights$Date==x,-1],na.rm=TRUE))
-w.uncertainty$Uncert_ee<- sapply(w.uncertainty$Date, function(x) weighted.mean(w.uncertainty[which(w.uncertainty$Date==x),c(6,11,16,21,26)], 
+w.uncertainty$Uncert_ee<- sapply(w.uncertainty$Date, function(x) weighted.mean(w.uncertainty[which(w.uncertainty$Date==x),c(6,11,16,21)], 
                                                                                weights[weights$Date==x,-1],na.rm=TRUE))
 w.uncertainty$Date <- GDPdata[,1]
 #-------------------
-#Unweighted versions (standard error of stacked database)
+#Unweighted versions
 uncertainty <- aggregate(BER[,(match("surveyQ",colnames(BER))+1):ncol(BER)], by=list(BER$surveyQ), FUN=se)
 uncertainty$Uncert_cc <- rowMeans(uncertainty[,c("Q2A","Q3A","Q4A","Q5A","Q6A","Q1")],na.rm = TRUE, dims = 1)
 uncertainty$Uncert_fl <- rowMeans(uncertainty[,c("Q2P","Q3P","Q4P","Q5P","Q6P")],na.rm = TRUE, dims = 1)
 colnames(uncertainty)[1] <- "Date"
 
-#Match the same or similar questions from the different surveys to combine all errors
+#Match the same or similar questions from the different surveys
 #Create NAs for missing questions
 tempE.M <- cbind(errors.M[,c("Date","eQ7","eQ1","eQ8",      "eQ4")],"Manucfaturing")
 colnames(tempE.M) <-       c("Date","eQ2","eQ3","eQ4",      "eQ6",  "Sector")
@@ -686,20 +671,20 @@ colnames(tempE.S) <-       c("Date","eQ2","eQ3","eQ4","eQ5",        "Sector")
 tempE.S[,c("eQ6")] <- NA
 
 errors <- tempE.M
-errors <- rbind(errors,tempE.B,tempE.T,tempE.V,tempE.S)
+errors <- rbind(errors,tempE.B,tempE.T,tempE.V)
 errors <- errors[,c(1,6,2,3,4,7,5)]
 rm(tempE.M,tempE.B,tempE.T,tempE.V,tempE.S)
 
-##Could plot errors?
+##Could plot errors
 exp.errors <- aggregate(errors[,-1:-2], by=list(errors$Date), FUN=se)
 uncertainty$eQ2 <- exp.errors$eQ2
 uncertainty$Uncert_ee <- rowMeans(exp.errors[,-1:-2],na.rm = TRUE, dims = 1)
 uncertainty$Date <- GDPdata[,1]
 
 ##-------------------------------------------------------------------------------
-#standardise the uncertainty indicators for plotting
 w.uncert.norm <- cbind(Date=w.uncertainty[,1],as.data.frame(scale(w.uncertainty[,-1])))
 uncert.norm <- cbind(Date=uncertainty[,1],as.data.frame(scale(uncertainty[,-1])))
+
 
 indicator_plot <- uncert.norm[,c("Date","Q2P","Uncert_fl","eQ2","Uncert_ee")]
 #colnames(indicator_plot) <- c("Date","Q2P","eQ2","wUncert_ee","wUncert_fl")
@@ -728,7 +713,7 @@ g <- g + theme(legend.position="bottom")
 g
 
 
-indicator_plot <- uncert.norm[,c("Date","Uncert_cc","Uncert_fl","Uncert_ee")]
+indicator_plot <- w.uncert.norm[,c("Date","Uncert_cc","Uncert_fl","Uncert_ee")]
 g <- ggplot(indicator_plot) 
 g <- g + geom_line(aes(x=Date, y=Uncert_cc, colour="Current Conditions"), size = 1)
 g <- g + geom_line(aes(x=Date, y=Uncert_fl, colour="Forward_looking"), size = 1)
@@ -767,14 +752,18 @@ colnames(temp_indices) <- c("Date","W_CC","W_Q2P","W_FL","W_eQ2","W_EE","Unw_CC"
 source("corstarsl.R")
 for(i in 2:ncol(temp_indices)) {temp_indices[,i] <- as.numeric(temp_indices[,i]) }
 ts.all_indices <- as.ts(temp_indices[,-1],start =c(1992,1),end=c(2015,3),frequency=4) 
-corstarsl(ts.all_indices)
-#xt <- xtable(corstarsl(ts.all_indices), caption="Correlations in Levels")
-#print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"))
+#cor(temp_indices[,-1],use="complete.obs")
+xt <- xtable(corstarsl(ts.all_indices), caption="Correlations in Levels")
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"))
 
 
 ##==============================================================================================
 ##COMOVEMENT------------------------------------------------------------------------------------
 ##==============================================================================================
+#Maak hulle time series
+#Interpoleer NAs
+#-------------------------------------------------------------------------------------------------
+
 realGDP <- read.csv("RealGDP.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
 realGDP$X <- as.Date(realGDP$X, format = "%Y/%m/%d")
 ts.realGDP <- ts(realGDP,start =c(1991,1),end=c(2015,3),frequency=4)
@@ -786,75 +775,22 @@ dum94[10] <- 1
 dum94 <- as.data.frame(dum94)
 names(dum94) <- "dum94"
 
-#plot hulle saam (uncertainty is still pro-cyclical in most cases)
+#plot hulle saam
 temp_indices <- cbind(Conf_fl=confidence[,"Q2P"],Uncert_ee=uncertainty[,"eQ2"],GDPgrowth=GDPgrowth4[,"RGDP"])
 ts.temp_indices <- ts(temp_indices,start =c(1992,1),end=c(2015,3),frequency=4) 
 plot(ts.temp_indices,plot.type = "m",main="")
 
-#Change variables for cross-correlogram
-#i.e. weighted vs. unweighted, aggretate vs. sector-specific, and single question vs. composite indicators
-#e.g. confidence.M$Q2P
-Conf_cc <- w.confidence[,"Conf_cc"]
-Conf_fl <- w.confidence[,"Conf_fl"]
-Uncert_fl <- w.uncertainty[,"Uncert_fl"]
-Uncert_ee <- w.uncertainty[,"Uncert_ee"]
-GDPgrowth <- GDPgrowth4[,"RGDP"]              #Choose real activity variable: RGDP, Employ or Investment 
+
+Conf_cc <- confidence[,"Conf_cc"]
+Conf_fl <- confidence[,"Conf_fl"]
+Uncert_fl <- uncertainty[,"Uncert_fl"]
+Uncert_ee <- uncertainty[,"Uncert_ee"]
+GDPgrowth <- GDPgrowth4[,"RGDP"]
 
 par(mfrow=c(2,2))
 ccf(Conf_cc, GDPgrowth, na.action = na.pass)
 ccf(Conf_fl, GDPgrowth, na.action = na.pass)
 ccf(Uncert_fl, GDPgrowth, na.action = na.pass)
 ccf(Uncert_ee, GDPgrowth, na.action = na.pass)
-
-
-#Maak hulle time series
-ts.indicators   <- ts(cbind(confidence[,c("Q2A","Q2P","Conf_cc","Conf_fl")],uncertainty[,c("Q2P","eQ2","Uncert_fl","Uncert_ee")]),start =c(1992,1),end=c(2015,3),frequency=4) 
-ts.indicators.M <- ts(cbind(confidence.M[,c("Q7A","Q7P","Conf_cc.M","Conf_fl.M")],uncertainty.M[,c("Q7P","eQ7.M","Uncert_fl.M","Uncert_ee.M")]),start =c(1992,1),end=c(2015,3),frequency=4) 
-ts.indicators.B <- ts(cbind(confidence.B[,c("Q2A","Q2P","Conf_cc.B","Conf_fl.B")],uncertainty.B[,c("Q2P","eQ2.B","Uncert_fl.B","Uncert_ee.B")]),start =c(1993,2),end=c(2015,3),frequency=4) 
-ts.indicators.T <- ts(cbind(confidence.T[,c("Q2A","Q2P","Conf_cc.T","Conf_fl.T")],uncertainty.T[,c("Q2P","eQ2.T","Uncert_fl.T","Uncert_ee.T")]),start =c(1992,2),end=c(2015,3),frequency=4) 
-ts.indicators.S <- ts(cbind(confidence.S[,c("Q2A","Q2P","Conf_cc.S","Conf_fl.S")],uncertainty.S[,c("Q2P","eQ2.S","Uncert_fl.S","Uncert_ee.S")]),start =c(2005,2),end=c(2015,3),frequency=4) 
-
-ts.windicators   <- ts(cbind(w.confidence[,c("Q2A","Q2P","Conf_cc","Conf_fl")],w.uncertainty[,c("Q2P","eQ2","Uncert_fl","Uncert_ee")]),start =c(1992,1),end=c(2015,3),frequency=4) 
-ts.windicators.M <- ts(cbind(w.confidence[,c("Q7A.M","Q7P.M","Conf_cc.M","Conf_fl.M")],w.uncertainty[,c("Q7P.M","eQ7.M","Uncert_fl.M","Uncert_ee.M")]),start =c(1992,1),end=c(2015,3),frequency=4) 
-ts.windicators.B <- ts(cbind(w.confidence[,c("Q2A.B","Q2P.B","Conf_cc.B","Conf_fl.B")],w.uncertainty[,c("Q2P.B","eQ2.B","Uncert_fl.B","Uncert_ee.B")]),start =c(1993,2),end=c(2015,3),frequency=4) 
-ts.windicators.T <- ts(cbind(w.confidence[,c("Q2A.T","Q2P.T","Conf_cc.T","Conf_fl.T")],w.uncertainty[,c("Q2P.T","eQ2.T","Uncert_fl.T","Uncert_ee.T")]),start =c(1992,2),end=c(2015,3),frequency=4) 
-ts.windicators.S <- ts(cbind(w.confidence[,c("Q2A.S","Q2P.S","Conf_cc.S","Conf_fl.S")],w.uncertainty[,c("Q2P.S","eQ2.S","Uncert_fl.S","Uncert_ee.S")]),start =c(2005,2),end=c(2015,3),frequency=4) 
-
-ts.GDPgrowth4 <- ts(GDPgrowth4,start =c(1992,1),end=c(2015,3),frequency=4)
-ts.GDPgrowth1 <- ts(GDPgrowth1,start =c(1991,2),end=c(2015,3),frequency=4)
-
-#Interpoleer NAs
-ts.indicators <- na.approx(ts.indicators)
-ts.windicators <- na.approx(ts.windicators)
-
-#Wat van Taylor se correlations in forecast errors??? 
-#Wat van Wimpie se concordance statistic???
-
-#Compare to existing indicators (e.g. BER BCI, SACCI BCI, Lewis Uncertainty, Redl Uncertainty)
-#Wat van confidence indicators se turning points vergelyk???
-
-##Doen mean van absolute forecast errors!!!!!
-##Check vir Manufacturing die expectations errors van Q31 en Q2o?????
-
-#====================================================#
-# ------------------ VAR ANALYSIS ------------------ #
-#====================================================#
-
-#Start with estimating the reduced form by OLS.
-#But before estimation:
-#Determine whether or not data is stationary
-#Determine the optimal lag length of the VAR
-#Determine stability conditions (roots of the system inside the unit circle)
-#After estimating the reduced form:
-#Hypothesis testing (including Granger causality)
-#Impulse response function
-#Variance decomposition
-#Identification of Structural VAR
-
-#---------------------------------------------------------
-#Test for unit roots
-
-
-#Wat van larger system to test predictive ability??
 
 

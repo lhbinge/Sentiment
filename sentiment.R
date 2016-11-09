@@ -399,7 +399,7 @@ indicators.B <- cbind(indicators.B, Uncert_fl.prod = aggregate(BER.B$Q3P, by=lis
 indicators.B <- cbind(indicators.B, Uncert_fl.GBC = aggregate(BER.B$Q2P, by=list(BER.B$surveyQ), FUN=se)[,2])
 
 dups <- BER.B[duplicated(BER.B[,c("id","surveyQ")]) | duplicated(BER.B[,c("id","surveyQ")], fromLast = TRUE),]
-uniBER.B <- BER.B[!duplicated(BER.B[,c("id","surveyQ")]),]
+BER.B <- BER.B[!duplicated(BER.B[,c("id","surveyQ")]),]
 
 errors1 <- indicators.B[,c(1,9)]
 errors2 <- indicators.B[,c(1,9)]
@@ -1405,6 +1405,29 @@ for(i in 1:95) {
     w.indicators$Empl[i] <- weighted.mean(Empl[i,], weights[i,],na.rm=TRUE)
 }
 
+
+dups <- BER[duplicated(BER[,c("id","surveyQ")]) | duplicated(BER[,c("id","surveyQ")], fromLast = TRUE),]
+BER <- BER[!duplicated(BER[,c("id","surveyQ")]),]
+
+exp.error <- function(temp) {
+    error <- merge(uncertainty[,c(1,ncol(uncertainty))],temp,by.x="Group.1",by.y="surveyQ", all.x=TRUE)
+    for(t in 1:nrow(error)) {
+        error$eQ2[t]  <- error$Q2A[(t+1)] - error$Q2P[t]
+        error$eQ3[t]  <- error$Q3A[(t+1)] - error$Q3P[t]
+        error$eQ4[t]  <- error$Q4A[(t+1)] - error$Q4P[t]
+        error$eQ5[t]  <- error$Q5A[(t+1)] - error$Q5P[t]
+        error$eQ6[t]  <- error$Q6A[(t+1)] - error$Q6P[t]
+    }
+    return(error[,c(1,grep("eQ", colnames(error)))])
+}
+errors <- data.frame()
+for(i in levels(BER$id)){
+    errors <- rbind(errors, exp.error(BER[which(BER$id==i),])) 
+}
+exp.errors <- aggregate(errors, by=list(errors$Group.1), FUN=se)[-2]
+uncertainty$eQ2 <- exp.errors$eQ2
+uncertainty$Uncert_ee <- rowMeans(exp.errors[,-1:-2],na.rm = TRUE, dims = 1)
+
 ##------------------------------------------------------------------------------------------
 
 colnames(w.indicators.M)[10:15] <- c("w.Uncert_fl.M","w.Uncert_fl.prod.M","w.Uncert_fl.GBC.M","w.Uncert_ee.M","w.Uncert_ee.prod.M","w.Uncert_ee.GBC.M")
@@ -1564,10 +1587,10 @@ recessions.df = read.table(textConnection(
 #g <- g + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
 #g
 
-indicator_plot <- uncert.norm[,c(1,3,5)]
+indicator_plot <- w.uncert.norm[,c(1,23,25)]
 g <- ggplot(indicator_plot) 
-g <- g + geom_line(aes(x=Date, y=Uncert_fl.GBC, colour="Forward_looking"), size = 1)
-g <- g + geom_line(aes(x=Date, y=Uncert_ee.GBC, colour="Expectation Errors"), size = 1)
+g <- g + geom_line(aes(x=Date, y=Uncert_fl, colour="Forward_looking"), size = 1)
+g <- g + geom_line(aes(x=Date, y=Uncert_ee, colour="Expectation Errors"), size = 1)
 g <- g + theme_bw()
 g <- g + labs(color="Legend text")
 g <- g + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
