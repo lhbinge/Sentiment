@@ -1,3 +1,20 @@
+---
+title: "BER Building Survey"
+subtitle: "Preliminary Results"
+author: Laurie Binge
+date: "27 January 2017"
+output:
+  beamer_presentation:
+    theme: "CambridgeUS"
+    colortheme: "dolphin"
+    fonttheme: "structurebold" 
+    toc: true
+    slide_level: 2
+---
+
+# BER Building Surveys Results
+
+```{r B.build, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
 ##========================================================================================##
 ## -------------------------------- BUILDING ---------------------------------------------##
 ##========================================================================================##
@@ -155,11 +172,16 @@ bou <- function(BER.B=BER.B, datums=datums, laat="uit", alt=TRUE) {
     return(building)
 }    
 
-##=============================
-
 indicators <- bou(BER.B, datums, "uit", TRUE)
-    
+indicators_late <- bou(BER.B, datums, "in", FALSE)
 
+pub <- read.csv("Building_BER_Published.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+ref <- read.csv("Ref Series.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+```
+
+## Buidling Results for Q1 (Confidence)
+
+```{r figure1, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- indicators[,c("Date","res.Q1","nonres.Q1","total.Q1")]
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -170,45 +192,55 @@ g <- g + theme(legend.title=element_blank())
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
+```
 
 
+## Contractor Results for Q1 (Confidence)
+```{r figure2, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- indicators[,c("Date","con_res.Q1","con_nonres.Q1","con_tot.Q1")]
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
-g <- g + ylab("Indicator")
-g <- g + xlab("")
+g <- g + ylab("Indicator") + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + theme(legend.title=element_blank()) 
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
+```
 
+## Sub-contractor Results for Q1 (Confidence)
+```{r figure3, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- indicators[,c("Date","subcon_res.Q1","subcon_nonres.Q1","subcon_tot.Q1")]
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
-g <- g + ylab("Indicator")
-g <- g + xlab("")
+g <- g + ylab("Indicator") + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + theme(legend.title=element_blank()) 
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
+```
 
+
+## Regional Results for Q1 (Confidence)
+```{r figure4, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- indicators[,c("Date","wc.Q1","kzn.Q1","gp.Q1")]
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
-g <- g + ylab("Indicator")
-g <- g + xlab("")
+g <- g + ylab("Indicator") + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + theme(legend.title=element_blank()) 
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
+```
 
-#Plot Data
+
+## Regional Observations
+```{r figure5, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 BERplot <- aggregate(BER.B$id, by=list(BER.B$surveyQ,BER.B$region), FUN = length)
 BERplot$Group.1 <- as.Date(as.yearqtr(BERplot$Group.1, format = "%YQ%q"))
 g <- ggplot(BERplot, aes(x=Group.1, y=x,fill=Group.2))
@@ -220,85 +252,160 @@ g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + ylab("Number of Respondents")
 g <- g + xlab("Date")
 g
+```
 
-##=============================
 
-indicators_late <- bou(BER.B, datums, "in", FALSE)
+# Latecomers
 
+## Building Results for Q1 (Confidence)
+```{r figure6, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- cbind(indicators[,c("Date","total.Q1")],indicators_late[,"total.Q1"])
 colnames(indicator_plot) <- c("Date","total (excl. latecomers)","total (incl. latecomers)")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
-g <- g + ylab("Indicator")
-g <- g + xlab("")
+g <- g + ylab("Indicator") + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + theme(legend.title=element_blank()) 
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
+```
 
 
+## Residential Results for Q1 (Confidence)
+```{r figure7, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- cbind(indicators[,c("Date","res.Q1")],indicators_late[,"res.Q1"])
 colnames(indicator_plot) <- c("Date","res (excl. latecomers)","res (incl. latecomers)")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
-g <- g + ylab("Indicator")
-g <- g + xlab("")
+g <- g + ylab("Indicator") + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + theme(legend.title=element_blank()) 
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
+```
 
+## Non-residential Results for Q1 (Confidence)
+```{r figure8, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- cbind(indicators[,c("Date","nonres.Q1")],indicators_late[,"nonres.Q1"])
 colnames(indicator_plot) <- c("Date","nonres (excl. latecomers)","nonres (incl. latecomers)")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
-g <- g + ylab("Indicator")
-g <- g + xlab("")
+g <- g + ylab("Indicator") + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + theme(legend.title=element_blank()) 
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
+```
 
-##=============================
+# Published Results
 
-pub <- read.csv("Building_BER_Published.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-
+## Contractor Results for Q1 (Confidence)
+```{r figure9, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- cbind(indicators[,c("Date","con_tot.Q1")],pub[,c("con_totalQ1")])
 colnames(indicator_plot) <- c("Date","con_tot.Q1:Microdata","con_tot.Q1:Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
-g <- g + ylab("Indicator")
-g <- g + xlab("")
+g <- g + ylab("Indicator") + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + theme(legend.title=element_blank()) 
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
+```
 
 
-indicator_plot <- cbind(indicators[,c("Date","con_tot.Q2A")],pub[,c("con_totalQ2A")])
-colnames(indicator_plot) <- c("Date","con_tot.Q2A:Microdata","con_tot.Q2A:Published")
+## Contractor Results for Q3A (Activity)
+```{r figure10, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
+indicator_plot <- cbind(indicators[,c("Date","con_tot.Q3A")],pub[,c("con_totalQ3A")])
+colnames(indicator_plot) <- c("Date","con_tot.Q3A:Microdata","con_tot.Q3A:Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
-g <- g + ylab("Indicator")
-g <- g + xlab("")
+g <- g + ylab("Indicator") + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + theme(legend.title=element_blank()) 
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
+```
 
-#------------------------------
-#Interoplasie (net linear vs use published value)
 
+## Contractor Results for Q6 (Tender Competition)
+```{r figure11, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
+indicator_plot <- cbind(indicators[,c("Date","con_tot.Q6")],pub[,c("con_totalQ6")])
+colnames(indicator_plot) <- c("Date","con_tot.Q6:Microdata","con_tot.Q6:Published")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Indicator") + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) 
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+```
+
+
+## Contractor Results for Q7 (Shortage of skilled labour)
+```{r figure12, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
+indicator_plot <- cbind(indicators[,c("Date","con_tot.Q7")],pub[,c("con_totalQ7")])
+colnames(indicator_plot) <- c("Date","con_tot.Q7:Microdata","con_tot.Q7:Published")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Indicator") + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) 
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+```
+
+## Contractor Results for Q8 (Shortage of building materials)
+```{r figure13, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
+#new
+indicator_plot <- cbind(indicators[,c("Date","con_tot.Q8")],pub[,c("con_totalQ8")])
+colnames(indicator_plot) <- c("Date","con_tot.Q8:Microdata","con_tot.Q8:Published")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("New Indicator") + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) 
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+```
+
+
+## Contractor Results for Q9 (Shortage of building work)
+```{r figure14, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
+indicator_plot <- cbind(indicators[,c("Date","con_tot.Q9")],pub[,c("con_totalQ9")])
+colnames(indicator_plot) <- c("Date","con_tot.Q9:Microdata","con_tot.Q9:Published")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("New Indicator") + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) 
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+```
+
+
+#Dealing with Gaps
+
+##Contractor Results for Q1 (Confidence)
+
+```{r figure15, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- cbind(indicators[,c("Date","con_tot.Q1")],pub[,c("con_totalQ1")])
 indicator_plot[,4] <- na.approx(indicator_plot[,2])
 indicator_plot[is.na(indicator_plot[,2]),2] <- indicator_plot[is.na(indicator_plot[,2]),3]
@@ -314,8 +421,12 @@ g <- g + theme(legend.title=element_blank())
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
+```
 
 
+##Sub-contractor Results for Q2A (GBC)
+
+```{r figure16, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- cbind(indicators[,c("Date","subcon_tot.Q2A")],pub[,c("subcon_totalQ2A")])
 indicator_plot[,4] <- na.approx(indicator_plot[,2])
 indicator_plot[is.na(indicator_plot[,2]),2] <- indicator_plot[is.na(indicator_plot[,2]),3]
@@ -331,121 +442,176 @@ g <- g + theme(legend.title=element_blank())
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
+```
 
 
 
-##=============================
-#Compare to reference series
-ref <- read.csv("Ref Series.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+#Reference Series
 
-source("corstarsl.R")
+## Residential Activity (1)
 
+```{r figure17, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- cbind(indicators[,c("Date","res.Q3A")],ref[,c("GFCF.Residential","Residential.building","Res..excl..h.c.a.","Res..excl..h.c.","Res..excl..a.")])
 indicator_plot[,2:7] <- scale(indicator_plot[,2:7])
 colnames(indicator_plot) <- c("Date","res.Q3A","GFCF.Residential","Residential.building","Res.excl.h.c.a.","Res.excl.h.c.","Res.excl.a.")
-corstarsl(indicator_plot[,-1])
 
 plot <- melt(indicator_plot[,c(1:4)], id="Date")  # convert to long format
 g <- ggplot(data=plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
-g <- g + ylab("Indicator")
-g <- g + xlab("")
+g <- g + ylab("Indicator") + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + theme(legend.title=element_blank()) 
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
+```
 
+## Residential Activity (2)
+
+```{r figure18, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 plot <- melt(indicator_plot[,c(1,2,5,6,7)], id="Date")  # convert to long format
 g <- ggplot(data=plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
-g <- g + ylab("Indicator")
-g <- g + xlab("")
+g <- g + ylab("") + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + theme(legend.title=element_blank()) 
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
+```
 
+## Residential Activity Correlations
+```{r table1, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+source("corstarsl.R")
+xt <- xtable(corstarsl(indicator_plot[,-1]))
+print(xt, "latex",comment=FALSE,scalebox = 0.6)
+```
 
+## Non-residential Activity (1)
+```{r figure19, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- cbind(indicators[,c("Date","nonres.Q3A")],ref[,c("GFCF.Non.residential","Non.residential.building","Non.res..excl..h.c.a.","Non.res..excl..h.c.","Non.res..excl..a.")])
 indicator_plot[,2:7] <- scale(indicator_plot[,2:7])
 colnames(indicator_plot) <- c("Date","non_res.Q3A","GFCF.Non-residential","Non.residential.building","Non.res.excl.h.c.a.","Non.res.excl.h.c.","Non.res.excl.a.")
-corstarsl(indicator_plot[,-1])
-
 plot <- melt(indicator_plot[,c(1:4)], id="Date")  # convert to long format
 g <- ggplot(data=plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
-g <- g + ylab("Indicator")
-g <- g + xlab("")
+g <- g + ylab("Indicator") + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + theme(legend.title=element_blank()) 
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
+```
 
+## Non-residential Activity (2)
+```{r figure20, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 plot <- melt(indicator_plot[,c(1,2,5,6,7)], id="Date")  # convert to long format
 g <- ggplot(data=plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
-g <- g + ylab("Indicator")
-g <- g + xlab("")
+g <- g + ylab("") + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + theme(legend.title=element_blank()) 
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
+```
 
+## Non-residential Activity Correlations
 
+```{r table2, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+source("corstarsl.R")
+xt <- xtable(corstarsl(indicator_plot[,-1]))
+print(xt, "latex",comment=FALSE,scalebox = 0.6)
+```
 
+## Total Activity (1)
 
+```{r figure21, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- cbind(indicators[,c("Date","total.Q3A")],ref[,c("GFCF.Res_Non.res","GFCF.Total","Total.building","Total..excl..h.c.a.","Total..excl..h.c.","Total..incl..all.")])
 indicator_plot[,2:8] <- scale(indicator_plot[,2:8])
 colnames(indicator_plot) <- c("Date","total.Q3A","GFCF.Res & Non.res","GFCF.Total","Total.building","Total.excl.h.c.a.","Total.excl.h.c.","Total..incl.all")
-corstarsl(indicator_plot[,-1])
 
 plot <- melt(indicator_plot[,c(1:5)], id="Date")  # convert to long format
 g <- ggplot(data=plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
-g <- g + ylab("Indicator")
-g <- g + xlab("")
+g <- g + ylab("Indicator") + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + theme(legend.title=element_blank()) 
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
+```
 
+## Total Activity (2)
+
+```{r figure22, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 plot <- melt(indicator_plot[,c(1,2,6,7,8)], id="Date")  # convert to long format
 g <- ggplot(data=plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
-g <- g + ylab("Indicator")
-g <- g + xlab("")
+g <- g + ylab("") + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + theme(legend.title=element_blank()) 
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
+```
 
 
+## Total Activity Correlations
 
+```{r table3, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+source("corstarsl.R")
+xt <- xtable(corstarsl(indicator_plot[,-1]))
+print(xt, "latex",comment=FALSE,scalebox = 0.6)
+```
+
+
+## Regional Activity
+
+```{r figure23, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- cbind(indicators[,c("Date","wc.Q3A","kzn.Q3A","gp.Q3A")],ref[,c("Building_WC","Building_KN","Building_GP")])
 indicator_plot[,2:7] <- scale(indicator_plot[,2:7])
 colnames(indicator_plot) <- c("Date","wc.Q3A","kzn.Q3A","gp.Q3A","Building_WC","Building_KN","Building_GP")
-corstarsl(indicator_plot[,-1])
 
-plot <- melt(indicator_plot, id="Date")  # convert to long format
-g <- ggplot(data=plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g <- g + geom_line()
-g <- g + ylab("Indicator")
-g <- g + xlab("")
-g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank()) 
-g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + theme(legend.position="bottom")
-g
+plot <- melt(indicator_plot[,c(1,2,5)], id="Date")  # convert to long format
+g1 <- ggplot(data=plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g1 <- g1 + geom_line()
+g1 <- g1 + ylab("Indicator") + xlab("")
+g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g1 <- g1 + theme(legend.title=element_blank()) 
+g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g1 <- g1 + theme(legend.position="bottom")
+
+plot <- melt(indicator_plot[,c(1,3,6)], id="Date")  # convert to long format
+g2 <- ggplot(data=plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g2 <- g2 + geom_line()
+g2 <- g2 + ylab("Indicator") + xlab("")
+g2 <- g2 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g2 <- g2 + theme(legend.title=element_blank()) 
+g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g2 <- g2 + theme(legend.position="bottom")
+
+plot <- melt(indicator_plot[,c(1,4,7)], id="Date")  # convert to long format
+g3 <- ggplot(data=plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g3 <- g3 + geom_line()
+g3 <- g3 + ylab("Indicator") + xlab("")
+g3 <- g3 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g3 <- g3 + theme(legend.title=element_blank()) 
+g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g3 <- g3 + theme(legend.position="bottom")
+
+library(gridExtra)
+grid.arrange(g1, g2, g3, ncol=2, nrow =2)
+```
 
 
+## Regional Activity Correlations
 
-
+```{r table4, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+source("corstarsl.R")
+xt <- xtable(corstarsl(indicator_plot[,-1]))
+print(xt, "latex",comment=FALSE,scalebox = 0.6)
+```
 
 
 
