@@ -11,31 +11,6 @@ csl: harvard.csl
 
 
 
-```{r table1, echo=FALSE, results='asis', message=FALSE, cache = TRUE}
-suppressMessages(library(xtable))
-
-smoke <- matrix(c(".","Better","Same","Poorer",
-                  "Expected Better",0,-1,-2,
-                  "Expected Same",1,0,-1,
-                  "Expected Poorer",2,1,0),ncol=4,byrow=TRUE)
-colnames(smoke) <- c("","","Q1At+1","")
-rownames(smoke) <- c("","","Q1Pt","")
-
-#colnames(smoke) <- c("Better","Same","Poorer")
-#rownames(smoke) <- c("Expected Better","Expected Same","Expected Poorer")
-#names(dimnames(smoke)) <- c("Q7Pt", "Q7At+1")
-smoke <- as.table(smoke)
-
-xt <- xtable(smoke, caption="Possible Expectaion Errors")
-
-#addtorow <- list()
-#addtorow$pos <- list(0, 0)
-#addtorow$command <- c("& \\multicolumn{3}{c}{Q7At+1} \\\\\n",
-#"Q7Pt & Expected Better & Expected Same & Expected Poorer \\\\\n")
-#print(xtable(smoke), add.to.row = addtorow, include.colnames = FALSE)
-
-print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top")) 
-```
 
 \begin{table}[]
 \centering
@@ -77,4 +52,54 @@ print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.p
 \end{tabular}
 \end{table}
 
+
+
+\begin{tabular}{ |p{4cm}|p{3cm}|p{3cm}|p{3cm}|p{3cm}| }
+ \hline
+ \multicolumn{4}{|c|}{Sector} \\
+ \hline
+ Survey Question & Manufacturing & Construction & Trade & Services\\
+ \hline
+ Business Conditions   & X  & X &  X & X \\
+ Activity & X  & X &  X & X\\
+ Employment & X  & X &  X & X\\
+ Profitability    &   & X &  X & X\\
+ Orders Placed & X  &  &  X & \\
+ \hline
+\end{tabular}
+
+
+
+\begin{table}[] 
+\centering
+\caption{Survey Questions used by Sector}
+\label{my-label}
+\begin{tabular}{lrrrr}
+\hline
+\multicolumn{1}{|l|}{Survey Question}     & \multicolumn{1}{r|}{Manufacturing} & \multicolumn{1}{r|}{Construction} & 
+\multicolumn{1}{r|}{Trade} & \multicolumn{1}{l|}{Services} \\ \hline
+\multicolumn{1}{|l|}{Business Conditions} & \multicolumn{1}{r|}{X}             & \multicolumn{1}{r|}{X}            & \multicolumn{1}{r|}{X}     & \multicolumn{1}{r|}{X}        \\ \hline
+\multicolumn{1}{|l|}{Activity}            & \multicolumn{1}{r|}{X}             & \multicolumn{1}{r|}{X}            & \multicolumn{1}{r|}{X}     & \multicolumn{1}{r|}{X}        \\ \hline
+\multicolumn{1}{|l|}{Employment}          & \multicolumn{1}{r|}{X}             & \multicolumn{1}{r|}{X}            & \multicolumn{1}{r|}{X}     & \multicolumn{1}{r|}{X}        \\ \hline
+\multicolumn{1}{|l|}{Profitability}       & \multicolumn{1}{r|}{}              & \multicolumn{1}{r|}{X}            & \multicolumn{1}{r|}{X}     & \multicolumn{1}{r|}{X}        \\ \hline
+\multicolumn{1}{|l|}{Orders Placed}       & \multicolumn{1}{r|}{X}             & \multicolumn{1}{r|}{}             & \multicolumn{1}{r|}{X}     & \multicolumn{1}{r|}{}         \\ \hline
+\end{tabular}
+\end{table}
+
+
+
+\begin{table}[]
+\centering
+\caption{Survey Questions used by Sector}
+\label{my-label}
+\begin{tabular}{|l|r|r|r|r|}
+\hline
+\textbf{Survey Question} & \textbf{Manufacturing} & \textbf{Construction} & \textbf{Trade} & \multicolumn{1}{l|}{\textbf{Services}} \\ \hline
+Business Conditions      & X                      & X                     & X              & X                                      \\ \hline
+Activity                 & X                      & X                     & X              & X                                      \\ \hline
+Employment               & X                      & X                     & X              & X                                      \\ \hline
+Profitability            &                        & X                     & X              & X                                      \\ \hline
+Orders Placed            & X                      &                       & X              &                                        \\ \hline
+\end{tabular}
+\end{table}
 

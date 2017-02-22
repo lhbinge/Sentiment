@@ -23,7 +23,8 @@ recessions.df = read.table(textConnection(
     "Peak, Trough
     1989-02-28, 1993-05-30
     1996-11-30, 1999-08-31
-    2007-11-30, 2009-08-31"), sep=',',
+    2007-11-30, 2009-08-31
+    2013-11-30, 2015-09-30"), sep=',',
     colClasses=c('Date', 'Date'), header=TRUE)
 
 
@@ -200,7 +201,7 @@ g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + scale_fill_discrete(name="Sector")
 g <- g + scale_y_continuous(labels=comma)
 g <- g + scale_x_discrete(breaks=levels(BERplot$Group.1)[c(T, rep(F, 1))])
-g <- g + ylab("Nuymber of Respondents")
+g <- g + ylab("Number of Respondents")
 g <- g + xlab("Date")
 g
 

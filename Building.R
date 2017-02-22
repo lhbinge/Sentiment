@@ -49,7 +49,7 @@ BER.B$region[(BER.B$surveyQ %in% foute) & (BER.B$region == 9)] <- 6.1
 BER.B$region[BER.B$surveyQ %in% foute] <- round(BER.B$region[BER.B$surveyQ %in% foute])
 
 Mode <- function(x) {
-    ux <- unique(x)
+    ux <- na.remove(unique(x))
     ux[which.max(tabulate(match(x, ux)))]
 }
 
@@ -444,10 +444,12 @@ g <- g + theme(legend.position="bottom")
 g
 
 
+###-------------------
+#final interpolated series
 
+indicators_final <- cbind(datums,na.approx(indicators[,2:ncol(indicators)]))
 
-
-
+write.csv(indicators_final,"Building_Indicators.csv")
 
 
 

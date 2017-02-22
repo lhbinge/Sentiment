@@ -36,12 +36,8 @@ suppressMessages(library(urca))
 ##=====================##
 ## READING IN THE DATA ##
 ##=====================##
-
 datums <- read.csv("dates.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
 datums$Datum <- as.Date(datums$Datum, format = "%Y/%m/%d")
-
-#library(xlsx)
-#write.xlsx(BER.B, "check.xlsx")
 
 ##=============================
 BER.B <- read.csv("Building_full.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
@@ -350,6 +346,7 @@ g <- g + theme(legend.title=element_blank())
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
+
 ```
 
 
@@ -366,6 +363,7 @@ g <- g + theme(legend.title=element_blank())
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
+
 ```
 
 ## Contractor Results for Q8 (Shortage of building materials)
@@ -382,6 +380,7 @@ g <- g + theme(legend.title=element_blank())
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
+
 ```
 
 
@@ -398,6 +397,7 @@ g <- g + theme(legend.title=element_blank())
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
+
 ```
 
 
@@ -455,7 +455,7 @@ indicator_plot <- cbind(indicators[,c("Date","res.Q3A")],ref[,c("GFCF.Residentia
 indicator_plot[,2:7] <- scale(indicator_plot[,2:7])
 colnames(indicator_plot) <- c("Date","res.Q3A","GFCF.Residential","Residential.building","Res.excl.h.c.a.","Res.excl.h.c.","Res.excl.a.")
 
-plot <- melt(indicator_plot[,c(1:4)], id="Date")  # convert to long format
+plot <- melt(indicator_plot[,c(1:7)], id="Date")  # convert to long format
 g <- ggplot(data=plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
 g <- g + ylab("Indicator") + xlab("")
@@ -466,19 +466,6 @@ g <- g + theme(legend.position="bottom")
 g
 ```
 
-## Residential Activity (2)
-
-```{r figure18, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
-plot <- melt(indicator_plot[,c(1,2,5,6,7)], id="Date")  # convert to long format
-g <- ggplot(data=plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g <- g + geom_line()
-g <- g + ylab("") + xlab("")
-g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank()) 
-g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + theme(legend.position="bottom")
-g
-```
 
 ## Residential Activity Correlations
 ```{r table1, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
@@ -492,7 +479,7 @@ print(xt, "latex",comment=FALSE,scalebox = 0.6)
 indicator_plot <- cbind(indicators[,c("Date","nonres.Q3A")],ref[,c("GFCF.Non.residential","Non.residential.building","Non.res..excl..h.c.a.","Non.res..excl..h.c.","Non.res..excl..a.")])
 indicator_plot[,2:7] <- scale(indicator_plot[,2:7])
 colnames(indicator_plot) <- c("Date","non_res.Q3A","GFCF.Non-residential","Non.residential.building","Non.res.excl.h.c.a.","Non.res.excl.h.c.","Non.res.excl.a.")
-plot <- melt(indicator_plot[,c(1:4)], id="Date")  # convert to long format
+plot <- melt(indicator_plot[,c(1:7)], id="Date")  # convert to long format
 g <- ggplot(data=plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
 g <- g + ylab("Indicator") + xlab("")
@@ -503,18 +490,6 @@ g <- g + theme(legend.position="bottom")
 g
 ```
 
-## Non-residential Activity (2)
-```{r figure20, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
-plot <- melt(indicator_plot[,c(1,2,5,6,7)], id="Date")  # convert to long format
-g <- ggplot(data=plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g <- g + geom_line()
-g <- g + ylab("") + xlab("")
-g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank()) 
-g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + theme(legend.position="bottom")
-g
-```
 
 ## Non-residential Activity Correlations
 
@@ -531,24 +506,10 @@ indicator_plot <- cbind(indicators[,c("Date","total.Q3A")],ref[,c("GFCF.Res_Non.
 indicator_plot[,2:8] <- scale(indicator_plot[,2:8])
 colnames(indicator_plot) <- c("Date","total.Q3A","GFCF.Res & Non.res","GFCF.Total","Total.building","Total.excl.h.c.a.","Total.excl.h.c.","Total..incl.all")
 
-plot <- melt(indicator_plot[,c(1:5)], id="Date")  # convert to long format
+plot <- melt(indicator_plot[,c(1:8)], id="Date")  # convert to long format
 g <- ggplot(data=plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
 g <- g + ylab("Indicator") + xlab("")
-g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank()) 
-g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + theme(legend.position="bottom")
-g
-```
-
-## Total Activity (2)
-
-```{r figure22, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
-plot <- melt(indicator_plot[,c(1,2,6,7,8)], id="Date")  # convert to long format
-g <- ggplot(data=plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g <- g + geom_line()
-g <- g + ylab("") + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + theme(legend.title=element_blank()) 
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
