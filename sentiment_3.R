@@ -14,6 +14,7 @@ suppressMessages(library(quantmod))
 suppressMessages(library(vars))
 suppressMessages(library(tseries))
 suppressMessages(library(urca))
+suppressMessages(library(BCDating))
 
 GDPdata <- read.csv("GDP Data.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
 GDPdata$Date <- as.Date(GDPdata$Date, format = "%Y/%m/%d")
@@ -29,6 +30,9 @@ recessions.df = read.table(textConnection(
     2007-11-30, 2009-08-31
     2013-11-30, 2016-12-31"), sep=',',
     colClasses=c('Date', 'Date'), header=TRUE)
+
+realGDP <- read.csv("RealGDP.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+realGDP$Date <- as.Date(realGDP$Date, format = "%Y/%m/%d")
 
 ##====================================##
 ## READING IN THE DATA ##
@@ -181,7 +185,8 @@ w.indicators.T <- calc_wconf(BER[BER$Sector=="Trade",])
 indicators.S <- calc_conf(BER[BER$Sector=="Services",])
 w.indicators.S <- calc_wconf(BER[BER$Sector=="Services",])
 
-indicators <- calc_conf(BER)
+indicators <- calc_conf(BER)[c(2,14:15)]
+colnames(indicators) <- c("Date","Activity","Confidence")
 w.indicators <- calc_wconf(BER)
 
 ##=================================##
@@ -270,27 +275,24 @@ g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"), e
 g <- g + theme(legend.position="bottom")
 g
 
-index_plot <- cbind(w.indicators,indicators[,14:15])
-colnames(index_plot) <- c("Date","Weighted Activity","Weighetd Confidence","Unweighted Activity","Unweighetd Confidence")
-index_plot <- melt(index_plot, id="Date")  # convert to long format
-g <- ggplot(data=index_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g <- g + geom_line(size = 1)
-g <- g + ylab("Indicator") + xlab("")
-g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank()) 
-g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + theme(legend.position="bottom")
-g
+#==============================
+#Comparison with Other measures
+#==============================
 
+GDPgrowth4 <- as.data.frame(sapply(log(realGDP[,-1]), diff, lag =4))
+GDPgrowth1 <- as.data.frame(sapply(log(realGDP[,-1]), diff, lag =1))
 
-index_plot <- cbind(w.indicators,GDPdata$BER_BCI, GDPdata$SACCI_BCI)
-index_plot[,2:5] <- scale(index_plot[,2:5])
-colnames(index_plot) <- c("Date","Activity","Confidence","BER_BCI","SACCI_BCI")
+conf_indices <- cbind(w.indicators,GDPdata$BER_BCI, GDPdata$SACCI_BCI,GDPgrowth4$RGDP)
+colnames(conf_indices) <- c("Date","Activity","Confidence","BER_BCI","SACCI_BCI","RGDP_Growth")
+
+index_plot <- conf_indices
+index_plot[,2:6] <- scale(index_plot[,2:6])
 g <- ggplot(index_plot) 
 g <- g + geom_line(aes(x=Date, y=Activity, colour="Activity"), size = 1)
 g <- g + geom_line(aes(x=Date, y=Confidence, colour="Confidence"), size = 1)
 g <- g + geom_line(aes(x=Date, y=BER_BCI, colour="BER_BCI"), size = 1)
 g <- g + geom_line(aes(x=Date, y=SACCI_BCI, colour="SACCI_BCI"), size = 1)
+g <- g + geom_line(aes(x=Date, y=RGDP_Growth, colour="RGDP_Growth"), size = 1)
 #g <- g + theme_bw()
 g <- g + labs(color="Legend text")
 g <- g + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
@@ -303,9 +305,41 @@ g <- g + theme(legend.position="bottom")
 g
 
 
-#Plot examples for sectors
-index_plot <- cbind(w.indicators.M[,c(2,14:15)],(GDPdata$ManuConf-50)/50)
-colnames(index_plot) <- c("Date","Activity","Confidence","BER BCI")
+#Check correlations
+source("corstarsl.R")
+xt <- xtable(corstarsl(conf_indices[,-1]), caption="Correlations in Levels")
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8,
+      include.rownames=FALSE)
+
+Activity <- conf_indices[,2]
+Confidence <- conf_indices[,3]
+BER_BCI <- conf_indices[,4]
+SACCI_BCI <- conf_indices[,5] 
+RGDP_Growth <- conf_indices[,6]
+
+par(mfrow=c(2,2))
+ccf(Activity, RGDP_Growth, na.action = na.pass)
+ccf(Confidence, RGDP_Growth, na.action = na.pass)
+ccf(BER_BCI, RGDP_Growth, na.action = na.pass)
+ccf(SACCI_BCI, RGDP_Growth, na.action = na.pass)
+
+#-----------------------------
+#Sectoral Analysis
+manufac <- cbind(w.indicators.M[,c(2,14:15)],(GDPdata$ManuConf-50)/50, GDPgrowth4$Manufacturing)
+colnames(manufac) <- c("Date","Activity","Confidence","BER_BCI","RGDP_Growth")
+
+construct <- cbind(w.indicators.B[,c(2,14:15)],(GDPdata$BuildingConf-50)/50, GDPgrowth4$Construction)
+colnames(construct) <- c("Date","Activity","Confidence","BER_BCI","RGDP_Growth")
+
+GDPdata$TradeConf <- rowMeans(GDPdata[,c(14,15,17)])
+trade <- cbind(w.indicators.T[,c(2,14:15)],(GDPdata$TradeConf-50)/50, GDPgrowth4$Trade)
+colnames(trade) <- c("Date","Activity","Confidence","BER_BCI","RGDP_Growth")
+
+services <- cbind(w.indicators.S[,c(2,14:15)], GDPgrowth4$Services)
+colnames(services) <- c("Date","Activity","Confidence","RGDP_Growth")
+
+index_plot <- manufac
+index_plot[,-1] <- scale(index_plot[,-1])
 index_plot <- melt(index_plot, id="Date")  # convert to long format
 g1 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable)) 
 g1 <- g1 + geom_line()
@@ -316,8 +350,8 @@ g1 <- g1 + theme(legend.position="none")
 g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 
-index_plot <- cbind(w.indicators.B[,c(2,14:15)],(GDPdata$BuildingConf-50)/50)
-colnames(index_plot) <- c("Date","Activity","Confidence","BER BCI")
+index_plot <- construct
+index_plot[,-1] <- scale(index_plot[,-1])
 index_plot <- melt(index_plot, id="Date")  # convert to long format
 g2 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable)) 
 g2 <- g2 + geom_line()
@@ -328,9 +362,8 @@ g2 <- g2 + theme(legend.position="none")
 g2 <- g2 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 
-GDPdata$TradeConf <- rowMeans(GDPdata[,c(14,15,17)])
-index_plot <- cbind(w.indicators.T[,c(2,14:15)],(GDPdata$TradeConf-50)/50)
-colnames(index_plot) <- c("Date","Activity","Confidence","BER BCI")
+index_plot <- trade
+index_plot[,-1] <- scale(index_plot[,-1])
 index_plot <- melt(index_plot, id="Date")  # convert to long format
 g3 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable)) 
 g3 <- g3 + geom_line()
@@ -341,9 +374,392 @@ g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "c
 g3 <- g3 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 
+index_plot <- services
+index_plot[,-1] <- scale(index_plot[,-1])
+index_plot <- melt(index_plot, id="Date")  # convert to long format
+g4 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable)) 
+g4 <- g4 + geom_line()
+g4 <- g4 + theme(legend.title=element_blank())
+g4 <- g4 + ggtitle("Services") 
+g4 <- g4 + ylab("") + xlab("")
+g4 <- g4 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
+g4 <- g4 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g4 <- g4 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 
 library(gridExtra)
-grid.arrange(g1, g2, g3, ncol=2, nrow =2)
+grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
+
+
+#Check correlations
+source("corstarsl.R")
+services$BER_BCI <- 1
+services <- services[,c(1,2,3,5,4)]
+xt1 <- cbind(corstarsl(manufac[,-1]),corstarsl(construct[,-1]))
+xt2 <- cbind(corstarsl(trade[,-1]),corstarsl(services[,-1]))
+xt1 <- sapply(xt1,as.character)
+xt2 <- sapply(xt2,as.character)
+xt2[3,4:5] <- ""
+xt2[4,6] <- ""
+xt1[1,] <- c("Activity","Confidence","BER_BCI","Activity","Confidence","BER_BCI")
+xt2[1,] <- c("Activity","Confidence","BER_BCI","Activity","Confidence","BER_BCI")
+colnames(xt1) <- c(" ","Manufacturing"," "," ","Construction"," ")
+colnames(xt2) <- c(" ","Trade"," "," ","Services"," ")
+row.names(xt1) <- c("Activity","Confidence","BER_BCI","RGDP_Growth")
+row.names(xt2) <- c("Activity","Confidence","BER_BCI","RGDP_Growth")
+
+xt <- xtable(xt1, caption="Correlations in Levels")
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8)
+xt <- xtable(xt2)
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.85)
+
+
+calc_ccf <- function(data, serv=0) {
+    Activity <- data[,2]
+    Confidence <- data[,3]
+    BER_BCI <- data[,4]
+    RGDP_Growth <- data[,5]
+
+    par(mfrow=c(2,2))
+    ccf(Activity, RGDP_Growth, na.action = na.pass)
+    ccf(Confidence, RGDP_Growth, na.action = na.pass)
+    if(serv==0) { ccf(BER_BCI, RGDP_Growth, na.action = na.pass) }
+}
+
+calc_ccf(manufac)
+calc_ccf(construct)
+calc_ccf(trade)
+calc_ccf(services, 1)
+
+#-------------------------------------------------------
+#Turning Points
+turning.df = read.table(textConnection(
+    "Peaks,  Troughs 
+         ,  1993Q2 
+    1996Q4, 1999Q3 
+    2007Q4, 2009Q3 
+    2013Q4, "), 
+    sep=',', header=TRUE)
+
+dat <- BBQ(ts(conf_indices[,2],start =c(1992,1),end=c(2015,3),frequency=4), mincycle = 6, minphase = 3, name="Activity")
+tp1 <- as.data.frame(show(dat))[,-3]
+dat <- BBQ(ts(conf_indices[,3],start =c(1992,1),end=c(2015,3),frequency=4), mincycle = 6, minphase = 3, name="Activity")
+tp2 <- as.data.frame(show(dat))[,-3]
+dat <- BBQ(ts(conf_indices[,4],start =c(1992,1),end=c(2015,3),frequency=4), mincycle = 6, minphase = 3, name="Activity")
+tp3 <- as.data.frame(show(dat))[,-3]
+dat <- BBQ(ts(conf_indices[,5],start =c(1992,1),end=c(2015,3),frequency=4), mincycle = 6, minphase = 3, name="Activity")
+tp4 <- as.data.frame(show(dat))[,-3]
+dat <- BBQ(ts(conf_indices[,6],start =c(1992,1),end=c(2015,3),frequency=4), mincycle = 6, minphase = 3, name="Activity")
+tp5 <- as.data.frame(show(dat))[,-3]
+
+cbindPad <- function(...){
+    args <- list(...)
+    n <- sapply(args,nrow)
+    mx <- max(n)
+    pad <- function(x, mx){
+        if (nrow(x) < mx){
+            nms <- colnames(x)
+            padTemp <- matrix(NA, mx - nrow(x), ncol(x))
+            colnames(padTemp) <- nms
+            if (ncol(x)==0) {
+                return(padTemp)
+            } else {
+                return(rbind(x,padTemp))
+            }
+        }
+        else{
+            return(x)
+        }
+    }
+    rs <- lapply(args,pad,mx)
+    return(do.call(cbind,rs))
+}
+
+turning <- cbindPad(turning.df,tp1,tp2,tp3,tp4,tp5)
+turning <- sapply(turning,as.character)
+turning <- rbind(colnames(turning),turning)
+colnames(turning) <- c("SARB"," ","Activity"," ","Confidence"," ","BER","BCI","SACCI","BCI","RGDP","Growth")
+xt <- xtable(turning, caption="Turning Points")
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"),
+      scalebox = 0.8, include.rownames = FALSE)
+
+
+turning <- cbindPad(turning.df,tp1,tp2,tp5)
+turning <- sapply(turning,as.character)
+turning <- rbind(colnames(turning),turning)
+colnames(turning) <- c("SARB"," ","Activity"," ","Confidence"," ","RGDP","Growth")
+xt <- xtable(turning, caption="Turning Points")
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"),
+      scalebox = 0.8, include.rownames = FALSE)
+
+#data("Iran.non.Oil.GDP.Cycle")
+#dat <- BBQ(Iran.non.Oil.GDP.Cycle, name="Dating Business Cycles of Iran")
+#show(dat)
+#summary(dat)
+#plot(dat)
+#data(MBRI.Iran.Dating)
+#plot(dat,MBRI.Iran.Dating)
+
+
+##========================================================
+##-------------VAR Analysis-------------------------------
+##========================================================
+calc_var <- function(data) {
+    vardat <- data
+    infocrit <- VARselect(vardat, lag.max = 12, type = "const")
+    k_aic <- infocrit$selection[1]
+    k_hq  <- infocrit$selection[2]
+    k_sic <- infocrit$selection[3]
+    k <- min(k_aic,k_sic,k_hq)
+    var_model <- VAR(vardat,p=k,type="const")
+    return(var_model)
+}
+
+var1 <- calc_var(cbind(Activity,RGDP_Growth))
+var2 <- calc_var(cbind(Confidence, RGDP_Growth))
+var3 <- calc_var(cbind(BER_BCI, RGDP_Growth))
+var4 <- calc_var(cbind(SACCI_BCI, RGDP_Growth))
+
+
+##Granger causality tests
+G <- data.frame()
+G[1,1] <- causality(var1,cause = "Activity")$Granger[4]
+G[1,2] <- as.numeric(as.character(causality(var1,cause = "Activity")$Granger[1]))
+G[1,3] <- as.numeric(as.character(causality(var1,cause = "Activity")$Granger[3]))
+G[2,1] <- causality(var1,cause = "RGDP_Growth")$Granger[4]
+G[2,2] <- as.numeric(as.character(causality(var1,cause = "RGDP_Growth")$Granger[1]))
+G[2,3] <- as.numeric(as.character(causality(var1,cause = "RGDP_Growth")$Granger[3]))
+
+G[3,1] <- causality(var2,cause = "Confidence")$Granger[4]
+G[3,2] <- as.numeric(as.character(causality(var2,cause = "Confidence")$Granger[1]))
+G[3,3] <- as.numeric(as.character(causality(var2,cause = "Confidence")$Granger[3]))
+G[4,1] <- causality(var2,cause = "RGDP_Growth")$Granger[4]
+G[4,2] <- as.numeric(as.character(causality(var2,cause = "RGDP_Growth")$Granger[1]))
+G[4,3] <- as.numeric(as.character(causality(var2,cause = "RGDP_Growth")$Granger[3]))
+
+G[5,1] <- causality(var3,cause = "BER_BCI")$Granger[4]
+G[5,2] <- as.numeric(as.character(causality(var3,cause = "BER_BCI")$Granger[1]))
+G[5,3] <- as.numeric(as.character(causality(var3,cause = "BER_BCI")$Granger[3]))
+G[6,1] <- causality(var3,cause = "RGDP_Growth")$Granger[4]
+G[6,2] <- as.numeric(as.character(causality(var3,cause = "RGDP_Growth")$Granger[1]))
+G[6,3] <- as.numeric(as.character(causality(var3,cause = "RGDP_Growth")$Granger[3]))
+
+G[7,1] <- causality(var4,cause = "SACCI_BCI")$Granger[4]
+G[7,2] <- as.numeric(as.character(causality(var4,cause = "SACCI_BCI")$Granger[1]))
+G[7,3] <- as.numeric(as.character(causality(var4,cause = "SACCI_BCI")$Granger[3]))
+G[8,1] <- causality(var4,cause = "RGDP_Growth")$Granger[4]
+G[8,2] <- as.numeric(as.character(causality(var4,cause = "RGDP_Growth")$Granger[1]))
+G[8,3] <- as.numeric(as.character(causality(var4,cause = "RGDP_Growth")$Granger[3]))
+
+
+G[,2:3] <- round(G[,2:3],3)
+mystars <- ifelse(G[,3] < .01, "***", ifelse(G[,3] < .05, "** ", ifelse(G[,3] < .1, "* ", " ")))
+Gnew <- matrix(paste(G[,2], mystars, sep=""), ncol=1) 
+G[,1] <- sub(".*: ", "", G[,1])
+G[,2] <- Gnew
+colnames(G) <- c("Granger causality H0:","statistic","p-value")
+
+xt <- xtable(G, caption="Granger causality tests")
+print(xt, "latex", include.rownames=FALSE,comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), 
+      scalebox = 0.8)
+
+#-----------------------------------------
+#Sectoral
+
+calc_sectoralvar <- function(data, serv=0) {
+    Activity <- data[,2]
+    Confidence <- data[,3]
+    BER_BCI <- data[,4]
+    RGDP_Growth <- data[,5]
+    
+    var1 <- calc_var(cbind(Activity,RGDP_Growth))
+    var2 <- calc_var(cbind(Confidence, RGDP_Growth))
+    var3 <- calc_var(cbind(BER_BCI, RGDP_Growth))
+
+    ##Granger causality tests
+    G <- data.frame()
+    G[1,1] <- causality(var1,cause = "Activity")$Granger[4]
+    G[1,2] <- as.numeric(as.character(causality(var1,cause = "Activity")$Granger[1]))
+    G[1,3] <- as.numeric(as.character(causality(var1,cause = "Activity")$Granger[3]))
+    G[2,1] <- causality(var1,cause = "RGDP_Growth")$Granger[4]
+    G[2,2] <- as.numeric(as.character(causality(var1,cause = "RGDP_Growth")$Granger[1]))
+    G[2,3] <- as.numeric(as.character(causality(var1,cause = "RGDP_Growth")$Granger[3]))
+    
+    G[3,1] <- causality(var2,cause = "Confidence")$Granger[4]
+    G[3,2] <- as.numeric(as.character(causality(var2,cause = "Confidence")$Granger[1]))
+    G[3,3] <- as.numeric(as.character(causality(var2,cause = "Confidence")$Granger[3]))
+    G[4,1] <- causality(var2,cause = "RGDP_Growth")$Granger[4]
+    G[4,2] <- as.numeric(as.character(causality(var2,cause = "RGDP_Growth")$Granger[1]))
+    G[4,3] <- as.numeric(as.character(causality(var2,cause = "RGDP_Growth")$Granger[3]))
+    
+    if(serv==0) {
+        G[5,1] <- causality(var3,cause = "BER_BCI")$Granger[4]
+        G[5,2] <- as.numeric(as.character(causality(var3,cause = "BER_BCI")$Granger[1]))
+        G[5,3] <- as.numeric(as.character(causality(var3,cause = "BER_BCI")$Granger[3]))
+        G[6,1] <- causality(var3,cause = "RGDP_Growth")$Granger[4]
+        G[6,2] <- as.numeric(as.character(causality(var3,cause = "RGDP_Growth")$Granger[1]))
+        G[6,3] <- as.numeric(as.character(causality(var3,cause = "RGDP_Growth")$Granger[3]))
+    }    
+    G[,2:3] <- round(G[,2:3],3)
+    mystars <- ifelse(G[,3] < .01, "***", ifelse(G[,3] < .05, "** ", ifelse(G[,3] < .1, "* ", " ")))
+    Gnew <- matrix(paste(G[,2], mystars, sep=""), ncol=1) 
+    G[,1] <- sub(".*: ", "", G[,1])
+    G[,2] <- Gnew
+    colnames(G) <- c("Granger causality H0:","statistic","p-value")
+    
+    return(G)
+}
+
+G_manu <- calc_sectoralvar(manufac)
+G_build <- calc_sectoralvar(construct[-1:-5,])
+G_trade <- calc_sectoralvar(trade[-1,])
+G_serv <- calc_sectoralvar(services[-1:-53,],1)
+G_serv <- rbind(G_serv, c("BER_BCI do not Granger-cause RGDP_Growth","",""), 
+                        c("RGDP_Growth do not Granger-cause BER_BCI","",""))
+                
+G_sector <- cbind(G_manu[,1:2],G_build[,2],G_trade[,2],G_serv[,2])
+colnames(G_sector)[2:5] <- c("Manufacturing", "Construction","Trade","Services")
+
+xt <- xtable(G_sector, caption="Granger causality tests")
+print(xt, "latex", include.rownames=FALSE,comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), 
+      scalebox = 0.8)
+
+#----------------------------------------------
+#Unit root tests
+adf.test(services[-1:-53,5], alternative = "stationary")
+
+summary(ur.df(services[-1:-53,5], c("none"), selectlags = c("AIC")))
+summary(ur.df(services[-1:-53,5], c("drift"), selectlags = c("AIC")))
+summary(ur.df(services[-1:-53,5], c("trend"), selectlags = c("AIC")))
+
+G_manu <- calc_sectoralvar(manufac)
+G_build <- calc_sectoralvar(construct[-1:-5,])
+G_trade <- calc_sectoralvar(trade[-1,])
+G_serv <- calc_sectoralvar(services[-1:-53,],1)
+
+#----------------------------------------------------------
+##IRFs
+#----------------------------------------------------------
+detach("package:BCDating", unload=TRUE)
+
+vardat <- cbind(Activity,RGDP_Growth)
+infocrit <- VARselect(vardat, lag.max = 12, type = "const")
+k_aic <- infocrit$selection[1]
+k_hq  <- infocrit$selection[2]
+k_sic <- infocrit$selection[3]
+k <- min(k_aic,k_sic,k_hq)
+var1 <- VAR(vardat,p=k,type="const")
+
+irf.y1 <- irf(var1,impulse = "Activity", response = "RGDP_Growth", n.ahead = 12,runs = 1000, seed=12345) 
+irf.y2 <- irf(var1,impulse = "RGDP_Growth", response = "Activity", n.ahead = 12,runs = 1000, seed=12345)
+par(mfrow=c(1,2),mar=c(7,5,7,2), cex=0.6, new=FALSE)
+plot(irf.y1,plot.type = c("single"))
+par(mfrow=c(1,2),mar=c(6,4,4.2,1), cex=0.6, new = TRUE)
+plot(irf.y2,plot.type = c("single"))
+
+irf.y1 <- irf(var2,impulse = "Confidence", response = "RGDP_Growth", n.ahead = 12,runs = 1000, seed=12345) 
+irf.y2 <- irf(var2,impulse = "RGDP_Growth", response = "Confidence", n.ahead = 12,runs = 1000, seed=12345)
+par(mfrow=c(1,2),mar=c(7,5,7,2), cex=0.6, new=FALSE)
+plot(irf.y1,plot.type = c("single"))
+par(mfrow=c(1,2),mar=c(6,4,4.2,1), cex=0.6, new = TRUE)
+plot(irf.y2,plot.type = c("single"))
+
+irf.y1 <- irf(var3,impulse = "BER_BCI", response = "RGDP_Growth", n.ahead = 12,runs = 1000, seed=12345) 
+irf.y2 <- irf(var3,impulse = "RGDP_Growth", response = "BER_BCI", n.ahead = 12,runs = 1000, seed=12345)
+par(mfrow=c(1,2),mar=c(7,5,7,2), cex=0.6, new=FALSE)
+plot(irf.y1,plot.type = c("single"))
+par(mfrow=c(1,2),mar=c(6,4,4.2,1), cex=0.6, new = TRUE)
+plot(irf.y2,plot.type = c("single"))
+
+irf.y1 <- irf(var4,impulse = "SACCI_BCI", response = "RGDP_Growth", n.ahead = 12,runs = 1000, seed=12345) 
+irf.y2 <- irf(var4,impulse = "RGDP_Growth", response = "SACCI_BCI", n.ahead = 12,runs = 1000, seed=12345)
+par(mfrow=c(1,2),mar=c(7,5,7,2), cex=0.6, new=FALSE)
+plot(irf.y1,plot.type = c("single"))
+par(mfrow=c(1,2),mar=c(6,4,4.2,1), cex=0.6, new = TRUE)
+plot(irf.y2,plot.type = c("single"))
+
+
+#------------------------------------------------
+#FEVD
+#par(mfrow=c(1,1))
+#win.graph(width=13,height=8)
+plot(fevd(var1, n.ahead = 10))
+plot(fevd(var2, n.ahead = 10))
+plot(fevd(var3, n.ahead = 10))
+plot(fevd(var4, n.ahead = 10))
+
+
+#-------------------------------------------------
+#Sectoral
+
+calc_irfs <- function(data) {
+    Activity <- data[,2]
+    RGDP_Growth <- data[,5]
+    
+    var1 <- calc_var(cbind(Activity,RGDP_Growth))
+    
+    irf.y1 <- irf(var1,impulse = "Activity", response = "RGDP_Growth", n.ahead = 12,runs = 1000, seed=12345) 
+    irf.y2 <- irf(var1,impulse = "RGDP_Growth", response = "Activity", n.ahead = 12,runs = 1000, seed=12345)
+    par(mfrow=c(1,2),mar=c(7,5,7,2), cex=0.6, new=FALSE)
+    plot(irf.y1,plot.type = c("single"))
+    par(mfrow=c(1,2),mar=c(6,4,4.2,1), cex=0.6, new = TRUE)
+    plot(irf.y2,plot.type = c("single"))
+    
+    #FEVD
+    fevd(var1, n.ahead = 10)
+    
+}
+
+calc_irfs(manufac)
+calc_irfs(construct[-1:-5,])
+calc_irfs(trade[-1,])
+calc_irfs(services[-1:-53,])
+
+
+#------------------------------------------------
+#FEVD
+fevd(var.2c, n.ahead = 5)
+
+#-------------------------------------------------
+
+#Three-variable VAR
+
+variable.3 <- function(y1, name1, y2, name2, y3, name3) {
+    y1 <- na.approx(y1)
+    y2 <- na.approx(y2)
+    y3 <- na.approx(y3)
+    vardat <- ts.intersect(y1, y2, y3)  
+    colnames(vardat) <- c(name1,name2,name3)
+    #infocrit <- VARselect(vardat, lag.max = 12, type = "const",exogen = dum94)
+    infocrit <- VARselect(vardat, lag.max = 12, type = "const")
+    k_aic <- infocrit$selection[1]
+    k_hq  <- infocrit$selection[2]
+    k_sic <- infocrit$selection[3]
+    k <- min(k_aic,k_sic,k_hq)
+    #var <- VAR(vardat,p=k,type="const",exogen = dum94)
+    var <- VAR(vardat,p=k,type="const")
+    return(var)
+}
+
+var <- variable.3(ts.indicators[,5],"Confidence",
+                  ts.indicators[,9],"Uncertainty",
+                  ts.GDPgrowth4[,1],"RGDPGrowth")
+
+name1 <- "Confidence"
+name2 <- "Uncertainty"   
+name3 <- "RGDPGrowth"
+
+irf.y1 <- irf(var,impulse = c(name1,name2), response = name3, n.ahead = 12,runs = 1000, seed=12345) 
+par(mfrow=c(1,2),mar=c(5,4,4,2), cex=0.5)
+plot(irf.y1,plot.type = c("single"))
+
+irf.y2 <- irf(var,impulse = name3, response = c(name1,name2), n.ahead = 12,runs = 1000, seed=12345)
+par(mfrow=c(1,2),mar=c(5,4,4,2), cex=0.5)
+plot(irf.y2,plot.type = c("single"))
+
+
+
+
+
 
 ##====================================================================================##
 ## -------------------------------- UNCERTAINTY --------------------------------------##
@@ -489,44 +905,64 @@ write.csv2(s_errors,"Services_errors.csv")
 #-----------------------------------------------------------------
 #Read for speed
 m_errors <- read.csv2("Manufacturing_errors.csv", header=TRUE)[,-1]
+m_errors$Datum <- as.Date(m_errors$Datum)
 b_errors <- read.csv2("Building_errors.csv", header=TRUE)[,-1]
+b_errors$Datum <- as.Date(b_errors$Datum)
 t_errors <- read.csv2("Trade_errors.csv", header=TRUE)[,-1]
+t_errors$Datum <- as.Date(t_errors$Datum)
 s_errors <- read.csv2("Services_errors.csv", header=TRUE)[,-1]
+s_errors$Datum <- as.Date(s_errors$Datum)
 errors <- rbind(m_errors,b_errors,t_errors,s_errors)
 
-calc_uncert.ee <- function(errors) {
-    idio.errors <- aggregate(errors[,-1:-2], by=list(errors$Datum), FUN=sd,na.rm=TRUE)
+calc_uncert.ee <- function(data) {
+    idio.errors <- aggregate(data[,-1:-2], by=list(data$Datum), FUN=se)
     #idio.errors[,2:6] <- scale(idio.errors[,2:6])
     idio.errors$idio <- rowMeans(idio.errors[,-1:-2],na.rm = TRUE, dims = 1)
     idio.errors$idio <- na.approx(idio.errors$idio,na.rm=FALSE)
     
-    agg.errors <- aggregate(errors[,-1:-2], by=list(errors$Datum), FUN= function(x) {mean(x, na.rm = TRUE)^2})
+    agg.errors <- aggregate(data[,-1:-2], by=list(data$Datum), FUN= function(x) {mean(x, na.rm = TRUE)^2})
     #agg.errors[,2:6] <- scale(agg.errors[,2:6])
     agg.errors$aggregate <- rowMeans(agg.errors[,-1:-2],na.rm = TRUE, dims = 1)
     agg.errors$aggregate <- na.approx(agg.errors$aggregate,na.rm=FALSE)
     
-    exp.errors <- cbind(idio.errors[,c(1,7)],agg.errors[,13])
-    colnames(exp.errors) <- c("Date","Uncert_Idiosyncratic","Uncert_Aggregate")
+    #total.errors <- aggregate(data[,-1:-2], by=list(data$Datum), FUN= function(x) {sum(x^2, na.rm = TRUE)*mean(x, na.rm = TRUE)/sum(x, na.rm = TRUE)})
+    #total.errors[,2:6] <- scale(total.errors[,2:6])
+    #total.errors$total <- rowMeans(total.errors[,-1:-2],na.rm = TRUE, dims = 1)
+    #total.errors$total  <- na.approx(total.errors$total,na.rm=FALSE)
+    
+    exp.errors <- cbind(idio.errors[,c(1,7)],agg.errors[,7],total.errors[,7])
+    colnames(exp.errors) <- c("Date","Uncert_Idiosyncratic","Uncert_Aggregate","Uncert_Total")
+    exp.errors$Date <- as.Date(exp.errors$Date)
+    exp.errors <- merge(datums,exp.errors,by.x="Datum",by.y="Date", all=TRUE)
     return(exp.errors)
 }
 
-calc_wuncert.ee <- function(errors) {
+calc_wuncert.ee <- function(data) {
     ##Weighted versions
-    weeg.3 <- function(errors) {  #calculate weighted standard deviation for each quarter for all columns
-        temp <- cbind(factor=errors$factor,errors$factor*errors[,3:ncol(errors)])
+    weeg.3 <- function(data) {  #calculate weighted standard deviation for each quarter for all columns
+        temp <- cbind(factor=data$factor,data$factor*data[,3:ncol(data)])
         xbar <- colSums(temp, na.rm=TRUE, dims = 1)/
             sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])]))
         temp <- errors[,-1]
         #this is the weighted standard devation: sum[wi*(xi-xbar)^2]/sum(wi) 
-        ind <- sqrt(sapply(colnames(temp), function(x) sum((temp[,x]-xbar[x])*(temp[,x]-xbar[x])*temp$factor,na.rm=TRUE))/
-                        sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])]))) 
+        idio <- sqrt(sapply(colnames(temp), function(x) sum((temp[,x]-xbar[x])*(temp[,x]-xbar[x])*temp$factor,na.rm=TRUE))/
+                        sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])],na.rm=TRUE))) 
+        aggr <- sapply(colnames(temp), function(x) xbar[x]*xbar[x]) 
+        ind <- cbind(idio,aggr)
         return(ind)
     }
-    w.errors <- as.data.frame(t(sapply(levels(BER$surveyQ), function(kwartaal) weeg.3(errors[errors$Date==kwartaal,]))))[,-1]
-    w.uncertainty$Uncert_ee <- rowMeans(w.errors,na.rm = TRUE, dims = 1)
-    
+    w.errors <- as.data.frame(t(sapply(datums$Datum, function(kwartaal) weeg.3(data[data$Datum==kwartaal,]))))
+    w.errors <- cbind(datums$Datum,w.errors)
+    colnames(w.errors) <- c("Date","Idio.factor","Idio.Q2","Idio.Q3","Idio.Q4","Idio.Q5","Idio.Q6",
+                            "Aggr.factor","Aggr.Q2","Aggr.Q3","Aggr.Q4","Aggr.Q5","Aggr.Q6")
+    w.errors[w.errors==0] <- NA
+    w.errors[,-1] <- scale(w.errors[,-1])
+    w.errors$Idio <- rowMeans(w.errors[,3:7],na.rm = TRUE, dims = 1)
+    w.errors$Aggr <- rowMeans(w.errors[,9:13],na.rm = TRUE, dims = 1)
+    w.errors[,14:15] <- na.approx(w.errors[,14:15],na.rm=FALSE)
+    w.errors <- w.errors[,c(1,14:15)]
+    return(w.errors)
 }
-
 
 uncert_error.M <- calc_uncert.ee(m_errors)
 w.uncert_error.M <- calc_wuncert.ee(m_errors)
@@ -544,8 +980,34 @@ uncert_error <- calc_uncert.ee(errors)
 w.uncert_error <- calc_wuncert.ee(errors)
 
 
-index_plot <- cbind(exp.errors[,c(1,7,13)])
-colnames(index_plot) <- c("Date","Idiosyncratic","Aggregate")
+#----------------------------------------------------------
+
+##Weighted versions
+weights <- GDPdata[,c(1:4,6)]
+dispersion <- cbind(w.uncertainty.M[,c(2,16)],w.uncertainty.B[,16],w.uncertainty.T[,16],w.uncertainty.S[,16])
+colnames(dispersion) <- c("Date","Manufacturing","Construction","Trade","Services")
+
+idio.errors <- cbind(w.uncert_error.M[,c(1,2)],w.uncert_error.B[,2],w.uncert_error.T[,2],w.uncert_error.S[,2])
+colnames(idio.errors) <- c("Date","Manufacturing","Construction","Trade","Services")
+
+aggr.errors <- cbind(w.uncert_error.M[,c(1,3)],w.uncert_error.B[,3],w.uncert_error.T[,3],w.uncert_error.S[,3])
+colnames(aggr.errors) <- c("Date","Manufacturing","Construction","Trade","Services")
+
+#create weighted means by GDP share
+dispersion$Dispersion <- sapply(dispersion$Date, function(x) weighted.mean(dispersion[which(dispersion$Date==x),c(2:5)], 
+                                                                         weights[weights$Date==x,-1],na.rm=TRUE))
+idio.errors$Idio.errors <- sapply(idio.errors$Date, function(x) weighted.mean(idio.errors[which(idio.errors$Date==x),c(2:5)], 
+                                                               weights[weights$Date==x,-1],na.rm=TRUE))
+aggr.errors$Aggr.errors <- sapply(aggr.errors$Date, function(x) weighted.mean(aggr.errors[which(aggr.errors$Date==x),c(2:5)], 
+                                                                              weights[weights$Date==x,-1],na.rm=TRUE))
+
+w.uncert_error <- cbind(dispersion[,c(1,6)],idio.errors[,6],aggr.errors[,6])
+colnames(w.uncert_error) <- c("Date","Dispersion","Idiosyncratic","Aggregate")
+
+
+index_plot <- w.uncert_error
+index_plot[,2:4] <- scale(index_plot[,2:4])
+colnames(index_plot) <- c("Date","Dispersion","Idiosyncratic","Aggregate")
 index_plot <- melt(index_plot, id="Date")  # convert to long format
 g <- ggplot(data=index_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line(size = 1)
@@ -557,359 +1019,6 @@ g <- g + theme(legend.position="bottom")
 g
 
 
-
-##=================================##
-## AGGREGATING                              
-##=================================##
-##Weighted versions
-names(w.uncertainty.M)[grep("Q7", colnames(w.uncertainty.M))] <- paste(names(w.uncertainty.M)[grep("Q7", colnames(w.uncertainty.M))],"M",sep=".")
-names(w.uncertainty.B)[grep("Q2", colnames(w.uncertainty.B))] <- paste(names(w.uncertainty.B)[grep("Q2", colnames(w.uncertainty.B))],"B",sep=".")
-names(w.uncertainty.T)[grep("Q2", colnames(w.uncertainty.T))] <- paste(names(w.uncertainty.T)[grep("Q2", colnames(w.uncertainty.T))],"T",sep=".")
-names(w.uncertainty.V)[grep("Q2", colnames(w.uncertainty.V))] <- paste(names(w.uncertainty.V)[grep("Q2", colnames(w.uncertainty.V))],"V",sep=".")
-names(w.uncertainty.S)[grep("Q2", colnames(w.uncertainty.S))] <- paste(names(w.uncertainty.S)[grep("Q2", colnames(w.uncertainty.S))],"S",sep=".")
-
-w.uncertainty <- merge(w.uncertainty.M[,c("Uncert_cc.M","Q7P.M","Uncert_fl.M","eQ7.M","Uncert_ee.M")], 
-                       w.uncertainty.B[,c("Uncert_cc.B","Q2P.B","Uncert_fl.B","eQ2.B","Uncert_ee.B")], by.x="row.names", by.y="row.names",all.x=TRUE)
-w.uncertainty <- merge(w.uncertainty, w.uncertainty.T[,c("Uncert_cc.T","Q2P.T","Uncert_fl.T","eQ2.T","Uncert_ee.T")], by.x="Row.names", by.y="row.names",all.x=TRUE)
-w.uncertainty <- merge(w.uncertainty, w.uncertainty.V[,c("Uncert_cc.V","Q2P.V","Uncert_fl.V","eQ2.V","Uncert_ee.V")], by.x="Row.names", by.y="row.names",all.x=TRUE)
-w.uncertainty <- merge(w.uncertainty, w.uncertainty.S[,c("Uncert_cc.S","Q2P.S","Uncert_fl.S","eQ2.S","Uncert_ee.S")], by.x="Row.names", by.y="row.names",all.x=TRUE)
-colnames(w.uncertainty)[1] <- "Date"
-
-#Calculate weighted means by GDP share
-w.uncertainty$Uncert_cc<- sapply(w.uncertainty$Date, function(x) weighted.mean(w.uncertainty[which(w.uncertainty$Date==x),c(2,7,12,17,22)], 
-                                                                               weights[weights$Date==x,-1],na.rm=TRUE))
-w.uncertainty$Q2P      <- sapply(w.uncertainty$Date, function(x) weighted.mean(w.uncertainty[which(w.uncertainty$Date==x),c(3,8,13,18,23)], 
-                                                                               weights[weights$Date==x,-1],na.rm=TRUE))
-w.uncertainty$Uncert_fl<- sapply(w.uncertainty$Date, function(x) weighted.mean(w.uncertainty[which(w.uncertainty$Date==x),c(4,9,14,19,24)], 
-                                                                               weights[weights$Date==x,-1],na.rm=TRUE))
-w.uncertainty$eQ2      <- sapply(w.uncertainty$Date, function(x) weighted.mean(w.uncertainty[which(w.uncertainty$Date==x),c(5,10,15,20,25)], 
-                                                                               weights[weights$Date==x,-1],na.rm=TRUE))
-w.uncertainty$Uncert_ee<- sapply(w.uncertainty$Date, function(x) weighted.mean(w.uncertainty[which(w.uncertainty$Date==x),c(6,11,16,21,26)], 
-                                                                               weights[weights$Date==x,-1],na.rm=TRUE))
-w.uncertainty$Date <- GDPdata[,1]
-#-------------------
-#Unweighted versions (standard error of stacked database)
-uncertainty <- aggregate(BER[,(match("surveyQ",colnames(BER))+1):ncol(BER)], by=list(BER$surveyQ), FUN=se)
-uncertainty$Uncert_cc <- rowMeans(uncertainty[,c("Q2A","Q3A","Q4A","Q5A","Q6A","Q1")],na.rm = TRUE, dims = 1)
-uncertainty$Uncert_fl <- rowMeans(uncertainty[,c("Q2P","Q3P","Q4P","Q5P","Q6P")],na.rm = TRUE, dims = 1)
-colnames(uncertainty)[1] <- "Date"
-
-#Match the same or similar questions from the different surveys to combine all errors
-#Create NAs for missing questions
-tempE.M <- cbind(errors.M[,c("Date","eQ7","eQ1","eQ8",      "eQ4")],"Manucfaturing")
-colnames(tempE.M) <-       c("Date","eQ2","eQ3","eQ4",      "eQ6",  "Sector")
-tempE.M[,c("eQ5")] <- NA
-tempE.B <- cbind(errors.B[,c("Date","eQ2","eQ3","eQ4","eQ5")],      "Construction")
-colnames(tempE.B) <-       c("Date","eQ2","eQ3","eQ4","eQ5",        "Sector")
-tempE.B[,c("eQ6")] <- NA
-tempE.T <- cbind(errors.T[,c("Date","eQ2","eQ3","eQ5")],            "Trade")
-colnames(tempE.T) <-       c("Date","eQ2","eQ3","eQ4",              "Sector")
-tempE.T[,c("eQ5","eQ6")] <- NA
-tempE.V <- cbind(errors.V[,c("Date","eQ2","eQ3",            "eQ4")],"Motor")
-colnames(tempE.V) <-       c("Date","eQ2","eQ3",            "eQ6",  "Sector")
-tempE.V[,c("eQ4","eQ5")] <- NA
-tempE.S <- cbind(errors.S[,c("Date","eQ2","eQ3","eQ4","eQ5")],      "Services")
-colnames(tempE.S) <-       c("Date","eQ2","eQ3","eQ4","eQ5",        "Sector")
-tempE.S[,c("eQ6")] <- NA
-
-errors <- tempE.M
-errors <- rbind(errors,tempE.B,tempE.T,tempE.V,tempE.S)
-errors <- errors[,c(1,6,2,3,4,7,5)]
-rm(tempE.M,tempE.B,tempE.T,tempE.V,tempE.S)
-
-##Could plot errors?
-exp.errors <- aggregate(errors[,-1:-2], by=list(errors$Date), FUN=se)
-uncertainty$eQ2 <- exp.errors$eQ2
-uncertainty$Uncert_ee <- rowMeans(exp.errors[,-1:-2],na.rm = TRUE, dims = 1)
-uncertainty$Date <- GDPdata[,1]
-
-##-------------------------------------------------------------------------------
-#standardise the uncertainty indicators for plotting
-w.uncert.norm <- cbind(Date=w.uncertainty[,1],as.data.frame(scale(w.uncertainty[,-1])))
-uncert.norm <- cbind(Date=uncertainty[,1],as.data.frame(scale(uncertainty[,-1])))
-
-indicator_plot <- uncert.norm[,c("Date","Q2P","Uncert_fl","eQ2","Uncert_ee")]
-#colnames(indicator_plot) <- c("Date","Q2P","eQ2","wUncert_ee","wUncert_fl")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g <- g + geom_line()
-g <- g + ylab("Indicator")
-g <- g + xlab("")
-g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank()) 
-g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + theme(legend.position="bottom")
-g
-
-
-# Check correlations
-temp_indices <- cbind(uncert.norm[,c(1,3,5)],w.uncert.norm[,c(3,5)])
-colnames(temp_indices) <- c("Date","Unw_FL","Unw_EE","Weighted_FL","Weighted_EE")
-source("corstarsl.R")
-for(i in 2:ncol(temp_indices)) {temp_indices[,i] <- as.numeric(temp_indices[,i]) }
-ts.all_indices <- as.ts(temp_indices[,-1],start =c(2000,1),end=c(2015,3),frequency=4) 
-#cor(temp_indices[,-1],use="complete.obs")
-xt <- xtable(corstarsl(ts.all_indices), caption="Correlations in Levels")
-print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"))
-
-
-##========================================================
-##COMOVEMENT----------------------------------------------
-##========================================================
-ts.indicators <- ts(indicators[,c(2,3,4,5,6,9,10,11,12)],start =c(1992,1),end=c(2015,3),frequency=4) 
-ts.indicators.M <- ts(indicators.M[,c(2,4,5,6,7,12,13,15,16)],start =c(1992,1),end=c(2015,3),frequency=4) 
-ts.indicators.B <- ts(indicators.B[,c(2,3,4,5,6,9,10,11,12)],start =c(1993,2),end=c(2015,3),frequency=4) 
-ts.indicators.T <- ts(indicators.T[,c(2,3,4,5,6,9,10,11,12)],start =c(1992,2),end=c(2015,3),frequency=4) 
-
-ts.windicators <- ts(w.indicators[,c(2,3,4,5,6,9,10,11,12)],start =c(1992,1),end=c(2015,3),frequency=4) 
-ts.windicators.M <- ts(w.indicators.M[,c(2,4,5,6,7,11,12,14,15)],start =c(1992,1),end=c(2015,3),frequency=4) 
-ts.windicators.B <- ts(w.indicators.B[,c(2,3,4,5,6,8,9,10,11)],start =c(1993,2),end=c(2015,3),frequency=4) 
-ts.windicators.T <- ts(w.indicators.T[,c(2,3,4,5,6,8,9,10,11)],start =c(1992,2),end=c(2015,3),frequency=4) 
-
-realGDP <- read.csv("RealGDP.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-realGDP$X <- as.Date(realGDP$X, format = "%Y/%m/%d")
-ts.realGDP <- ts(realGDP,start =c(1991,1),end=c(2015,3),frequency=4)
-GDPgrowth4 <- sapply(log(ts.realGDP[,-1]), diff, lag =4)
-ts.GDPgrowth4 <- ts(GDPgrowth4,start =c(1992,1),end=c(2015,3),frequency=4)
-GDPgrowth1 <- sapply(log(ts.realGDP[,-1]), diff, lag =1)
-ts.GDPgrowth1 <- ts(GDPgrowth1,start =c(1991,2),end=c(2015,3),frequency=4)
-
-dum94 <- ts(0,start =c(1992,1),end=c(2015,3),frequency=4)
-dum94[10] <- 1
-dum94 <- as.data.frame(dum94)
-names(dum94) <- "dum94"
-
-#plot hulle saam
-temp_indices <- cbind(indicators[,c(1,6)],Uncert_EE=indicators[,12],GDPgr=GDPgrowth4[,1])
-ts.temp_indices <- ts(temp_indices[,-1],start =c(1992,1),end=c(2015,3),frequency=4) 
-plot(ts.temp_indices,plot.type = "m",main="")
-
-all_indices <- cbind(Date=GDPdata$X,w.indicators[,c(2,5,6,10,12)],GDPgrowth4[,1])
-colnames(all_indices) <- c("Date", "Conf_CC", "Act_GBC", "Conf_FL", "Uncert_FL", "Uncert_EE", "GDPgrowth")
-
-Conf_cc <- all_indices[,2]
-Act_GBC <- all_indices[,3]
-Conf_GBC <- all_indices[,4]
-Unc_fl <- all_indices[,5] 
-Unc_ee <- all_indices[,6]
-GDPgrowth <- all_indices[,7]
-
-par(mfrow=c(2,2))
-ccf(Act_GBC, GDPgrowth, na.action = na.pass)
-ccf(Conf_GBC, GDPgrowth, na.action = na.pass)
-ccf(Unc_fl, GDPgrowth, na.action = na.pass)
-ccf(Unc_ee, GDPgrowth, na.action = na.pass)
-
-##========================================================
-##-------------VAR Analysis-------------------------------
-##========================================================
-y1 <- ts.windicators[,1]
-y2 <- ts.GDPgrowth4[,1]
-name1 <- "Conf_CC"
-name2 <- "RGDPGrowth"  
-y1 <- na.approx(y1)
-y2 <- na.approx(y2)
-vardat <- ts.intersect(y1, y2)  
-colnames(vardat) <- c(name1,name2)
-infocrit <- VARselect(vardat, lag.max = 12, type = "const",exogen = dum94)
-k_aic <- infocrit$selection[1]
-k_hq  <- infocrit$selection[2]
-k_sic <- infocrit$selection[3]
-k <- min(k_aic,k_sic,k_hq)
-var1 <- VAR(vardat,p=k,type="const",exogen = dum94)
-
-y1 <- ts.windicators[,4]
-y2 <- ts.GDPgrowth4[,1]
-name1 <- "Act_GBC"
-name2 <- "RGDPGrowth"  
-y1 <- na.approx(y1)
-y2 <- na.approx(y2)
-vardat <- ts.intersect(y1, y2)  
-colnames(vardat) <- c(name1,name2)
-infocrit <- VARselect(vardat, lag.max = 12, type = "const",exogen = dum94)
-k_aic <- infocrit$selection[1]
-k_hq  <- infocrit$selection[2]
-k_sic <- infocrit$selection[3]
-k <- min(k_aic,k_sic,k_hq)
-var2 <- VAR(vardat,p=k,type="const",exogen = dum94)
-
-y1 <- ts.windicators[,5]
-y2 <- ts.GDPgrowth4[,1]
-name1 <- "Conf_GBC"
-name2 <- "RGDPGrowth"  
-y1 <- na.approx(y1)
-y2 <- na.approx(y2)
-vardat <- ts.intersect(y1, y2)  
-colnames(vardat) <- c(name1,name2)
-infocrit <- VARselect(vardat, lag.max = 12, type = "const",exogen = dum94)
-k_aic <- infocrit$selection[1]
-k_hq  <- infocrit$selection[2]
-k_sic <- infocrit$selection[3]
-k <- min(k_aic,k_sic,k_hq)
-var3 <- VAR(vardat,p=k,type="const",exogen = dum94)
-
-y1 <- ts.windicators[,7]
-y2 <- ts.GDPgrowth4[,1]
-name1 <- "Uncert_fl"
-name2 <- "RGDPGrowth"  
-y1 <- na.approx(y1)
-y2 <- na.approx(y2)
-vardat <- ts.intersect(y1, y2)  
-colnames(vardat) <- c(name1,name2)
-infocrit <- VARselect(vardat, lag.max = 12, type = "const")
-k_aic <- infocrit$selection[1]
-k_hq  <- infocrit$selection[2]
-k_sic <- infocrit$selection[3]
-k <- min(k_aic,k_sic,k_hq)
-var4 <- VAR(vardat,p=k,type="const")
-
-y1 <- ts.windicators[,9]
-y2 <- ts.GDPgrowth4[,1]
-name1 <- "Uncert_ee"
-name2 <- "RGDPGrowth"  
-y1 <- na.approx(y1)
-y2 <- na.approx(y2)
-vardat <- ts.intersect(y1, y2)  
-colnames(vardat) <- c(name1,name2)
-infocrit <- VARselect(vardat, lag.max = 12, type = "const")
-k_aic <- infocrit$selection[1]
-k_hq  <- infocrit$selection[2]
-k_sic <- infocrit$selection[3]
-k <- min(k_aic,k_sic,k_hq)
-var5 <- VAR(vardat,p=k,type="const")
-
-y1 <- ts.indicators[,9]
-y2 <- ts.GDPgrowth4[,1]
-name1 <- "unw.Uncert_ee"
-name2 <- "RGDPGrowth"  
-y1 <- na.approx(y1)
-y2 <- na.approx(y2)
-vardat <- ts.intersect(y1, y2)  
-colnames(vardat) <- c(name1,name2)
-infocrit <- VARselect(vardat, lag.max = 12, type = "const")
-k_aic <- infocrit$selection[1]
-k_hq  <- infocrit$selection[2]
-k_sic <- infocrit$selection[3]
-k <- min(k_aic,k_sic,k_hq)
-var6 <- VAR(vardat,p=k,type="const")
-
-
-##Granger causality tests
-G <- data.frame()
-G[1,1] <- causality(var1,cause = "Conf_CC")$Granger[4]
-G[1,2] <- as.numeric(as.character(causality(var1,cause = "Conf_CC")$Granger[1]))
-G[1,3] <- as.numeric(as.character(causality(var1,cause = "Conf_CC")$Granger[3]))
-G[2,1] <- causality(var1,cause = "RGDPGrowth")$Granger[4]
-G[2,2] <- as.numeric(as.character(causality(var1,cause = "RGDPGrowth")$Granger[1]))
-G[2,3] <- as.numeric(as.character(causality(var1,cause = "RGDPGrowth")$Granger[3]))
-
-G[3,1] <- causality(var2,cause = "Act_GBC")$Granger[4]
-G[3,2] <- as.numeric(as.character(causality(var2,cause = "Act_GBC")$Granger[1]))
-G[3,3] <- as.numeric(as.character(causality(var2,cause = "Act_GBC")$Granger[3]))
-G[4,1] <- causality(var2,cause = "RGDPGrowth")$Granger[4]
-G[4,2] <- as.numeric(as.character(causality(var2,cause = "RGDPGrowth")$Granger[1]))
-G[4,3] <- as.numeric(as.character(causality(var2,cause = "RGDPGrowth")$Granger[3]))
-
-G[5,1] <- causality(var3,cause = "Conf_GBC")$Granger[4]
-G[5,2] <- as.numeric(as.character(causality(var3,cause = "Conf_GBC")$Granger[1]))
-G[5,3] <- as.numeric(as.character(causality(var3,cause = "Conf_GBC")$Granger[3]))
-G[6,1] <- causality(var3,cause = "RGDPGrowth")$Granger[4]
-G[6,2] <- as.numeric(as.character(causality(var3,cause = "RGDPGrowth")$Granger[1]))
-G[6,3] <- as.numeric(as.character(causality(var3,cause = "RGDPGrowth")$Granger[3]))
-
-G[8,1] <- causality(var4,cause = "Uncert_fl")$Granger[4]
-G[8,2] <- as.numeric(as.character(causality(var4,cause = "Uncert_fl")$Granger[1]))
-G[8,3] <- as.numeric(as.character(causality(var4,cause = "Uncert_fl")$Granger[3]))
-G[9,1] <- causality(var4,cause = "RGDPGrowth")$Granger[4]
-G[9,2] <- as.numeric(as.character(causality(var4,cause = "RGDPGrowth")$Granger[1]))
-G[9,3] <- as.numeric(as.character(causality(var4,cause = "RGDPGrowth")$Granger[3]))
-
-G[10,1] <- causality(var5,cause = "Uncert_ee")$Granger[4]
-G[10,2] <- as.numeric(as.character(causality(var5,cause = "Uncert_ee")$Granger[1]))
-G[10,3] <- as.numeric(as.character(causality(var5,cause = "Uncert_ee")$Granger[3]))
-G[11,1] <- causality(var5,cause = "RGDPGrowth")$Granger[4]
-G[11,2] <- as.numeric(as.character(causality(var5,cause = "RGDPGrowth")$Granger[1]))
-G[11,3] <- as.numeric(as.character(causality(var5,cause = "RGDPGrowth")$Granger[3]))
-
-G[12,1] <- causality(var6,cause = "unw.Uncert_ee")$Granger[4]
-G[12,2] <- as.numeric(as.character(causality(var6,cause = "unw.Uncert_ee")$Granger[1]))
-G[12,3] <- as.numeric(as.character(causality(var6,cause = "unw.Uncert_ee")$Granger[3]))
-G[13,1] <- causality(var6,cause = "RGDPGrowth")$Granger[4]
-G[13,2] <- as.numeric(as.character(causality(var6,cause = "RGDPGrowth")$Granger[1]))
-G[13,3] <- as.numeric(as.character(causality(var6,cause = "RGDPGrowth")$Granger[3]))
-
-G[,2:3] <- round(G[,2:3],3)
-mystars <- ifelse(G[,3] < .01, "***", ifelse(G[,3] < .05, "** ", ifelse(G[,3] < .1, "* ", " ")))
-Gnew <- matrix(paste(G[,2], mystars, sep=""), ncol=1) 
-Gnew[7] <- ""
-G[,1] <- sub(".*: ", "", G[,1])
-G[,2] <- Gnew
-colnames(G) <- c("Granger causality H0:","statistic","p-value")
-
-xt <- xtable(G, caption="Granger causality tests")
-print(xt, "latex", include.rownames=FALSE,comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8)
-
-#----------------------------------------------------------
-##IRFs
-#----------------------------------------------------------
-irf.y1 <- irf(var3,impulse = "Conf_GBC", response = "RGDPGrowth", n.ahead = 12,runs = 1000, seed=12345) 
-irf.y2 <- irf(var3,impulse = "RGDPGrowth", response = "Conf_GBC", n.ahead = 12,runs = 1000, seed=12345)
-
-par(mfrow=c(1,2),mar=c(7,5,7,2), cex=0.6, new=FALSE)
-plot(irf.y1,plot.type = c("single"))
-par(mfrow=c(1,2),mar=c(6,4,4.2,1), cex=0.6, new = TRUE)
-plot(irf.y2,plot.type = c("single"))
-
-irf.y1 <- irf(var5,impulse = "Uncert_ee", response = "RGDPGrowth", n.ahead = 12,runs = 1000, seed=12345) 
-irf.y2 <- irf(var5,impulse = "RGDPGrowth", response = "Uncert_ee", n.ahead = 12,runs = 1000, seed=12345)
-
-par(mfrow=c(1,2),mar=c(7,5,7,2), cex=0.6, new=FALSE)
-plot(irf.y1,plot.type = c("single"))
-par(mfrow=c(1,2),mar=c(6,4,4.2,1), cex=0.6, new = TRUE)
-plot(irf.y2,plot.type = c("single"))
-
-irf.y1 <- irf(var6,impulse = "unw.Uncert_ee", response = "RGDPGrowth", n.ahead = 12,runs = 1000, seed=12345) 
-irf.y2 <- irf(var6,impulse = "RGDPGrowth", response = "unw.Uncert_ee", n.ahead = 12,runs = 1000, seed=12345)
-
-par(mfrow=c(1,2),mar=c(7,5,7,2), cex=0.6, new=FALSE)
-plot(irf.y1,plot.type = c("single"))
-par(mfrow=c(1,2),mar=c(6,4,4.2,1), cex=0.6, new = TRUE)
-plot(irf.y2,plot.type = c("single"))
-
-#Three-variable VAR
-
-variable.3 <- function(y1, name1, y2, name2, y3, name3) {
-    y1 <- na.approx(y1)
-    y2 <- na.approx(y2)
-    y3 <- na.approx(y3)
-    vardat <- ts.intersect(y1, y2, y3)  
-    colnames(vardat) <- c(name1,name2,name3)
-    #infocrit <- VARselect(vardat, lag.max = 12, type = "const",exogen = dum94)
-    infocrit <- VARselect(vardat, lag.max = 12, type = "const")
-    k_aic <- infocrit$selection[1]
-    k_hq  <- infocrit$selection[2]
-    k_sic <- infocrit$selection[3]
-    k <- min(k_aic,k_sic,k_hq)
-    #var <- VAR(vardat,p=k,type="const",exogen = dum94)
-    var <- VAR(vardat,p=k,type="const")
-    return(var)
-}
-
-var <- variable.3(ts.indicators[,5],"Confidence",
-                  ts.indicators[,9],"Uncertainty",
-                  ts.GDPgrowth4[,1],"RGDPGrowth")
-
-name1 <- "Confidence"
-name2 <- "Uncertainty"   
-name3 <- "RGDPGrowth"
-
-irf.y1 <- irf(var,impulse = c(name1,name2), response = name3, n.ahead = 12,runs = 1000, seed=12345) 
-par(mfrow=c(1,2),mar=c(5,4,4,2), cex=0.5)
-plot(irf.y1,plot.type = c("single"))
-
-irf.y2 <- irf(var,impulse = name3, response = c(name1,name2), n.ahead = 12,runs = 1000, seed=12345)
-par(mfrow=c(1,2),mar=c(5,4,4,2), cex=0.5)
-plot(irf.y2,plot.type = c("single"))
 
 
 

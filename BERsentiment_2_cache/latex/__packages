@@ -18,3 +18,8 @@ lmtest
 vars
 tseries
 gridExtra
+lattice
+survival
+Formula
+Hmisc
+BCDating

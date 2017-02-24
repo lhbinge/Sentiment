@@ -203,6 +203,7 @@ suppressMessages(library(quantmod))
 suppressMessages(library(vars))
 suppressMessages(library(tseries))
 suppressMessages(library(urca))
+suppressMessages(library(BCDating))
 
 GDPdata <- read.csv("GDP Data.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
 GDPdata$Date <- as.Date(GDPdata$Date, format = "%Y/%m/%d")
@@ -218,6 +219,9 @@ recessions.df = read.table(textConnection(
     2007-11-30, 2009-08-31
     2013-11-30, 2016-12-31"), sep=',',
     colClasses=c('Date', 'Date'), header=TRUE)
+
+realGDP <- read.csv("RealGDP.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+realGDP$Date <- as.Date(realGDP$Date, format = "%Y/%m/%d")
 
 ##====================================##
 ## READING IN THE DATA ##
@@ -423,7 +427,7 @@ Accordingly, @Girardi2015 suggest scaling the forecast dispersion measures in pe
 
 Uncertainty is then measured as the cross-sectional standard deviation of the expectation errors in each quarter. Although it is based on the realised expectation errors in the next quarter, this is dependent on the knowledge and level of uncertainty in the current period. Thus, the standard deviation of realised expectation errors at time $t+1$ constitutes uncertainty in $t$ [@Bachmann2010]. This timing does not require decision-makers to know anything about the future, other than that it is more or less uncertain.
 
-One implication of this uncertainty indicator is that when all the firms make the same expectation error it implies no uncertainty. @Arslan2011 argued that firms make expectation errors because of uncertainty in the economy and that expectation errors should therefore be treated as uncertainty. They distinguish between "aggregate" and "idiosyncratic" uncertainty. Idiosyncratic uncertainty is the variance of expectation errors made across firms and is the same as the measure used in @Bachmann2010 and @Bachmann2013. Idiosyncratic uncertainty measures how individual firms depart from the overall mean on expectation errors. Aggregate uncertainty is defined as the square of the average expectation errors made across firms. Consequently, aggregate uncertainty increases if more firms make similar expectation errors. This is akin to the measures based on the mean of the absolute expectations errors proposed in @Bachmann2013, which one would expect to be larger in a more uncertain environment. The total uncertainty measure, captures all expectation errors.
+One implication of this uncertainty indicator is that when all the firms make the same expectation error it implies no uncertainty. @Arslan2011 argued that firms make expectation errors because of uncertainty in the economy and that expectation errors should therefore be treated as uncertainty. They call the measure used in @Bachmann2010 and @Bachmann2013 "idiosyncratic" uncertainty. It measures how individual firms depart from the overall mean on expectation errors. In addition, they suggest "aggregate" uncertainty, which is defined as the square of the average expectation errors made across firms. Consequently, aggregate uncertainty increases if more firms make similar expectation errors. This is akin to the measures based on the mean of the absolute expectations errors proposed in @Bachmann2013, which one would expect to be larger in a more uncertain environment. 
 
 More formally, the uncertainty measures can be defined as: 
 $$
@@ -440,8 +444,8 @@ If more firms make the same expectation errors, aggregate uncertainty will incre
 
 To calculate the indicators for a specific question the weightings are applied in the same way as for the confidence indicators, i.e. firm size and subsector weights. @Jurado2015 argued that uncertainty manifests itself in a vast array of variables. Composite uncertainty indicators are therefore calculated as the average of a number of survey questions, as reported in Table 2. This should reduce their likelihood of producing "false positives", i.e. signalling high uncertainty where there is none, and "false negatives", i.e. failure to detect mounting uncertainty [@Girardi2015]. The sectoral indicators are then aggregated with GDP shares as weights to form the overall uncertainty indicators. The cross-sectional dispersion method can be seen as akin to the forecaster disagreement proxy for uncertainty used by @Baker2013.
 
-#Results: Indicators of Sentiment
-This section uses the quarterly BER business tendency surveys and the methodology described above to calculate indicators of business sentiment in South Africa. The composite sectoral and aggregate indicators for confidence and uncertainty are first presented. The indicators are then compared to existing measures of confidence and uncertainty in South Africa and related to economic activity in South Africa.  
+#Results: Confidence
+This section uses the quarterly BER business tendency surveys and the methodology described above to calculate indicators of business confidence in South Africa. The composite sectoral and aggregate indicators for confidence are first presented. The indicators are then compared to existing measures of confidence and related to economic activity in South Africa. 
 
 ##Confidence
 
@@ -494,7 +498,8 @@ w.indicators.T <- calc_wconf(BER[BER$Sector=="Trade",])
 indicators.S <- calc_conf(BER[BER$Sector=="Services",])
 w.indicators.S <- calc_wconf(BER[BER$Sector=="Services",])
 
-indicators <- calc_conf(BER)
+indicators <- calc_conf(BER)[c(2,14:15)]
+colnames(indicators) <- c("Date","Activity","Confidence")
 w.indicators <- calc_wconf(BER)
 
 ##=================================##
@@ -514,7 +519,7 @@ w.indicators <- cbind(activity[,c(1,6)],conf[,6])
 colnames(w.indicators) <- c("Date","Activity","Confidence")
 ```
 
-Figure 2 illustrates the weighted sectoral Activity and Confidence indicators. The indicators seem to capture some cyclical movement in the sectors. The confidence indicators seem to lead the activity indicators in each of the sectors, with turning points generally before the activity measures. This is what one would expect, given that the confidence indicators are based on forward-looking expectations. This means that the confidence indicators are potentially more useful leading indicators of economic activity.
+Figure 2 illustrates the weighted sectoral Activity and Confidence indicators. The indicators seem to capture cyclical movement in the sectors. The confidence indicators seem to lead the activity indicators in each of the sectors, with turning points generally before the activity measures. This is what one would expect, given that the confidence indicators are based on forward-looking expectations. This means that the confidence indicators are potentially useful leading indicators of economic activity.
 
 ```{r figure2, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted Sectoral Activity and Confidence Indicators"}
 #Plot examples for sectors
@@ -570,6 +575,7 @@ library(gridExtra)
 grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 ```
 
+Figure 3 illustrates the weighted aggregate Activity and Confidence indicators. The shaded areas denote the recessionary periods according to the official turning points of the SARB. The indices follow a similar cyclical trend over the period and are very highly correlated, as reported in Table 4 below. The Confidence index seems to lead changes in the Activity index to some extent. The indicators appear to match the different phases of the business cycle relatively well. Turning points were generally before the official turning points, as discussed in more detail below. 
 
 ```{r figure3, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted Activity and Confidence Indicators"}
 index_plot <- w.indicators
@@ -588,31 +594,29 @@ g <- g + theme(legend.position="bottom")
 g
 ```
 
+The survey-based indicators appear to be plausible and potentially useful indicators of business confidence in South Africa. The following section tests for this more formally be comparing them to the existing measures of confidence and GDP growth. The unweighted versions of the indicators, calculated by stacking all of the available responses from all the surveys (i.e. completely unweighted), are very similar but slightly less volatile than the weighted versions. The specific weighting adopted therefore turns out to have very little impact on the confidence indices, implying that the specific weighting approach does not significantly alter the results. The same is true of the respective sector indices.
 
-```{r figure4, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted Activity and Confidence Indicators compared to the Unweighted versions"}
-index_plot <- cbind(w.indicators,indicators[,14:15])
-colnames(index_plot) <- c("Date","Weighted Activity","Weighetd Confidence","Unweighted Activity","Unweighetd Confidence")
-index_plot <- melt(index_plot, id="Date")  # convert to long format
-g <- ggplot(data=index_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g <- g + geom_line(size = 1)
-g <- g + ylab("Indicator") + xlab("")
-g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank()) 
-g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + theme(legend.position="bottom")
-g
-```
+##Comparison and Evaluation
+This section compares the characteristics of the Activity and Confidence indicators to the two existing South African business confidence indices, the BER BCI and the SACCI BCI. All of the aggregate and sectoral confidence indicators are then related to movements in real output growth. Correlations are used to measure the tracking record between the indicators and their reference series (i.e. real GDP growth). The relationship between turning points is reported, to indicate their usefulness in terms of leading or coincident indicators. Granger causality tests are used to illuminate the timing of the relationships between the indicators and real output growth. Simple bivariate VARs are then estimated to provide some preliminary evidence on the dynamic effects of confidence shocks on the economy.
 
-###Comparison
-```{r figure5, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted Activity and Confidence Indicators compared the BER BCI and SACCI BCI"}
-index_plot <- cbind(w.indicators,GDPdata$BER_BCI, GDPdata$SACCI_BCI)
-index_plot[,2:5] <- scale(index_plot[,2:5])
-colnames(index_plot) <- c("Date","Activity","Confidence","BER_BCI","SACCI_BCI")
+###Correlations
+Figure 4 compares the Activity and Confidence indicators to the BER and SACCI BCIs, as well as real GDP growth. Real GDP growth is measured as annual quarter-on-quarter growth, e.g. 2015Q1 over 2014Q1, which corresponds to the reference period in the BER surveys. Recessionary periods are shaded and the indicators are standardised for plotting. The confidence indicators appear to strongly pro-cyclical, and follow real GDP growth closely. 
+
+```{r figure4, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted Activity and Confidence Indicators compared the BER BCI and SACCI BCI"}
+GDPgrowth4 <- as.data.frame(sapply(log(realGDP[,-1]), diff, lag =4))
+GDPgrowth1 <- as.data.frame(sapply(log(realGDP[,-1]), diff, lag =1))
+
+conf_indices <- cbind(w.indicators,GDPdata$BER_BCI, GDPdata$SACCI_BCI,GDPgrowth4$RGDP)
+colnames(conf_indices) <- c("Date","Activity","Confidence","BER_BCI","SACCI_BCI","RGDP_Growth")
+
+index_plot <- conf_indices
+index_plot[,2:6] <- scale(index_plot[,2:6])
 g <- ggplot(index_plot) 
 g <- g + geom_line(aes(x=Date, y=Activity, colour="Activity"), size = 1)
 g <- g + geom_line(aes(x=Date, y=Confidence, colour="Confidence"), size = 1)
 g <- g + geom_line(aes(x=Date, y=BER_BCI, colour="BER_BCI"), size = 1)
 g <- g + geom_line(aes(x=Date, y=SACCI_BCI, colour="SACCI_BCI"), size = 1)
+g <- g + geom_line(aes(x=Date, y=RGDP_Growth, colour="RGDP_Growth"), size = 1)
 #g <- g + theme_bw()
 g <- g + labs(color="Legend text")
 g <- g + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
@@ -625,11 +629,115 @@ g <- g + theme(legend.position="bottom")
 g
 ```
 
+The tracking record of the indicators is measured by their correlation with the corresponding quantitative or reference series. Table 4 reports the contemporaneous correlations of the indicators and real GDP growth. All the indicators exhibit a significant positive correlation with real GDP growth. The Activity indicator has the highest contemporaneous correlation with real GDP growth. It is higher than the BER or SACCI BCIs, which also measure activity or current conditions. One would expect indicators of current conditions to have a higher tracking record than indicators of forward-looking expectations, although the tracking record on the Confidence indicator is still relatively high (especially compared to the SACCI BCI).
+
+```{r table4, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+#Check correlations
+source("corstarsl.R")
+xt <- xtable(corstarsl(conf_indices[,-1]), caption="Correlations in Levels")
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8)
+```
+
+Cross-correlations can be used to illustrate the underlying dynamic relationships between the indicators and real GDP growth. Figure 5 illustrates the cross-correlograms for the indicators and real GDP growth. The Confidence measure seems to lead the other indicators and GDP growth. The highest correlation coefficient for the Confidence measure occurs at 1 lag, with a correlation of 0.7, whereas for the measures of activity it occurs contemporaneously. All three survey-based measures exhibit relatively high correlations with lagged GDP growth. This implies that they are all potentially useful leading indicators of real activity. 
+
+```{r figure5, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Cross-correlograms of confidence indicators and real GDP growth"}
+Activity <- conf_indices[,2]
+Confidence <- conf_indices[,3]
+BER_BCI <- conf_indices[,4]
+SACCI_BCI <- conf_indices[,5] 
+RGDP_Growth <- conf_indices[,6]
+
+par(mfrow=c(2,2))
+ccf(Activity, RGDP_Growth, na.action = na.pass)
+ccf(Confidence, RGDP_Growth, na.action = na.pass)
+ccf(BER_BCI, RGDP_Growth, na.action = na.pass)
+ccf(SACCI_BCI, RGDP_Growth, na.action = na.pass)
+```
+
+Although there are too few cycles over the sample period to analyse cyclical turning points in full detail, it is still of interest to assess whether the indicators behave in a systematic way around cyclical turning points. In other words, do they systematically lead, are coincident with, or lag peaks and troughs of cycles. Even if the indicators are coincident with turning point, the significant delay in the release of official data and the official dating of turning points. For instance, the official business cycle peak of December 2007 was only published in September 2009, almost two years after the fact. The SARB's composite leading indicator is released only 6-8 weeks after the reference month, whereas the BER survey data is available within the reference quarter.
+
+The turning points in the indicators are determined with the BBQ algorithm developed by @Harding2002. The algorithm identifies local minima (troughs) and maxima (peaks) in a single time series. Censoring rules in the algorithm ensure that each cycle and each phases have a minimum duration. @Harding2002 suggested a censoring rule based on a minim of 2 quarters for each phase and a minimum of 5 quarters for a full cycle. Because the indicators are quite volatile, however, this default censoring rule produces a number of very short phases (2 quarters) during the middle part of the sample period (2000-2005). The minimum was therefore increased to 3 quarters for a phase and 7 quarters for a full cycle.
+
+The resulting turning points are reported in Table 5, along with the official reference turning points. The sample period includes 3 upswing phases and 4 recessionary periods. In addition, in 2001 and 2003 the SARB indicators pointed to possible reference turning points. Although the SARB dating committee decided at the time that neither of these periods qualified, subsequent data revisions have shown that in hindsight there could have been an official turning point, especially in 2003, if the dating procedure had been followed mechanically [@Venter2005a]. 
+
+The BBQ algorithm identified a few more cycles in the confidence indicators, especially around the period (2000-2004) and towards the end of the sample period (2013-2014). The survey-based indicators all exhibited troughs before the official trough dates, between 1 and 4 quarters before they occurred. The survey-based indicators exhibited peaks long before the official peak dates, in some cases around 8 quarters before the official dates. The downside of course is that there were so many false positives. Although it should be noted that the reference series, real GDP growth, exhibited even more cycles, when dated with the BBQ method.
+
+```{r turn, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+#Turning Points
+turning.df = read.table(textConnection(
+    "Peaks,  Troughs 
+         ,  1993Q2 
+    1996Q4, 1999Q3 
+    2007Q4, 2009Q3 
+    2013Q4, "), 
+    sep=',', header=TRUE)
+
+dat <- BBQ(ts(conf_indices[,2],start =c(1992,1),end=c(2015,3),frequency=4), mincycle = 6, minphase = 3, name="Activity")
+tp1 <- as.data.frame(show(dat))[,-3]
+dat <- BBQ(ts(conf_indices[,3],start =c(1992,1),end=c(2015,3),frequency=4), mincycle = 6, minphase = 3, name="Activity")
+tp2 <- as.data.frame(show(dat))[,-3]
+dat <- BBQ(ts(conf_indices[,4],start =c(1992,1),end=c(2015,3),frequency=4), mincycle = 6, minphase = 3, name="Activity")
+tp3 <- as.data.frame(show(dat))[,-3]
+dat <- BBQ(ts(conf_indices[,5],start =c(1992,1),end=c(2015,3),frequency=4), mincycle = 6, minphase = 3, name="Activity")
+tp4 <- as.data.frame(show(dat))[,-3]
+dat <- BBQ(ts(conf_indices[,6],start =c(1992,1),end=c(2015,3),frequency=4), mincycle = 6, minphase = 3, name="Activity")
+tp5 <- as.data.frame(show(dat))[,-3]
+
+cbindPad <- function(...){
+    args <- list(...)
+    n <- sapply(args,nrow)
+    mx <- max(n)
+    pad <- function(x, mx){
+        if (nrow(x) < mx){
+            nms <- colnames(x)
+            padTemp <- matrix(NA, mx - nrow(x), ncol(x))
+            colnames(padTemp) <- nms
+            if (ncol(x)==0) {
+                return(padTemp)
+            } else {
+                return(rbind(x,padTemp))
+            }
+        }
+        else{
+            return(x)
+        }
+    }
+    rs <- lapply(args,pad,mx)
+    return(do.call(cbind,rs))
+}
+
+turning <- cbindPad(turning.df,tp1,tp2,tp3,tp4,tp5)
+turning <- sapply(turning,as.character)
+turning <- rbind(colnames(turning),turning)
+colnames(turning) <- c("SARB"," ","Activity"," ","Confidence"," ","BER","BCI","SACCI","BCI","RGDP","Growth")
+```
+
+```{r table5, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+xt <- xtable(turning, caption="Turning Points")
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.7, include.rownames = FALSE)
+```
+
+Figure 6 compares the sectoral Activity and Confidence indicators to the BER sectoral indicators,[^12] as well as sectoral GDP growth. The indicators seem to capture cyclical movements in real output over the period. Table 6 reports the contemporaneous correlations of the sectoral indicators and their corresponding sectoral real GDP growth rates. All the indicators are highly positively correlated with their respective sectoral real GDP growth rates. For the manufacturing sector, the Confidence indicators exhibits the highest contemporaneous correlation. For the construction sector the BER BCI has the highest correlation. This is interesting, as their measure only includes building contractors and excludes the other respondents. For the trade and services sectors, the Activity indicators exhibit the highest correlations.
+
+[^12]: The BER does not publish a confidence indicator for the services sector.
 
 ```{r figure6, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted Sectoral Activity and Confidence Indicators"}
-#Plot examples for sectors
-index_plot <- cbind(w.indicators.M[,c(2,14:15)],(GDPdata$ManuConf-50)/50)
-colnames(index_plot) <- c("Date","Activity","Confidence","BER BCI")
+#Sectoral Analysis
+manufac <- cbind(w.indicators.M[,c(2,14:15)],(GDPdata$ManuConf-50)/50, GDPgrowth4$Manufacturing)
+colnames(manufac) <- c("Date","Activity","Confidence","BER_BCI","RGDP_Growth")
+
+construct <- cbind(w.indicators.B[,c(2,14:15)],(GDPdata$BuildingConf-50)/50, GDPgrowth4$Construction)
+colnames(construct) <- c("Date","Activity","Confidence","BER_BCI","RGDP_Growth")
+
+GDPdata$TradeConf <- rowMeans(GDPdata[,c(14,15,17)])
+trade <- cbind(w.indicators.T[,c(2,14:15)],(GDPdata$TradeConf-50)/50, GDPgrowth4$Trade)
+colnames(trade) <- c("Date","Activity","Confidence","BER_BCI","RGDP_Growth")
+
+services <- cbind(w.indicators.S[,c(2,14:15)], GDPgrowth4$Services)
+colnames(services) <- c("Date","Activity","Confidence","RGDP_Growth")
+
+index_plot <- manufac
+index_plot[,-1] <- scale(index_plot[,-1])
 index_plot <- melt(index_plot, id="Date")  # convert to long format
 g1 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable)) 
 g1 <- g1 + geom_line()
@@ -640,8 +748,8 @@ g1 <- g1 + theme(legend.position="none")
 g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 
-index_plot <- cbind(w.indicators.B[,c(2,14:15)],(GDPdata$BuildingConf-50)/50)
-colnames(index_plot) <- c("Date","Activity","Confidence","BER BCI")
+index_plot <- construct
+index_plot[,-1] <- scale(index_plot[,-1])
 index_plot <- melt(index_plot, id="Date")  # convert to long format
 g2 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable)) 
 g2 <- g2 + geom_line()
@@ -652,9 +760,8 @@ g2 <- g2 + theme(legend.position="none")
 g2 <- g2 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 
-GDPdata$TradeConf <- rowMeans(GDPdata[,c(14,15,17)])
-index_plot <- cbind(w.indicators.T[,c(2,14:15)],(GDPdata$TradeConf-50)/50)
-colnames(index_plot) <- c("Date","Activity","Confidence","BER BCI")
+index_plot <- trade
+index_plot[,-1] <- scale(index_plot[,-1])
 index_plot <- melt(index_plot, id="Date")  # convert to long format
 g3 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable)) 
 g3 <- g3 + geom_line()
@@ -665,10 +772,242 @@ g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "c
 g3 <- g3 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 
+index_plot <- services
+index_plot[,-1] <- scale(index_plot[,-1])
+index_plot <- melt(index_plot, id="Date")  # convert to long format
+g4 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable)) 
+g4 <- g4 + geom_line()
+g4 <- g4 + theme(legend.title=element_blank())
+g4 <- g4 + ggtitle("Services") 
+g4 <- g4 + ylab("") + xlab("")
+g4 <- g4 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
+g4 <- g4 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g4 <- g4 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 
 library(gridExtra)
-grid.arrange(g1, g2, g3, ncol=2, nrow =2)
+grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 ```
+
+```{r table6, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+#Check correlations
+source("corstarsl.R")
+services$BER_BCI <- 1
+services <- services[,c(1,2,3,5,4)]
+xt1 <- cbind(corstarsl(manufac[,-1]),corstarsl(construct[,-1]))
+xt2 <- cbind(corstarsl(trade[,-1]),corstarsl(services[,-1]))
+xt1 <- sapply(xt1,as.character)
+xt2 <- sapply(xt2,as.character)
+xt2[3,4:5] <- ""
+xt2[4,6] <- ""
+xt1[1,] <- c("Activity","Confidence","BER_BCI","Activity","Confidence","BER_BCI")
+xt2[1,] <- c("Activity","Confidence","BER_BCI","Activity","Confidence","BER_BCI")
+colnames(xt1) <- c(" ","Manufacturing"," "," ","Construction"," ")
+colnames(xt2) <- c(" ","Trade"," "," ","Services"," ")
+row.names(xt1) <- c("Activity","Confidence","BER_BCI","RGDP_Growth")
+row.names(xt2) <- c("Activity","Confidence","BER_BCI","RGDP_Growth")
+
+xt <- xtable(xt1, caption="Correlations in Levels")
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8)
+xt <- xtable(xt2)
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8)
+```
+
+Figure 7 illustrates the cross-correlograms for the Manufacturing indicators and real GDP growth in the Manufacturing sector. The results are fairly similar to the aggregate results and all three survey-based measures exhibit relatively high correlations with lagged GDP growth. Again, the Confidence measure seems to lead the other indicators and GDP growth. The cross-correlograms for the other sectors are very similar, except in the Services sector, where the Confidence measure has even longer leading relationship with real GDP growth.
+
+```{r figure7, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Cross-correlograms of Manufacturing indicators and real GDP growth"}
+calc_ccf <- function(data, serv=0) {
+    Activity <- data[,2]
+    Confidence <- data[,3]
+    BER_BCI <- data[,4]
+    RGDP_Growth <- data[,5]
+
+    par(mfrow=c(2,2))
+    ccf(Activity, RGDP_Growth, na.action = na.pass)
+    ccf(Confidence, RGDP_Growth, na.action = na.pass)
+    if(serv==0) { ccf(BER_BCI, RGDP_Growth, na.action = na.pass) }
+}
+
+calc_ccf(manufac)
+#calc_ccf(construct)
+#calc_ccf(trade)
+#calc_ccf(services, 1)
+```
+
+###Granger causality tests
+Granger causality tests are often performed when investigating the comovement among variables. This test determines whether one time series is useful in forecasting another, by measuring the ability of lagged values of a time series to predict the future values of another time series. A time series $Z$ is said to Granger-cause $Y$ if it can be shown that the $Z$ values provide statistically significant information about future values of $Y$. 
+
+
+```{r vars, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+##========================================================
+##-------------VAR Analysis-------------------------------
+##========================================================
+calc_var <- function(data) {
+    vardat <- data
+    infocrit <- VARselect(vardat, lag.max = 12, type = "const")
+    k_aic <- infocrit$selection[1]
+    k_hq  <- infocrit$selection[2]
+    k_sic <- infocrit$selection[3]
+    k <- min(k_aic,k_sic,k_hq)
+    var_model <- VAR(vardat,p=k,type="const")
+    return(var_model)
+}
+
+var1 <- calc_var(cbind(Activity,RGDP_Growth))
+var2 <- calc_var(cbind(Confidence, RGDP_Growth))
+var3 <- calc_var(cbind(BER_BCI, RGDP_Growth))
+var4 <- calc_var(cbind(SACCI_BCI, RGDP_Growth))
+```
+
+Table 7 reports the results for Granger causality tests for the confidence indicators and real GDP growth. The results suggest that the lagged values of all three survey-based confidence indicators significantly predicts real GDP growth, with limited evidence of Granger-causality in the reverse direction. In other words, the results suggest that all three survey-based confidence indicators contain relevant information for the prediction of output growth. This implies that the survey-based measures exhibit a leading relationship with real GDP growth. @Pellissier2002 used Granger causality tests to investigate the relationship between the BER BCI and the SARB's coincident business cycle indicator. He argued that a high level of feedback between business confidence and real GDP growth indicated a coincident rather than a leading relationship. However, even in that case, survey-based business confidence exhibit quasi-leading indicator attributes in terms of its timely availability and the finality of its data. 
+
+```{r table7, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+##Granger causality tests
+G <- data.frame()
+G[1,1] <- causality(var1,cause = "Activity")$Granger[4]
+G[1,2] <- as.numeric(as.character(causality(var1,cause = "Activity")$Granger[1]))
+G[1,3] <- as.numeric(as.character(causality(var1,cause = "Activity")$Granger[3]))
+G[2,1] <- causality(var1,cause = "RGDP_Growth")$Granger[4]
+G[2,2] <- as.numeric(as.character(causality(var1,cause = "RGDP_Growth")$Granger[1]))
+G[2,3] <- as.numeric(as.character(causality(var1,cause = "RGDP_Growth")$Granger[3]))
+
+G[3,1] <- causality(var2,cause = "Confidence")$Granger[4]
+G[3,2] <- as.numeric(as.character(causality(var2,cause = "Confidence")$Granger[1]))
+G[3,3] <- as.numeric(as.character(causality(var2,cause = "Confidence")$Granger[3]))
+G[4,1] <- causality(var2,cause = "RGDP_Growth")$Granger[4]
+G[4,2] <- as.numeric(as.character(causality(var2,cause = "RGDP_Growth")$Granger[1]))
+G[4,3] <- as.numeric(as.character(causality(var2,cause = "RGDP_Growth")$Granger[3]))
+
+G[5,1] <- causality(var3,cause = "BER_BCI")$Granger[4]
+G[5,2] <- as.numeric(as.character(causality(var3,cause = "BER_BCI")$Granger[1]))
+G[5,3] <- as.numeric(as.character(causality(var3,cause = "BER_BCI")$Granger[3]))
+G[6,1] <- causality(var3,cause = "RGDP_Growth")$Granger[4]
+G[6,2] <- as.numeric(as.character(causality(var3,cause = "RGDP_Growth")$Granger[1]))
+G[6,3] <- as.numeric(as.character(causality(var3,cause = "RGDP_Growth")$Granger[3]))
+
+G[7,1] <- causality(var4,cause = "SACCI_BCI")$Granger[4]
+G[7,2] <- as.numeric(as.character(causality(var4,cause = "SACCI_BCI")$Granger[1]))
+G[7,3] <- as.numeric(as.character(causality(var4,cause = "SACCI_BCI")$Granger[3]))
+G[8,1] <- causality(var4,cause = "RGDP_Growth")$Granger[4]
+G[8,2] <- as.numeric(as.character(causality(var4,cause = "RGDP_Growth")$Granger[1]))
+G[8,3] <- as.numeric(as.character(causality(var4,cause = "RGDP_Growth")$Granger[3]))
+
+
+G[,2:3] <- round(G[,2:3],3)
+mystars <- ifelse(G[,3] < .01, "***", ifelse(G[,3] < .05, "** ", ifelse(G[,3] < .1, "* ", " ")))
+Gnew <- matrix(paste(G[,2], mystars, sep=""), ncol=1) 
+G[,1] <- sub(".*: ", "", G[,1])
+G[,2] <- Gnew
+colnames(G) <- c("Granger causality H0:","statistic","p-value")
+
+xt <- xtable(G, caption="Granger causality tests")
+print(xt, "latex", include.rownames=FALSE,comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), 
+      scalebox = 0.8)
+```
+
+Table 8 reports the results of the Granger causality tests for the sectoral indicators and their corresponding sectoral real GDP growth rates. The results are similar, except for the trade sector (i.e. wholesale, retail and motor vehicles), where lagged values of real GDP growth significantly predicts all three survey-based confidence indicators. This implies that the confidence indicators for the trade sector are lagging indicators for real GDP growth in that sector.
+
+```{r table8, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+#Sectoral
+calc_sectoralvar <- function(data, serv=0) {
+    Activity <- data[,2]
+    Confidence <- data[,3]
+    BER_BCI <- data[,4]
+    RGDP_Growth <- data[,5]
+    
+    var1 <- calc_var(cbind(Activity,RGDP_Growth))
+    var2 <- calc_var(cbind(Confidence, RGDP_Growth))
+    var3 <- calc_var(cbind(BER_BCI, RGDP_Growth))
+
+    ##Granger causality tests
+    G <- data.frame()
+    G[1,1] <- causality(var1,cause = "Activity")$Granger[4]
+    G[1,2] <- as.numeric(as.character(causality(var1,cause = "Activity")$Granger[1]))
+    G[1,3] <- as.numeric(as.character(causality(var1,cause = "Activity")$Granger[3]))
+    G[2,1] <- causality(var1,cause = "RGDP_Growth")$Granger[4]
+    G[2,2] <- as.numeric(as.character(causality(var1,cause = "RGDP_Growth")$Granger[1]))
+    G[2,3] <- as.numeric(as.character(causality(var1,cause = "RGDP_Growth")$Granger[3]))
+    
+    G[3,1] <- causality(var2,cause = "Confidence")$Granger[4]
+    G[3,2] <- as.numeric(as.character(causality(var2,cause = "Confidence")$Granger[1]))
+    G[3,3] <- as.numeric(as.character(causality(var2,cause = "Confidence")$Granger[3]))
+    G[4,1] <- causality(var2,cause = "RGDP_Growth")$Granger[4]
+    G[4,2] <- as.numeric(as.character(causality(var2,cause = "RGDP_Growth")$Granger[1]))
+    G[4,3] <- as.numeric(as.character(causality(var2,cause = "RGDP_Growth")$Granger[3]))
+    
+    if(serv==0) {
+        G[5,1] <- causality(var3,cause = "BER_BCI")$Granger[4]
+        G[5,2] <- as.numeric(as.character(causality(var3,cause = "BER_BCI")$Granger[1]))
+        G[5,3] <- as.numeric(as.character(causality(var3,cause = "BER_BCI")$Granger[3]))
+        G[6,1] <- causality(var3,cause = "RGDP_Growth")$Granger[4]
+        G[6,2] <- as.numeric(as.character(causality(var3,cause = "RGDP_Growth")$Granger[1]))
+        G[6,3] <- as.numeric(as.character(causality(var3,cause = "RGDP_Growth")$Granger[3]))
+    }    
+    G[,2:3] <- round(G[,2:3],3)
+    mystars <- ifelse(G[,3] < .01, "***", ifelse(G[,3] < .05, "** ", ifelse(G[,3] < .1, "* ", " ")))
+    Gnew <- matrix(paste(G[,2], mystars, sep=""), ncol=1) 
+    G[,1] <- sub(".*: ", "", G[,1])
+    G[,2] <- Gnew
+    colnames(G) <- c("Granger causality H0:","statistic","p-value")
+    
+    return(G)
+}
+
+G_manu <- calc_sectoralvar(manufac)
+G_build <- calc_sectoralvar(construct[-1:-5,])
+G_trade <- calc_sectoralvar(trade[-1,])
+G_serv <- calc_sectoralvar(services[-1:-53,],1)
+G_serv <- rbind(G_serv, c("BER_BCI do not Granger-cause RGDP_Growth","",""), 
+                        c("RGDP_Growth do not Granger-cause BER_BCI","",""))
+                
+G_sector <- cbind(G_manu[,1:2],G_build[,2],G_trade[,2],G_serv[,2])
+colnames(G_sector)[2:5] <- c("Manufacturing", "Construction","Trade","Services")
+
+xt <- xtable(G_sector, caption="Granger causality tests")
+print(xt, "latex", include.rownames=FALSE,comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), 
+      scalebox = 0.8)
+```
+
+###VAR Analysis
+This section provides some preliminary evidence on the dynamic effects of confidence shocks on real economic activity. Most macro variables move together over the business cycle, without any obvious causal direction. This makes it difficult to identify the direction of relationships. The literature has either assumed the direction of causation, or relied on timing for identification in estimators like VARs. This section follows the literature (e.g. @Taylor2007 and @Bachmann2013) in using standard recursive VARs to trace out the dynamic responses of economic activity to surprise increases in confidence. The aim is to investigate whether these measures have a significant dynamic relationship with real output, and whether a shock to confidence generates responses which are in line with the theory. The relationships are analysed for the aggregate variables, as well as for each sector separately. It is not surprising that a wide range of results have been found using VAR regressions because of their sensitivity to subtle differences in assumptions [@Baker2013]. 
+
+The relationships are investigated with bivariate recursive VARs featuring a measure of confidence and real GDP growth. A bivariate system is a parsimonious way to model the joint dynamics of sentiment and real economic activity [@Bachmann2013]. A range of VARs are estimated on the quarterly data running from 1992Q1 to 2015Q3. The confidence indicators enter in levels, while the activity variables enter as annual quarter-on-quarter growth rates, which corresponds to the survey reference period. Unit root test indicate that virtually all of the aggregate and sectoral Activity and Confidence indicators and the corresponding real GDP growth rates are stationary, the exception being real GDP growth in the services sector, probably due to the shorter sample period. 
+
+The specification aims at providing preliminary evidence on the dynamic effects of confidence shocks on real activity. In the bivariate case, both variables are treated as endogenous:
+$$y_t = \beta_{10} - \beta_{12} z_t + \gamma_{11} y_{t-1} + \gamma_{12} z_{t-1} + \epsilon_{yt}$$
+$$z_t = \beta_{20} - \beta_{21} y_t + \gamma_{21} y_{t-1} + \gamma_{22} z_{t-1} + \epsilon_{zt}$$
+where $y$ is output, $z$ is confidence, and $\epsilon$ is the residual of each equation. 
+
+The appropriate number of lags are selected by means of the Akaike information criterion (AIC), the Schwarz criterion (SC) and the Hannan-Quinn criterion (HQ). The most parsimonious model is selected, provided that the diagnostic tests (i.e. no serial correlation, homoscedasticity and normality) are satisfied. In the majority of cases the information criteria point to 2 lags. The model fit is best when a constant term is included. At present, simple linear interpolation is used for the missing values.
+
+The sentiment indicators are ordered first in a recursive identification strategy, with the Cholesky decomposition used to identify structural shocks. With this ordering, shocks to the sentiment indicator are allowed to have a contemporaneous impact on activity, but shocks to activity have no contemporaneous impact on sentiment ($\beta_{21} = 0$). In other words, innovations to the sentiment indicators influence economic activity on impact, but not vice versa. This is the identification strategy and ordering used in virtually all of the literature (e.g. @Leduc2013, @Mendicino2013, and @Bachmann2013). This is motivated by the timing of the surveys: at the time in which the survey is filled in at time $t$ the respondents do not know the realisations of output growth in time $t$. The response deadline is generally the second month of the quarter.
+
+This allows for the generation of impulse response functions (IRFs), which show the dynamic impact of a shock to confidence on the system. The shock itself is an innovation to the residual in the equation of the variable of interest. Figure 8 illustrates the IRFs of a bivariate VARs for the Activity indicator and real GDP growth. The left panel plots the responses of real GDP growth to an orthogonal shock in the indicator, with 95% bootstrap confidence intervals. The results are virtually identical for the Confidence indicator. Following an increase in confidence, real GDP growth increases by around 0.3% on impact, with a peak at 3 quarters. The effect on the growth rate is transitory, dying out after approximately 7 quarters. This is equivalent to a permanent increase in the level of output, which confirms the findings in the literature (e.g. @Barsky2012). The right panel plots the responses of confidence to an orthogonal shock in real GDP growth. Following an increase in real GDP growth, there is a significant increase in confidence of around 2% in the following quarter. The results are similar for alternative orderings (as the correlations in errors are only around 0.3).
+
+```{r figure8, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="IRFs of Activity and real GDP growth"}
+detach("package:BCDating", unload=TRUE)
+
+vardat <- cbind(Activity,RGDP_Growth)
+infocrit <- VARselect(vardat, lag.max = 12, type = "const")
+k_aic <- infocrit$selection[1]
+k_hq  <- infocrit$selection[2]
+k_sic <- infocrit$selection[3]
+k <- min(k_aic,k_sic,k_hq)
+var1 <- VAR(vardat,p=k,type="const")
+
+irf.y1 <- irf(var1,impulse = "Activity", response = "RGDP_Growth", n.ahead = 12,runs = 1000, seed=12345) 
+irf.y2 <- irf(var1,impulse = "RGDP_Growth", response = "Activity", n.ahead = 12,runs = 1000, seed=12345)
+par(mfrow=c(1,2),mar=c(7,5,7,2), cex=0.6, new=FALSE)
+plot(irf.y1,plot.type = c("single"))
+par(mfrow=c(1,2),mar=c(6,4,4.2,1), cex=0.6, new = TRUE)
+plot(irf.y2,plot.type = c("single"))
+```
+
+The importance of innovations can also be examined with variance decompositions. While the IRFs describe the reaction of a variable of interest to some exogenous shock, the decomposition of the forecast error variance of a given variable determines how much of the error can be explained by exogenous shocks to the other variables in the system [@Girardi2015]. The forecast error variance decomposition (FEVD) tells us the proportion of the movements in a sequence due to its "own" shocks versus shocks to the other variable. Figure 9 illustrates the FEVDs. It shows that up to around a third (37%) of the movements in real GDP growth are explained by the various confidence indicators over the longer term, while real GDP explains up to 7.5% of the variance in confidence.
+
+```{r figure9, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="FEVDs of Activity and real GDP growth"}
+plot(fevd(var1, n.ahead = 10))    
+```
+
 
 #References
 
