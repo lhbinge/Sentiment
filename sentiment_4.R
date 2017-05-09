@@ -1,6 +1,6 @@
-##===================================================================================##
-## -------------------------------- SENTIMENT ---------------------------------------##
-##===================================================================================##
+##===========================##
+##------ SENTIMENT ----------##
+##===========================##
 setwd("C:\\Users\\Laurie\\OneDrive\\Documents\\BING\\BER Confidence Surveys\\Sentiment")
 
 suppressMessages(library(ggplot2))
@@ -140,10 +140,9 @@ g <- g + ylab("Number of Respondents")
 g <- g + xlab("Date")
 g
 
-##====================================================================================##
-## -------------------------------- CONFIDENCE ---------------------------------------##
-##====================================================================================##
-
+##========================##
+##----- CONFIDENCE -------##
+##========================##
 calc_conf <- function(data) {
     confidence <- aggregate(data[,(match("surveyQ",colnames(data))+1):ncol(data)], by=list(data$surveyQ), FUN=mean, na.rm=TRUE)
     confidence$Conf_cc <- rowMeans(confidence[,c("Q1","Q2A","Q3A","Q4A","Q5A","Q6A")],na.rm = TRUE, dims = 1)
@@ -169,14 +168,17 @@ calc_wconf <- function(data) {
     w.confidence <- as.data.frame(t(sapply(levels(data$surveyQ), function(kwartaal) weeg(data[data$surveyQ==kwartaal,]))))
     w.confidence$Conf_cc <- rowMeans(w.confidence[,c("Q1","Q2A","Q3A","Q4A","Q5A","Q6A")],na.rm = TRUE, dims = 1)
     w.confidence$Conf_fl <- rowMeans(w.confidence[,c("Q2P","Q3P","Q4P","Q5P","Q6P")],na.rm = TRUE, dims = 1)
+    #w.confidence$Conf_all <- rowMeans(w.confidence[,c("Q1","Q2A","Q3A","Q4A","Q5A","Q6A","Q2P","Q3P","Q4P","Q5P","Q6P")],na.rm = TRUE, dims = 1)
     w.confidence <- merge(datums,w.confidence,by.x="Date",by.y="row.names", all=TRUE)[,-3]
     w.confidence[,14:15] <- na.approx(w.confidence[,14:15],na.rm = FALSE)
     
     return(w.confidence)
 }
-##=====================================##
+
+
+##======================##
 ## CALCULATE INDICATORS ##
-##=====================================##
+##======================##
 indicators.M <- calc_conf(BER[BER$Sector=="Manufacturing",])
 w.indicators.M <- calc_wconf(BER[BER$Sector=="Manufacturing",])
 
@@ -207,6 +209,7 @@ conf$Confidence <- sapply(conf$Date, function(x) weighted.mean(conf[which(conf$D
                                                                weights[weights$Date==x,-1],na.rm=TRUE))
 w.indicators <- cbind(activity[,c(1,6)],conf[,6])
 colnames(w.indicators) <- c("Date","Activity","Confidence")
+
 
 
 #-----------------------------------------------
@@ -267,7 +270,6 @@ index_plot <- w.indicators
 g <- ggplot(index_plot) 
 g <- g + geom_line(aes(x=Date, y=Activity, colour="Activity"), size = 1)
 g <- g + geom_line(aes(x=Date, y=Confidence, colour="Confidence"), size = 1)
-#g <- g + theme_bw()
 g <- g + labs(color="Legend text")
 g <- g + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
 g <- g + ylab("Indicator") + xlab("")
@@ -292,7 +294,6 @@ g <- g + geom_line(aes(x=Date, y=Confidence, colour="Confidence"), size = 1)
 g <- g + geom_line(aes(x=Date, y=BER_BCI, colour="BER_BCI"), size = 1)
 g <- g + geom_line(aes(x=Date, y=SACCI_BCI, colour="SACCI_BCI"), size = 1)
 g <- g + geom_line(aes(x=Date, y=RGDP_Growth, colour="RGDP_Growth"), size = 1)
-#g <- g + theme_bw()
 g <- g + labs(color="Legend text")
 g <- g + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
 g <- g + ylab("Indicator") + xlab("")
@@ -307,8 +308,7 @@ g
 #Check correlations
 source("corstarsl.R")
 xt <- xtable(corstarsl(conf_indices[,-1]), caption="Correlations in Levels")
-print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8,
-      include.rownames=FALSE)
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8)
 
 Activity <- conf_indices[,2]
 Confidence <- conf_indices[,3]
@@ -317,10 +317,10 @@ SACCI_BCI <- conf_indices[,5]
 RGDP_Growth <- conf_indices[,6]
 
 par(mfrow=c(2,2))
-ccf(Activity, RGDP_Growth, na.action = na.pass)
-ccf(Confidence, RGDP_Growth, na.action = na.pass)
-ccf(BER_BCI, RGDP_Growth, na.action = na.pass)
-ccf(SACCI_BCI, RGDP_Growth, na.action = na.pass)
+ccf(Activity, RGDP_Growth, na.action = na.pass, ylim=c(-0.3, 0.8))
+ccf(Confidence, RGDP_Growth, na.action = na.pass, ylim=c(-0.3, 0.8))
+ccf(BER_BCI, RGDP_Growth, na.action = na.pass, ylim=c(-0.3, 0.8))
+ccf(SACCI_BCI, RGDP_Growth, na.action = na.pass, ylim=c(-0.3, 0.8))
 
 #-----------------------------
 #Sectoral Analysis
@@ -419,9 +419,9 @@ calc_ccf <- function(data, serv=0) {
     RGDP_Growth <- data[,5]
 
     par(mfrow=c(2,2))
-    ccf(Activity, RGDP_Growth, na.action = na.pass)
-    ccf(Confidence, RGDP_Growth, na.action = na.pass)
-    if(serv==0) { ccf(BER_BCI, RGDP_Growth, na.action = na.pass) }
+    ccf(Activity, RGDP_Growth, na.action = na.pass, ylim=c(-0.3, 0.8))
+    ccf(Confidence, RGDP_Growth, na.action = na.pass, ylim=c(-0.3, 0.8))
+    if(serv==0) { ccf(BER_BCI, RGDP_Growth, na.action = na.pass, ylim=c(-0.3, 0.8)) }
 }
 
 calc_ccf(manufac)
@@ -452,46 +452,90 @@ tp4 <- as.data.frame(show(dat))[,-3]
 dat <- BBQ(ts(conf_indices[,6],start =c(1992,1),end=c(2015,3),frequency=4), mincycle = 6, minphase = 3, name="Activity")
 tp5 <- as.data.frame(show(dat))[,-3]
 
-cbindPad <- function(...){
-    args <- list(...)
-    n <- sapply(args,nrow)
-    mx <- max(n)
-    pad <- function(x, mx){
-        if (nrow(x) < mx){
-            nms <- colnames(x)
-            padTemp <- matrix(NA, mx - nrow(x), ncol(x))
-            colnames(padTemp) <- nms
-            if (ncol(x)==0) {
-                return(padTemp)
-            } else {
-                return(rbind(x,padTemp))
-            }
-        }
-        else{
-            return(x)
-        }
-    }
-    rs <- lapply(args,pad,mx)
-    return(do.call(cbind,rs))
-}
-
-turning <- cbindPad(turning.df,tp1,tp2,tp3,tp4,tp5)
-turning <- sapply(turning,as.character)
-turning <- rbind(colnames(turning),turning)
-colnames(turning) <- c("SARB"," ","Activity"," ","Confidence"," ","BER","BCI","SACCI","BCI","RGDP","Growth")
-xt <- xtable(turning, caption="Turning Points")
-print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"),
-      scalebox = 0.8, include.rownames = FALSE)
-
 detach("package:BCDating", unload=TRUE)
 
-#data("Iran.non.Oil.GDP.Cycle")
-#dat <- BBQ(Iran.non.Oil.GDP.Cycle, name="Dating Business Cycles of Iran")
-#show(dat)
-#summary(dat)
-#plot(dat)
-#data(MBRI.Iran.Dating)
-#plot(dat,MBRI.Iran.Dating)
+maak_datums <- function(data) {
+    data$Peak <- as.Date(as.yearqtr(data[,1], format = "%YQ%q"), frac = 1)
+    data$Trough <- as.Date(as.yearqtr(data[,2], format = "%YQ%q"), frac = 1)
+    data$Peak[1] <- "1990-12-31"
+    data$Trough[nrow(data)] <- "2016-12-31"
+    return(data)
+}
+
+tp1 <- maak_datums(tp1)
+tp2 <- maak_datums(tp2)
+tp3 <- maak_datums(tp3)
+tp4 <- maak_datums(tp4)
+tp5 <- maak_datums(tp5)
+
+
+index_plot <- conf_indices[,c(1,2)]
+index_plot[,2] <- scale(index_plot[,2])
+colnames(index_plot) <- c("Date","Confidence")
+g1 <- ggplot(index_plot) 
+g1 <- g1 + geom_line(aes(x=Date, y=Confidence, colour="Confidence"), size = 0.5)
+g1 <- g1 + labs(color="Legend text")
+g1 <- g1 + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=0), fill='grey', alpha=0.5)
+g1 <- g1 + geom_rect(data=tp1, aes(xmin=Peak, xmax=Trough, ymin=0, ymax=+Inf), fill='blue', alpha=0.5)
+g1 <- g1 + ylab("Indicator") + xlab("")
+g1 <- g1 + ggtitle("Activity") 
+g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g1 <- g1 + theme(legend.title=element_blank()) 
+g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"), expand=c(0,0),
+                      limits = as.Date(c("1990-12-31", NA)))
+g1 <- g1 + theme(legend.position="none")
+
+
+index_plot <- conf_indices[,c(1,3)]
+index_plot[,2] <- scale(index_plot[,2])
+colnames(index_plot) <- c("Date","Confidence")
+g2 <- ggplot(index_plot) 
+g2 <- g2 + geom_line(aes(x=Date, y=Confidence, colour="Confidence"), size = 0.5)
+g2 <- g2 + labs(color="Legend text")
+g2 <- g2 + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=0), fill='grey', alpha=0.5)
+g2 <- g2 + geom_rect(data=tp2, aes(xmin=Peak, xmax=Trough, ymin=0, ymax=+Inf), fill='blue', alpha=0.5)
+g2 <- g2 + ylab("") + xlab("")
+g2 <- g2 + ggtitle("Confidence") 
+g2 <- g2 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g2 <- g2 + theme(legend.title=element_blank()) 
+g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"), expand=c(0,0),
+                        limits = as.Date(c("1990-12-31", NA)))
+g2 <- g2 + theme(legend.position="none")
+
+index_plot <- conf_indices[,c(1,4)]
+index_plot[,2] <- scale(index_plot[,2])
+colnames(index_plot) <- c("Date","Confidence")
+g3 <- ggplot(index_plot) 
+g3 <- g3 + geom_line(aes(x=Date, y=Confidence, colour="Confidence"), size = 0.5)
+g3 <- g3 + labs(color="Legend text")
+g3 <- g3 + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=0), fill='grey', alpha=0.5)
+g3 <- g3 + geom_rect(data=tp3, aes(xmin=Peak, xmax=Trough, ymin=0, ymax=+Inf), fill='blue', alpha=0.5)
+g3 <- g3 + ylab("Indicator") + xlab("")
+g3 <- g3 + ggtitle("BER BCI") 
+g3 <- g3 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g3 <- g3 + theme(legend.title=element_blank()) 
+g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"), expand=c(0,0),
+                        limits = as.Date(c("1990-12-31", NA)))
+g3 <- g3 + theme(legend.position="none")
+
+index_plot <- conf_indices[,c(1,5)]
+index_plot[,2] <- scale(index_plot[,2])
+colnames(index_plot) <- c("Date","Confidence")
+g4 <- ggplot(index_plot) 
+g4 <- g4 + geom_line(aes(x=Date, y=Confidence, colour="Confidence"), size = 0.5)
+g4 <- g4 + labs(color="Legend text")
+g4 <- g4 + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=0), fill='grey', alpha=0.5)
+g4 <- g4 + geom_rect(data=tp4, aes(xmin=Peak, xmax=Trough, ymin=0, ymax=+Inf), fill='blue', alpha=0.5)
+g4 <- g4 + ylab("") + xlab("")
+g4 <- g4 + ggtitle("SACCI BCI") 
+g4 <- g4 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g4 <- g4 + theme(legend.title=element_blank()) 
+g4 <- g4 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"), expand=c(0,0),
+                        limits = as.Date(c("1990-12-31", NA)))
+g4 <- g4 + theme(legend.position="none")
+
+library(gridExtra)
+grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 
 
 ##========================================================
@@ -685,6 +729,7 @@ source("plot_varfevd.R")
 #dev.off()
 par(mfrow=c(1,2))
 plot.varfevd(fevd(var1, n.ahead = 10 ),plot.type = "single")
+
 #-------------------------------------------------
 #Sectoral
 data <- manufac
@@ -714,13 +759,13 @@ plot.varfevd(fevd(varm, n.ahead = 10 ),plot.type = "single")
 
 
 
-##====================================================================================##
-## -------------------------------- UNCERTAINTY --------------------------------------##
-##====================================================================================##
+##========================##
+## ---- UNCERTAINTY ------##
+##========================##
 se <- function(x) sqrt(var(x,na.rm=TRUE)/length(na.omit(x))*(length(na.omit(x))-1)) #adjust for (n-1)
-##---------------------##
+##------------##
 ## Dispersion                    
-##---------------------##
+##------------##
 
 calc_uncert <- function(data) {
     uncertainty <- aggregate(data[,(match("surveyQ",colnames(data))+1):ncol(data)], by=list(data$surveyQ), FUN=se)
@@ -780,25 +825,6 @@ w.uncertainty[,-1] <- scale(w.uncertainty[,-1])
 
 w.uncertainty$Dispersion <- sapply(w.uncertainty$Date, function(x) weighted.mean(w.uncertainty[which(w.uncertainty$Date==x),c(2:5)], 
                                                                            weights[weights$Date==x,-1],na.rm=TRUE))
-
-#index_plot <- cbind(uncertainty[,c(2,16)],w.uncertainty[,6])
-index_plot <- cbind(w.uncert_error[,c(1,3,4)],uncert_error[,3:4])
-index_plot[,-1] <- scale(index_plot[,-1])
-#colnames(index_plot) <- c("Date","unweighted","DISP")
-colnames(index_plot) <- c("Date","Idio","Aggre","Unw_Idio","Unw_Aggre")
-g <- ggplot(index_plot) 
-g <- g + geom_line(aes(x=Date, y=Idio, colour="Idio"), size = 1)
-g <- g + geom_line(aes(x=Date, y=Unw_Idio, colour="Unw_Idio"), size = 1)
-g <- g + labs(color="Legend text")
-g <- g + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
-g <- g + ylab("Indicator") + xlab("")
-g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank()) 
-g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"), expand=c(0,0),
-                      limits = as.Date(c("1990-12-31", NA)))
-g <- g + theme(legend.position="bottom")
-g
-
 
 ##---------------------##
 ##Expectations Errors--
@@ -923,7 +949,6 @@ w.uncert_error.S <- calc_wuncert.ee(s_errors)
 uncert_error <- calc_uncert.ee(errors)
 
 #----------------------------------------------------------
-
 ##Weighted versions
 weights <- GDPdata[,c(1:4,6)]
 idio.errors <- cbind(w.uncert_error.M[,c(1,2)],w.uncert_error.B[,2],w.uncert_error.T[,2],w.uncert_error.S[,2])
@@ -1020,17 +1045,51 @@ g <- g + theme(legend.position="bottom")
 g
 
 
+#index_plot <- cbind(uncertainty[,c(2,16)],w.uncertainty[,6])
+index_plot <- cbind(w.uncert_error[,c(1,3,4)],uncert_error[,3:4])
+index_plot[,-1] <- scale(index_plot[,-1])
+#colnames(index_plot) <- c("Date","unweighted","DISP")
+colnames(index_plot) <- c("Date","Idio","Aggre","Unw_Idio","Unw_Aggre")
+g <- ggplot(index_plot) 
+g <- g + geom_line(aes(x=Date, y=Idio, colour="Idio"), size = 1)
+g <- g + geom_line(aes(x=Date, y=Unw_Idio, colour="Unw_Idio"), size = 1)
+g <- g + labs(color="Legend text")
+g <- g + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
+g <- g + ylab("Indicator") + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) 
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"), expand=c(0,0),
+                      limits = as.Date(c("1990-12-31", NA)))
+g <- g + theme(legend.position="bottom")
+g
+
+#-------------------------------------------------
+#PCA
 #-------------------------------------------------
 uncert_indices <- cbind(w.uncert_error,GDPdata$IMF_Uncertainty, GDPdata$SAVI,GDPgrowth4$RGDP)
 colnames(uncert_indices) <-c("Date","Dispersion","Idiosyncratic","Aggregate","EPU","SAVI","RGDP_Growth")
 uncert_indices[,-1] <- scale(uncert_indices[,-1])
-uncert_indices$Uncertainty <- rowMeans(uncert_indices[,c(2:6)],na.rm = TRUE)
+un <- uncert_indices #un <- na.locf(uncert_indices)
+un[is.na(un)] <- 0
+#uncert_indices$Uncertainty <- rowMeans(uncert_indices[,c(2:6)],na.rm = TRUE)
+uncert_indices$Uncertainty <- princomp(un[,c(2:6)])$scores[,1]
 uncert_indices <- uncert_indices[,c(1:6,8,7)]
+
+#fit <- princomp(un[,c(2:6)])
+#print(fit)
+#summary(fit) # print variance accounted for 
+#loadings(fit) # pc loadings 
+#plot(fit,type="lines") # scree plot 
+#p <- fit$scores # the principal components
+
 
 index_plot <- uncert_indices
 g <- ggplot(index_plot) 
-g <- g + geom_line(aes(x=Date, y=EPU, colour="EPU"), size = 1)
-g <- g + geom_line(aes(x=Date, y=SAVI, colour="SAVI"), size = 1)
+#g <- g + geom_line(aes(x=Date, y=Dispersion, colour="Dispersion"), size = 0.5)
+#g <- g + geom_line(aes(x=Date, y=Aggregate, colour="Aggregate"), size = 0.5)
+#g <- g + geom_line(aes(x=Date, y=Idiosyncratic, colour="Idiosyncratic"), size = 0.5)
+g <- g + geom_line(aes(x=Date, y=EPU, colour="EPU"), size = 0.9)
+g <- g + geom_line(aes(x=Date, y=SAVI, colour="SAVI"), size = 0.9)
 g <- g + geom_line(aes(x=Date, y=Uncertainty, colour="Uncertainty"), size = 1)
 g <- g + labs(color="Legend text")
 g <- g + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
@@ -1042,12 +1101,12 @@ g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"), e
 g <- g + theme(legend.position="bottom")
 g
 
-
 #Check correlations
 source("corstarsl.R")
 xt <- xtable(corstarsl(uncert_indices[,-1]), caption="Correlations in Levels")
 print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8,
       include.rownames=FALSE)
+
 
 Dispersion <- uncert_indices[,2]
 Idiosyncratic <- uncert_indices[,3]
@@ -1055,41 +1114,55 @@ Aggregate <- uncert_indices[,4]
 EPU <- uncert_indices[,5] 
 SAVI <- uncert_indices[,6] 
 Uncertainty <- uncert_indices[,7]
-RGDP_Growth <- uncert_indices[,8]
-
+RGDP_Growth <- conf_indices[,6]
+#EPU <- p[,1]
     
 par(mfrow=c(3,2))
-ccf(Dispersion, RGDP_Growth, na.action = na.pass)
-ccf(Idiosyncratic, RGDP_Growth, na.action = na.pass)
-ccf(Aggregate, RGDP_Growth, na.action = na.pass)
+ccf(Dispersion, RGDP_Growth, na.action = na.pass, ylim=c(-0.5, 0.5))
+ccf(Idiosyncratic, RGDP_Growth, na.action = na.pass, ylim=c(-0.5, 0.5))
+ccf(Aggregate, RGDP_Growth, na.action = na.pass, ylim=c(-0.5, 0.5))
 #par(mfrow=c(2,2))
-ccf(EPU, RGDP_Growth, na.action = na.pass)
-ccf(SAVI, RGDP_Growth, na.action = na.pass)
-ccf(Uncertainty, RGDP_Growth, na.action = na.pass)
+ccf(EPU, RGDP_Growth, na.action = na.pass, ylim=c(-0.5, 0.5))
+ccf(SAVI, RGDP_Growth, na.action = na.pass, ylim=c(-0.5, 0.5))
+ccf(Uncertainty, RGDP_Growth, na.action = na.pass, ylim=c(-0.5, 0.5))
+#ccf(PCA, RGDP_Growth, na.action = na.pass)
+#corstarsl(cbind(uncert_indices[,-1],PCA))
 
+#-----------------------------------------------
 #Sectoral Analysis
 manufac <- cbind(w.uncert_error.M,w.uncertainty.M[,16], GDPgrowth4$Manufacturing)
 colnames(manufac) <- c("Date","Idiosyncratic","Aggregate","Dispersion","RGDP_Growth")
-manufac[,-1] <- scale(manufac[,-1])
-manufac$Uncertainty <- rowMeans(manufac[,c(2:4)],na.rm = TRUE)
+manufac[,2:4] <- scale(manufac[,2:4])
+#manufac$Uncertainty <- rowMeans(manufac[,c(2:4)],na.rm = TRUE)
+manufac <- manufac[-95,]
+manufac$Uncertainty <- princomp(na.locf(manufac[,2:4]))$scores[,1]
 manufac <- manufac[,c(1:4,6,5)]
 
 construct <- cbind(w.uncert_error.B,w.uncertainty.B[,16], GDPgrowth4$Construction)
 colnames(construct) <- c("Date","Idiosyncratic","Aggregate","Dispersion","RGDP_Growth")
-construct[,-1] <- scale(construct[,-1])
-construct$Uncertainty <- rowMeans(construct[,c(2:4)],na.rm = TRUE)
+construct[,2:4] <- scale(construct[,2:4])
+#construct$Uncertainty <- rowMeans(construct[,c(2:4)],na.rm = TRUE)
+construct <- construct[c(-1:-5,-95),] #un <- na.locf(uncert_indices)
+#un[is.na(un)] <- 0
+construct$Uncertainty <- princomp(na.locf(construct[,2:4]))$scores[,1]
 construct <- construct[,c(1:4,6,5)]
 
 trade <- cbind(w.uncert_error.T,w.uncertainty.T[,16], GDPgrowth4$Trade)
 colnames(trade) <- c("Date","Idiosyncratic","Aggregate","Dispersion","RGDP_Growth")
-trade[,-1] <- scale(trade[,-1])
-trade$Uncertainty <- rowMeans(trade[,c(2:4)],na.rm = TRUE)
+trade[,2:4] <- scale(trade[,2:4])
+#trade$Uncertainty <- rowMeans(trade[,c(2:4)],na.rm = TRUE)
+trade <- trade[c(-1,-95),] #un <- na.locf(uncert_indices)
+#un[is.na(un)] <- 0
+trade$Uncertainty <- princomp(na.locf(trade[,2:4]))$scores[,1]
 trade <- trade[,c(1:4,6,5)]
 
 services <- cbind(w.uncert_error.S,w.uncertainty.S[,16], GDPgrowth4$Services)
 colnames(services) <- c("Date","Idiosyncratic","Aggregate","Dispersion","RGDP_Growth")
-services[,-1] <- scale(services[,-1])
-services$Uncertainty <- rowMeans(services[,c(2:4)],na.rm = TRUE)
+services[,2:4] <- scale(services[,2:4])
+#services$Uncertainty <- rowMeans(services[,c(2:4)],na.rm = TRUE)
+services <- services[c(-1:-53,-95),] #un <- na.locf(uncert_indices)
+#un[is.na(un)] <- 0
+services$Uncertainty <- princomp(na.locf(services[,2:4]))$scores[,1]
 services <- services[,c(1:4,6,5)]
 
 #Check correlations
@@ -1106,9 +1179,9 @@ row.names(xt1) <- c("Idiosyncratic","Aggregate","Dispersion","Uncertainty","RGDP
 row.names(xt2) <- c("Idiosyncratic","Aggregate","Dispersion","Uncertainty","RGDP")
 
 xt <- xtable(xt1, caption="Correlations in Levels")
-print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8)
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.7)
 xt <- xtable(xt2)
-print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.85)
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.75)
 
 
 calc_ccf <- function(data) {
@@ -1119,11 +1192,10 @@ calc_ccf <- function(data) {
     RGDP_Growth <- data[,6]
     
     par(mfrow=c(2,2))
-    ccf(Idiosyncratic, RGDP_Growth, na.action = na.pass)
-    ccf(Aggregate, RGDP_Growth, na.action = na.pass)
-    ccf(Dispersion, RGDP_Growth, na.action = na.pass)
-    ccf(Uncertainty, RGDP_Growth, na.action = na.pass)
-    
+    ccf(Idiosyncratic, RGDP_Growth, na.action = na.pass, ylim=c(-0.5, 0.5))
+    ccf(Aggregate, RGDP_Growth, na.action = na.pass, ylim=c(-0.5, 0.5))
+    ccf(Dispersion, RGDP_Growth, na.action = na.pass, ylim=c(-0.5, 0.5))
+    ccf(Uncertainty, RGDP_Growth, na.action = na.pass, ylim=c(-0.5, 0.5))
 }
 
 calc_ccf(manufac)
@@ -1132,9 +1204,9 @@ calc_ccf(trade)
 calc_ccf(services)
 
 
-##========================================================
-##-------------VAR Analysis-------------------------------
-##========================================================
+##==========================
+##------VAR Analysis--------
+##==========================
 calc_var <- function(data) {
     vardat <- data
     infocrit <- VARselect(vardat, lag.max = 12, type = "const")
@@ -1151,7 +1223,8 @@ var2 <- calc_var(cbind(Idiosyncratic, RGDP_Growth)[-95,])
 var3 <- calc_var(cbind(Aggregate, RGDP_Growth)[-95,])
 var4 <- calc_var(cbind(EPU, RGDP_Growth))
 var5 <- calc_var(cbind(SAVI,RGDP_Growth)[-1:-14,])
-var6 <- calc_var(cbind(Uncertainty, RGDP_Growth)[-95,])
+var6 <- calc_var(cbind(Uncertainty, RGDP_Growth)[,])
+
 
 ##Granger causality tests
 G <- data.frame()
@@ -1261,10 +1334,10 @@ calc_sectoralvar <- function(data) {
     return(G)
 }
 
-G_manu <- calc_sectoralvar(manufac[-95,])
-G_build <- calc_sectoralvar(construct[c(-1:-5,-95),])
-G_trade <- calc_sectoralvar(trade[c(-1,-95),])
-G_serv <- calc_sectoralvar(services[c(-1:-53,-95),])
+G_manu <- calc_sectoralvar(manufac)
+G_build <- calc_sectoralvar(construct)
+G_trade <- calc_sectoralvar(trade)
+G_serv <- calc_sectoralvar(services)
 
 G_sector <- cbind(G_manu[,1:2],G_build[,2],G_trade[,2],G_serv[,2])
 colnames(G_sector)[2:5] <- c("Manufacturing", "Construction","Trade","Services")
@@ -1350,18 +1423,18 @@ par(mfrow=c(1,2))
 plot.varfevd(fevd(var6, n.ahead = 10 ),plot.type = "single")
 #-------------------------------------------------
 #Sectoral
-manufac[-95,]
-construct[c(-1:-5,-95),]
-trade[c(-1,-95),]
-services[c(-1:-53,-95),]
+data <- manufac
+#data <- construct
+#data <- trade
+#data <- services
 
-data <- manufac[-95,]
 Idiosyncratic <- data[,2]
 Aggregate <- data[,3]
 Dispersion <- data[,4]
-RGDP_Growth <- data[,5]
+Uncertainty <- data[,5]
+RGDP_Growth <- data[,6]
 
-vardat <- cbind(Dispersion,RGDP_Growth)
+vardat <- cbind(Uncertainty,RGDP_Growth)
 infocrit <- VARselect(vardat, lag.max = 12, type = "const")
 k_aic <- infocrit$selection[1]
 k_hq  <- infocrit$selection[2]
@@ -1369,8 +1442,8 @@ k_sic <- infocrit$selection[3]
 k <- min(k_aic,k_sic,k_hq)
 varm <- VAR(vardat,p=k,type="const")
 
-irf.y1 <- irf(varm,impulse = "Dispersion", response = "RGDP_Growth", n.ahead = 12,runs = 1000, seed=12345) 
-irf.y2 <- irf(varm,impulse = "RGDP_Growth", response = "Dispersion", n.ahead = 12,runs = 1000, seed=12345)
+irf.y1 <- irf(varm,impulse = "Uncertainty", response = "RGDP_Growth", n.ahead = 12,runs = 1000, seed=12345) 
+irf.y2 <- irf(varm,impulse = "RGDP_Growth", response = "Uncertainty", n.ahead = 12,runs = 1000, seed=12345)
 par(mfrow=c(1,2),mar=c(7,5,7,2), cex=0.6, new=FALSE)
 plot(irf.y1,plot.type = c("single"))
 par(mfrow=c(1,2),mar=c(6,4,4.2,1), cex=0.6, new = TRUE)
@@ -1378,45 +1451,27 @@ plot(irf.y2,plot.type = c("single"))
 
 source("plot_varfevd.R")
 #dev.off()
-par(mfrow=c(1,2))
+par(mfrow=c(1,2), new = FALSE)
 plot.varfevd(fevd(varm, n.ahead = 10 ),plot.type = "single")
 
 
-
-#Three-variable VAR
-
-variable.3 <- function(y1, name1, y2, name2, y3, name3) {
-    y1 <- na.approx(y1)
-    y2 <- na.approx(y2)
-    y3 <- na.approx(y3)
-    vardat <- ts.intersect(y1, y2, y3)  
-    colnames(vardat) <- c(name1,name2,name3)
-    #infocrit <- VARselect(vardat, lag.max = 12, type = "const",exogen = dum94)
-    infocrit <- VARselect(vardat, lag.max = 12, type = "const")
-    k_aic <- infocrit$selection[1]
-    k_hq  <- infocrit$selection[2]
-    k_sic <- infocrit$selection[3]
-    k <- min(k_aic,k_sic,k_hq)
-    #var <- VAR(vardat,p=k,type="const",exogen = dum94)
-    var <- VAR(vardat,p=k,type="const")
-    return(var)
-}
-
-var <- variable.3(ts.indicators[,5],"Confidence",
-                  ts.indicators[,9],"Uncertainty",
-                  ts.GDPgrowth4[,1],"RGDPGrowth")
-
-name1 <- "Confidence"
-name2 <- "Uncertainty"   
-name3 <- "RGDPGrowth"
-
-irf.y1 <- irf(var,impulse = c(name1,name2), response = name3, n.ahead = 12,runs = 1000, seed=12345) 
-par(mfrow=c(1,2),mar=c(5,4,4,2), cex=0.5)
-plot(irf.y1,plot.type = c("single"))
-
-irf.y2 <- irf(var,impulse = name3, response = c(name1,name2), n.ahead = 12,runs = 1000, seed=12345)
-par(mfrow=c(1,2),mar=c(5,4,4,2), cex=0.5)
-plot(irf.y2,plot.type = c("single"))
+#===========================================
+#All three together
+index_plot <- cbind(conf_indices[,c(1,2)],uncert_indices$Uncertainty) 
+index_plot[,-1] <- scale(index_plot[,-1])
+colnames(index_plot) <- c("Date","Activity","Uncertainty")
+g <- ggplot(index_plot) 
+g <- g + geom_line(aes(x=Date, y=Activity, colour="Activity"), size = 1)
+g <- g + geom_line(aes(x=Date, y=Uncertainty, colour="Uncertainty"), size = 1)
+g <- g + labs(color="Legend text")
+g <- g + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
+g <- g + ylab("Indicator") + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) 
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"), expand=c(0,0),
+                      limits = as.Date(c("1990-12-31", NA)))
+g <- g + theme(legend.position="bottom")
+g
 
 
 #---------------------------------------
@@ -1438,7 +1493,188 @@ g <- g + theme(legend.position="bottom")
 g
 dev.off()
 
+
+write.csv2(conf_indices,"conf_indices.csv")
+write.csv2(uncert_indices,"uncert_indices.csv")
+
+conf_indices <- read.csv2("conf_indices.csv")[,-1]
+uncert_indices <- read.csv2("uncert_indices.csv")[,-1]
+
+
 #=================
+#Expanded VAR
+#=================
+Activity <- conf_indices[,2]
+Confidence <- conf_indices[,3]
+BER_BCI <- conf_indices[,4]
+SACCI_BCI <- conf_indices[,5] 
+RGDP_Growth <- conf_indices[,6]
+
+Dispersion <- uncert_indices[,2]
+Idiosyncratic <- uncert_indices[,3]
+Aggregate <- uncert_indices[,4]
+EPU <- uncert_indices[,5] 
+SAVI <- uncert_indices[,6] 
+Uncertainty <- uncert_indices[,7]
+
+#Three-variable VAR
+vardat <- cbind(Activity,Uncertainty,RGDP_Growth)  
+infocrit <- VARselect(vardat, lag.max = 16, type = "const")
+k_aic <- infocrit$selection[1]
+k_hq  <- infocrit$selection[2]
+k_sic <- infocrit$selection[3]
+k <- min(k_aic,k_sic,k_hq)
+var_3 <- VAR(vardat,p=k,type="const")
+
+irf.y1 <- irf(var_3,impulse = c("Activity","Uncertainty"), response = "RGDP_Growth", n.ahead = 12,runs = 1000, seed=12345) 
+par(mfrow=c(1,2),mar=c(5,4,4,2), cex=0.5)
+plot(irf.y1,plot.type = c("single"))
+
+irf.y2 <- irf(var_3,impulse = "RGDP_Growth", response = c("Activity","Uncertainty"), n.ahead = 12,runs = 1000, seed=12345)
+par(mfrow=c(1,2),mar=c(5,4,4,2), cex=0.5)
+plot(irf.y2,plot.type = c("single"))
+
+source("plot_varfevd.R")
+#dev.off()
+par(mfrow=c(1,3))
+plot.varfevd(fevd(var_3, n.ahead = 10 ),plot.type = "single")
+
+#---------------------------------
+#In growth rates:
+JSE <- GDPgrowth4$RJSE
+Bond <- GDPdata$Bond2
+TBill <- GDPdata$T.Bill
+Spread <- Bond-TBill
+Employment <- GDPgrowth4$Employ
+Investment <- GDPgrowth4$Rinvestment 
+Production <- GDPgrowth4$RProduction
+
+vardat <- cbind(Activity,Uncertainty,JSE,Spread,RGDP_Growth,
+                Production,Employment,Investment)  
+
+#vardat <- cbind(Activity,Uncertainty,Spread,RGDP_Growth,Production,Employment,Investment)  
+
+infocrit <- VARselect(vardat, lag.max = 16, type = "const")
+k_aic <- infocrit$selection[1]
+k_hq  <- infocrit$selection[2]
+k_sic <- infocrit$selection[3]
+k <- min(k_aic,k_sic,k_hq)
+vare <- VAR(vardat,p=2,type="const")
+
+irf.y1 <- irf(vare,impulse = c("Activity","Uncertainty","JSE","Spread","Production","Employment","Investment"),
+              response = c("RGDP_Growth"), n.ahead = 12,runs = 1000, seed=12345) 
+
+irf.y1 <- irf(vare,impulse = c("Activity","Uncertainty"),
+              response = c("RGDP_Growth"), n.ahead = 12,runs = 1000, seed=12345) 
+
+irf.y1 <- irf(vare,impulse = c("Activity","Uncertainty"),
+              response = c("RGDP_Growth","Production","Investment"), n.ahead = 12,runs = 1000, seed=12345) 
+
+irf.y1 <- irf(vare,impulse = c("Activity","Uncertainty"),
+              response = c("RGDP_Growth","Production","Employment"), n.ahead = 12,runs = 1000, seed=12345) 
+
+plot(irf.y1,plot.type = c("multiple"))
+
+irf.y2 <- irf(vare,impulse = "RGDP_Growth", response = c("Activity","Uncertainty"), n.ahead = 12,runs = 1000, seed=12345)
+plot(irf.y2,plot.type = c("multiple"))
+
+par(mfrow=c(2,3),mar=c(3,4,2,1), cex=0.6)
+plot(irf.y1,plot.type = c("single"), main="")
+
+
+source("plot_varfevd.R")
+#dev.off()
+par(mfrow=c(2,3))
+plot.varfevd(fevd(vare, n.ahead = 10 ),plot.type = "single")
+
+plot(fevd(vare, n.ahead = 10 ))
+#-------------------------------
+#In levels:
+
+JSE <- log(realGDP$RJSE[-1:-4])
+Investment <- log(realGDP$Rinvestment[-1:-4])
+Production <- log(realGDP$RProduction[-1:-4])
+RGDP <- log(realGDP$RGDP[-1:-4])
+
+vardat <- cbind(Activity,Uncertainty,JSE,Spread,RGDP,
+                Production,Employment,Investment)  
+
+infocrit <- VARselect(vardat, lag.max = 16, type = "const")
+k_aic <- infocrit$selection[1]
+k_hq  <- infocrit$selection[2]
+k_sic <- infocrit$selection[3]
+k <- min(k_aic,k_sic,k_hq)
+var1 <- VAR(vardat,p=2,type="const")
+
+irf.y1 <- irf(var1,impulse = c("Activity","Uncertainty"),
+              response = c("RGDP","Production","Investment"), n.ahead = 12,runs = 1000, seed=12345) 
+
+par(mfrow=c(2,3),mar=c(3,4,2,1), cex=0.6)
+plot(irf.y1,plot.type = c("single"), main="")
+
+plot(irf.y1,plot.type = c("multiple"))
+
+irf.y2 <- irf(var1,impulse = "RGDP", response = c("Activity","Uncertainty","JSE","Bond","Spread","Production","Employment","Investment"), n.ahead = 12,runs = 1000, seed=12345)
+plot(irf.y2,plot.type = c("multiple"))
+
+par(mfrow=c(1,2),mar=c(5,4,4,2), cex=0.5)
+plot(irf.y1,plot.type = c("single"))
+
+par(mfrow=c(2,3))
+plot.varfevd(fevd(vare, n.ahead = 10 ),plot.type = "single")
+
+#---------------------------------
+#Var Diagnostics
+library(fUnitRoots)
+
+summary(ur.df(Employment, c("none"), selectlags = c("AIC")))
+summary(ur.df(Employment, c("drift"), selectlags = c("AIC")))
+summary(ur.df(Employment, c("trend"), selectlags = c("AIC")))
+
+adf.test(Employment)
+adfTest(Spread)
+
+vardat <- cbind(Activity,Uncertainty,RGDP_Growth)
+
+infocrit <- VARselect(vardat, lag.max = 16, type = "const")
+k_aic <- infocrit$selection[1]
+k_hq  <- infocrit$selection[2]
+k_sic <- infocrit$selection[3]
+k <- min(k_aic,k_sic,k_hq)
+var1 <- VAR(vardat,p=2,type="const")
+
+serialT1 <- serial.test(var1, lags.bg=2, type="BG")
+serialT2 <- serial.test(var1, lags.pt=2, type="PT.adjusted")
+serialT3 <- serial.test(var1, lags.pt=2, type="PT.asymptotic")
+archT <- arch.test(var1, lags.single=1, lags.multi = 1, multivariate.only = F)
+normT <- normality.test(var1, multivariate.only = F)
+
+
+plot(var1,plot.type = c("multiple"))
+plot(serialT1,plot.type = c("multiple"))
+methods(plot)
+getAnywhere(plot.varest)
+plot(serialT1,ylim.hist=c(0,2))
+plot(serialT1,ylim.hist=c(0,1))
+plot(normT)
+
+# Assessment of residuals - marginal-marginal
+par(din=c(5,2.5))
+layout(matrix(c(1,2),nrow=1,ncol=2,byrow = T))
+resids <- cbind(var1[[1]][[1]][[2]], var1[[1]][[2]][[2]])
+plot(resids, ylim=c(-1.6,1.6), xlim=c(-0.8,0.8), xlab="Log Price (M)", ylab="Log Quantity (M)", main="Marginal versus marginal")
+ellipse(mu=c(0,0), sigma=cov(resids), alpha=0.1,npoints=300,col="red")
+
+# Assessment of residuals - conditional-marginal
+resid2 <- cbind(marg$residuals, cond$residuals)
+plot(resid2, ylim=c(-1.6,1.6), xlim=c(-0.8,0.8), xlab="Log Price (M)", ylab="Log Quantity (C)", main="Conditional versus marginal")
+ellipse(mu=c(0,0), sigma=cov(resid2), alpha=0.1,npoints=300,col="red")
+
+
+
+
+
+#--------------------------------
 #Compare turning points graphically
 #separate geom_rect met ymin en ymax adjusted
 ggplot(dfm) +
@@ -1450,6 +1686,10 @@ ggplot(dfm) +
     facet_wrap( ~ firm)
 
 #=================
+
+
+
+
 #Principle components
 
 # Load data
@@ -1462,39 +1702,27 @@ ir.species <- iris[, 5]
 
 # apply PCA - scale. = TRUE is highly 
 # advisable, but default is FALSE. 
-ir.pca <- prcomp(log.ir,
-                 center = TRUE,
-                 scale. = TRUE) 
-# print method
-print(ir.pca)
+un <- uncert_indices[,2:6]
 
-# plot method
-plot(ir.pca, type = "l")
+un[is.na(un)] <- 0
+un <- na.locf(un,fromLast = TRUE)
+un <- na.locf(un)
 
-# summary method
-summary(ir.pca)
-
-ir.pca$loadings
-ir.pca$scores
-
-#PCA on caret package to correct skewness and scale variables
-require(caret)
-trans = preProcess(iris[,1:4], 
-                   method=c("BoxCox", "center", 
-                            "scale", "pca"))
-PC = predict(trans, iris[,1:4])
-
-
-
-# Pricipal Components Analysis
-# entering raw data and extracting PCs 
-# from the correlation matrix 
-fit <- princomp(mydata, cor=TRUE)
+fit <- princomp(un,center = TRUE,scale = TRUE,cor=TRUE,na.rm=TRUE)
+print(fit)
 summary(fit) # print variance accounted for 
 loadings(fit) # pc loadings 
 plot(fit,type="lines") # scree plot 
-fit$scores # the principal components
+p <- fit$scores # the principal components
 biplot(fit)
+screeplot(fit)
+
+
+#PCA on caret package to correct skewness and scale variables
+require(caret)
+trans <- preProcess(un,method=c("BoxCox", "center","scale", "pca"))
+PC <- predict(trans, un[,1:5])
+
 
 # Varimax Rotated Principal Components
 # retaining 5 components 
@@ -1503,6 +1731,18 @@ fit <- principal(mydata, nfactors=5, rotate="varimax")
 fit # print results
 
 
+#---------
+p <- princomp(survey)
+summary(p)
+plot(p)
+biplot(p)
+p$loadings
+p$scores
+
+s <- factanal(un, factors = 2, rotation = "varimax",scores = "regression",
+              na.action=na.omit)
+s
+f <- s$scores
 
 ####### Calculating Principal component of returns of S&P CNX 500 companies ########
 ## Access the relevant file ##
@@ -1522,20 +1762,18 @@ ret <- as.matrix(returns1, nrow = dim(returns1)[1], ncol = dim(returns1)[2])
 princ.return <- princomp(ret) ## This is it.!!
 
 ## Identifying what components to be used ##
-barplot(height=princ.return$sdev[1:10]/princ.return$sdev[1])   
+barplot(height=fit$sdev[1:10]/fit$sdev[1])   
 # I am plotting the standard deviation of the PC's divided by standard deviation of PC 1, this can help us decide on a benchmark that we can use to select the relevant components.
 
 ## To get the first principal component in a variable ##
-load <- loadings(princ.return)[,1]   
+load <- loadings(fit)[,1]   
 ## loadings() gives the linear combination by which our input variables will be linearly weighted to compute the components, and this command gives us the loading for 1st PC.
 
-pr.cp <- ret %*% load  
+u <- as.matrix(un)
+pr.cp <- u %*% load  
 ## Matrix multiplication of the input data with the loading for the 1st PC gives us the 1st PC in matrix form. 
 
 pr <- as.numeric(pr.cp) ## Gives us the 1st PC in numeric form in pr.
-
-
-
 
 
 
@@ -1572,4 +1810,9 @@ confusionMatrix(testing$type,predict(modelFit,testPC))
 modelFit <- train(training$type ~ .,method="glm",preProcess="pca",data=training)
 # print results of model
 confusionMatrix(testing$type,predict(modelFit,testing))
+
+
+
+
+
 

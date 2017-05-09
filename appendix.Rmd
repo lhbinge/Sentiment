@@ -1,0 +1,34 @@
+---
+output: md_document    
+fontsize: 12pt
+geometry: margin=1in
+---
+
+```{r ap1, echo=FALSE, results='asis',warning=FALSE, message=FALSE, cache = TRUE}
+setwd("C:\\Users\\Laurie\\OneDrive\\Documents\\BING\\BER Confidence Surveys\\Sentiment")
+suppressMessages(library(xtable))
+
+conf_indices <- read.csv2("conf_indices.csv")[,-1]
+uncert_indices <- read.csv2("uncert_indices.csv")[,-1]
+
+all_indices <- cbind(conf_indices[,c(1:3)],uncert_indices[,c(2:4,7)])
+xt <- xtable(all_indices[1:48,], caption="Sentiment Indicators")
+print(xt, "latex",comment=FALSE, include.rownames=FALSE,
+      caption.placement = getOption("xtable.caption.placement", "top"),scalebox=0.8)
+
+```
+
+
+```{r ap2, echo=FALSE, results='asis',warning=FALSE, message=FALSE, cache = TRUE}
+setwd("C:\\Users\\Laurie\\OneDrive\\Documents\\BING\\BER Confidence Surveys\\Sentiment")
+suppressMessages(library(xtable))
+
+conf_indices <- read.csv2("conf_indices.csv")[,-1]
+uncert_indices <- read.csv2("uncert_indices.csv")[,-1]
+
+all_indices <- cbind(conf_indices[,c(1:3)],uncert_indices[,c(2:4,7)])
+xt <- xtable(all_indices[48:95,])
+print(xt, "latex",comment=FALSE, include.rownames=FALSE,
+      scalebox=0.8)
+
+```

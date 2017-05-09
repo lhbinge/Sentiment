@@ -38,7 +38,7 @@ plot.varfevd  <-function (x, plot.type = c("multiple", "single"), names = NULL,
             xvalue <- cbind(t(x), hmat)
             barplot(xvalue, main = main, col = col, ylab = ylab,
                     xlab = xlab, names.arg = names.arg, ylim = ylim,
-                    legend.text = legend, ...)
+                    legend.text = legend,...)
             abline(h = 0)
             
             
