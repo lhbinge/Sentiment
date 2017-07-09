@@ -15,8 +15,8 @@ csl: harvard.csl
 \begin{center}
 \Large\scshape{Business Sentiment and the Business Cycle in South Africa} \\ 
 \vspace{1em}
-\large\normalfont{Laurie Binge}\footnote{PhD candidate at the Department of Economics at Stellenbosch University.} \\
-\large\normalfont{Willem H. Boshoff}\footnote{Associate Professor at the Department of Economics at Stellenbosch University.} \\
+\large\normalfont{Laurie Binge}\footnote{PhD candidate, Department of Economics, Stellenbosch University, Private Bag X1, Matieland, 7602, South Africa. Corresponding author. E-mail: lhbinge@gmail.com} \\
+\large\normalfont{Willem H. Boshoff}\footnote{Associate Professor, Department of Economics, Stellenbosch University. E-mail: wimpie2@sun.ac.za.} \\
 \normalsize\textit{Stellenbosch University} \\
 \normalsize\normalfont{This draft: \today} 
 \end{center}
@@ -500,7 +500,7 @@ This paper uses the first principal component of the 5 standardised uncertainty 
 #Results: Confidence
 This section presents the composite sectoral and aggregate business confidence indicators for South Africa. Simple linear interpolation is used for the few missing quarters. The indicators are then compared to existing measures of confidence and related to economic activity in South Africa.   
 
-##Confidence
+##Confidence Indicators
 ```{r confidence, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
 ##========================##
 ##----- CONFIDENCE -------##
@@ -1086,10 +1086,11 @@ var1 <- VAR(vardat,p=k,type="const")
 
 irf.y1 <- irf(var1,impulse = "Activity", response = "RGDP_Growth", n.ahead = 12,runs = 1000, seed=12345) 
 irf.y2 <- irf(var1,impulse = "RGDP_Growth", response = "Activity", n.ahead = 12,runs = 1000, seed=12345)
-par(mfrow=c(1,2),mar=c(7,5,7,2), cex=0.6, new=FALSE)
-plot(irf.y1,plot.type = c("single"))
-par(mfrow=c(1,2),mar=c(6,4,4.2,1), cex=0.6, new = TRUE)
-plot(irf.y2,plot.type = c("single"))
+par(mfrow=c(1,1), new=FALSE)
+nf <- layout(matrix(c(1,2,1,2), 1, 2, byrow = TRUE))
+plot(irf.y1,plot.type = c("single"), main="Response from Activity", xlab="Horizon in quarters")
+par(new = TRUE)
+plot(irf.y2,plot.type = c("single"), main="Response from RGDP Growth", xlab="Horizon in quarters")
 ```
 
 The importance of innovations can also be examined with variance decompositions. While the IRFs describe the reaction of a variable of interest to an exogenous shock, the decomposition of the forecast error variance of a given variable shows how much of the error can be explained by exogenous shocks to the other variables in the system [@Girardi2015]. The forecast error variance decomposition (FEVD) shows the proportion of the movements in a sequence due to its own shocks and shocks to the other variable. Figure 10 illustrates the FEVDs for the Activity indicator and real GDP growth. Up to around half (52%) of the movements in real GDP growth are explained by the confidence indicator over the longer term, while real GDP explains up to 3% of the variance in the Activity indicator.
@@ -1117,10 +1118,11 @@ varm <- VAR(vardat,p=k,type="const")
 
 irf.y1 <- irf(varm,impulse = "Activity", response = "RGDP_Growth", n.ahead = 12,runs = 1000, seed=12345) 
 irf.y2 <- irf(varm,impulse = "RGDP_Growth", response = "Activity", n.ahead = 12,runs = 1000, seed=12345)
-par(mfrow=c(1,2),mar=c(7,5,7,2), cex=0.6, new=FALSE)
-plot(irf.y1,plot.type = c("single"))
-par(mfrow=c(1,2),mar=c(6,4,4.2,1), cex=0.6, new = TRUE)
-plot(irf.y2,plot.type = c("single"))
+par(mfrow=c(1,1), new=FALSE)
+nf <- layout(matrix(c(1,2,1,2), 1, 2, byrow = TRUE))
+plot(irf.y1,plot.type = c("single"), main="Response from Activity", xlab="Horizon in quarters")
+par(new = TRUE)
+plot(irf.y2,plot.type = c("single"), main="Response from RGDP Growth", xlab="Horizon in quarters")
 ```
 
 Figure 12 illustrates the FEVDs for the Activity indicator and real GDP growth in the Manufacturing sector. Up to more than a third (39%) of the movements in real GDP growth are explained by Activity over the longer term, while real GDP explains up to 2% of the variance in Activity. Overall, the results suggest that shocks to confidence are important for economic fluctuations, accounting for between around 20% and 60% of the forecast error variance of the real GDP growth rate, depending on the level of aggregation and the indicator used.
@@ -1131,7 +1133,7 @@ par(mfrow=c(1,2))
 plot.varfevd(fevd(varm, n.ahead = 10 ),plot.type = "single")
 ```
 
-###Summary and Suggested Further Analysis
+##Summary and Suggested Further Analysis
 All the indicators of confidence examined in this section exhibit a significant positive correlation with real GDP growth. The Activity indicators generally exhibited the highest correlation with real GDP growth and therefore the most successful tracking record. The Confidence indicators generally lead the indicators based on current conditions. The indicators provided advanced warning of turning points, although there were a few false signals, especially over the ambiguous period of 2000-2003. The analysis could be expanded by further analysing the cyclical properties of the indicators in terms of duration, amplitude and steepness. Co-movement between cycles in the indicators and the business cycle could be analysed using the concordance index [@Boshoff2005a]. 
 
 The results suggest that all three survey-based confidence indicators contain relevant information for the prediction of output growth. The lagged values of all three survey-based confidence indicators significantly Granger-caused real GDP growth, with limited evidence of Granger-causality in the reverse direction. The indicators had a positive and significant impact on real GDP growth in the VAR models. Shocks to the indicators accounted for a sizeable fraction of variation in economic activity. This is the case for the aggregate indicators as well as the sectoral indicators. This implies that the confidence indicators contain useful information about current and future economic developments. As a result, these confidence indicators are potentially useful for monitoring economic developments in a timely manner and for forecasting future economic activity. The new composite indicators seem to outperform the existing confidence indicators, in terms of tracking record, the stability of turning points, and the size of impulse responses.
@@ -1441,6 +1443,7 @@ g
 
 The following section tests for this more formally be comparing the uncertainty indicators to alternative measures of uncertainty, the EPU and the SAVI, as well as real GDP growth. A combined indicator is then constructed from all 5 proxies, which turns out to perform better than the individual indicators. The relationships are analysed for the aggregate variables, as well as for each sector separately. The advantage of also looking at specific sectors separately is that general equilibrium effects are likely to be mitigated. For instance, the wait-and-see effect is a partial equilibrium mechanism, which might be dampened by general equilibrium price adjustments (e.g. wages are likely to adjust in equilibrium so that at least some firms continue hiring). The focus on sector-level data offers a better chance of detecting the wait-and-see effect [@Bachmann2010].
 
+##Comparison and Evaluation
 This section compares and evaluates the survey-based uncertainty indicators and the two alternative indicators of uncertainty in South Africa, the EPU and the SAVI. This section then uses correlations, Granger causality tests, and bivariate VARs to provide some preliminary evidence on the dynamic effects of uncertainty shocks on the economy. The results presented below indicate that the combined uncertainty indicator exhibits a higher correlation with movements in real output growth than the separate components. 
 
 ###Correlations between uncertainty indicators and real GDP growth
@@ -1747,14 +1750,15 @@ The uncertainty indicators are ordered first in a recursive identification strat
 
 Figure 18 illustrates the IRFs of a bivariate VAR with Dispersion and real GDP growth. The left panel plots the responses of real GDP growth to an orthogonal shock in Dispersion, with 95% bootstrap confidence intervals. A shock to Dispersion is followed by a mildly significant decrease in real GDP growth. The right panel plots the responses of Dispersion to an orthogonal shock in real GDP growth. Following a shock to real GDP growth, there is no significant response in Dispersion. The IRFs for the Aggregate, EPU, and SAVI indicators of uncertainty are almost identical. A shock to these indicators is associated with a mildly significant decrease in real GDP growth, while a shock to real GDP growth does not lead to a significant change in each of the uncertainty indicators. The results are similar for alternative orderings.
 
-```{r figure18, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="IRFs of Uncertainty and real GDP growth"}
+```{r figure18, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="IRFs of Dispersion and real GDP growth"}
 irf.y1 <- irf(var1,impulse = "Dispersion", response = "RGDP_Growth", n.ahead = 12,runs = 1000, seed=12345) 
 irf.y2 <- irf(var1,impulse = "RGDP_Growth", response = "Dispersion", n.ahead = 12,runs = 1000, seed=12345)
 
-par(mfrow=c(1,2),mar=c(7,5,7,2), cex=0.6, new=FALSE)
-plot(irf.y1,plot.type = c("single"))
-par(mfrow=c(1,2),mar=c(6,4,4.2,1), cex=0.6, new = TRUE)
-plot(irf.y2,plot.type = c("single"))
+par(mfrow=c(1,1), new=FALSE)
+nf <- layout(matrix(c(1,2,1,2), 1, 2, byrow = TRUE))
+plot(irf.y1,plot.type = c("single"), main="Response from Dispersion", xlab="Horizon in quarters")
+par(new = TRUE)
+plot(irf.y2,plot.type = c("single"), main="Response from RGDP Growth", xlab="Horizon in quarters")
 ```
 
 Figure 19 illustrates the IRFs of a bivariate VAR with the overall Uncertainty indicators and real GDP growth. A shock to Uncertainty is followed by a significant decrease in real GDP growth on impact, with a peak at 3 quarters. The impact on the growth rate is transitory, dying out after approximately 6 quarters. This result confirms the findings in most of the literature (e.g. @Bachmann2013 and @Redl2015), where innovations to uncertainty have protracted negative effects on economic activity.   
@@ -1763,10 +1767,11 @@ Figure 19 illustrates the IRFs of a bivariate VAR with the overall Uncertainty i
 irf.y1 <- irf(var6,impulse = "Uncertainty", response = "RGDP_Growth", n.ahead = 12,runs = 1000, seed=12345) 
 irf.y2 <- irf(var6,impulse = "RGDP_Growth", response = "Uncertainty", n.ahead = 12,runs = 1000, seed=12345)
 
-par(mfrow=c(1,2),mar=c(7,5,7,2), cex=0.6, new=FALSE)
-plot(irf.y1,plot.type = c("single"))
-par(mfrow=c(1,2),mar=c(6,4,4.2,1), cex=0.6, new = TRUE)
-plot(irf.y2,plot.type = c("single"))
+par(mfrow=c(1,1), new=FALSE)
+nf <- layout(matrix(c(1,2,1,2), 1, 2, byrow = TRUE))
+plot(irf.y1,plot.type = c("single"), main="Response from Uncertainty", xlab="Horizon in quarters")
+par(new = TRUE)
+plot(irf.y2,plot.type = c("single"), main="Response from RGDP Growth", xlab="Horizon in quarters")
 ```
 
 Figure 20 illustrates the FEVDs for the overall Uncertainty indicator and real GDP growth. Up to around 20% of the movements in real GDP growth are explained by the Uncertainty indicator over the longer term, while real GDP explains about 2% of the variance in Uncertainty. This is in line with findings in the literature (e.g. @Bachmann2013).
@@ -1801,11 +1806,11 @@ varm <- VAR(vardat,p=k,type="const")
 
 irf.y1 <- irf(varm,impulse = "Uncertainty", response = "RGDP_Growth", n.ahead = 12,runs = 1000, seed=12345) 
 irf.y2 <- irf(varm,impulse = "RGDP_Growth", response = "Uncertainty", n.ahead = 12,runs = 1000, seed=12345)
-par(mfrow=c(1,2),mar=c(7,5,7,2), cex=0.6, new=FALSE)
-plot(irf.y1,plot.type = c("single"))
-par(mfrow=c(1,2),mar=c(6,4,4.2,1), cex=0.6, new = TRUE)
-plot(irf.y2,plot.type = c("single"))
-
+par(mfrow=c(1,1), new=FALSE)
+nf <- layout(matrix(c(1,2,1,2), 1, 2, byrow = TRUE))
+plot(irf.y1,plot.type = c("single"), main="Response from Uncertainty", xlab="Horizon in quarters")
+par(new = TRUE)
+plot(irf.y2,plot.type = c("single"), main="Response from RGDP Growth", xlab="Horizon in quarters")
 ```
 
 ```{r figure22, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="FEVDs of Uncertainty and real GDP growth in the Manufacturing sector"}
@@ -1894,7 +1899,7 @@ par(mfrow=c(2,3),mar=c(3,4,2,1), cex=0.6)
 plot(irf.y1,plot.type = c("single"), main="")
 ```
 
-###Summary and Suggested Further Analysis
+##Summary and Suggested Further Analysis
 This section has presented 3 survey-based indicators of uncertainty, as well as two additional popular proxies from the literature: stock market volatility and the news-based EPU created by @Hlatshwayo2016. All the indicators appear to be counter-cyclical in the sense that they exhibit a significant negative correlation with real GDP growth, albeit at different horizons. Most of the indicators seem to lead changes in real GDP growth. 
 
 None of the uncertainty proxies are a perfect measure of a multidimensional and complex phenomenon, but all of them can potentially contribute to the understanding of the effects of uncertainty on economic activity [@Bachmann2013]. The 5 indicators were combined to form an overall Uncertainty indicator, similar to @Baker2013 and @Redl2015, in order to reflect different sources of uncertainty from the different proxies. This combined indicator appeared to be a plausible indicator of macroeconomic uncertainty in South Africa, reflecting key economic events. It also appeared to track real GDP growth rates more closely than any of the individual components separately.

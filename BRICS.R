@@ -333,6 +333,35 @@ colnames(Concord_2) <- colnames(S)[3:6]
 
 
 
+figuur <- S[-1:-60,c(-2,-7)]
+for(i in 1:4) {
+    for(j in 1:227)
+    ifelse(figuur[j,i+1]==0,figuur[j,i+1]<-i,figuur[j,i+1]<-NA)  
+}
+
+recessions.la <- recessions.l[-1:-4,]
+recessions.la[1,1] <- "1975-03-31"
+
+index_plot <- figuur
+g1 <- ggplot(index_plot) 
+g1 <- g1 + geom_rect(data=recessions.la, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='darkgrey', alpha=0.5)
+g1 <- g1 + geom_line(aes(x=Date, y=Coincident), size = 10)
+g1 <- g1 + geom_line(aes(x=Date, y=Leading), size = 10)
+g1 <- g1 + geom_line(aes(x=Date, y=BER_BCI), size = 10)
+g1 <- g1 + geom_line(aes(x=Date, y=SACCI), size = 10)
+g1 <- g1 + labs(color="Legend text")
+g1 <- g1 + ylab("") + xlab("")
+g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g1 <- g1 + theme(legend.title=element_blank()) 
+g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"), expand=c(0,0),
+                      limits = as.Date(c("1973-12-31", NA)))
+g1 <- g1 + theme(legend.position="none")
+g1 <- g1 + scale_y_continuous(limits=c(0.5, 4.5),breaks = 0:5,
+                   labels = c(" ", "Coincident", "Leading", "BER BCI", "SACCI BCI", " "))
+g1
+
+
+
 #---------------------------------------------------
 #VARs
 detach("package:BCDating", unload=TRUE)
@@ -344,7 +373,7 @@ calc_var <- function(data) {
     k_hq  <- infocrit$selection[2]
     k_sic <- infocrit$selection[3]
     k <- min(k_aic,k_sic,k_hq)
-    var_model <- VAR(vardat,p=9,type="const")
+    var_model <- VAR(vardat,p=8,type="const")
     return(var_model)
 }
 
@@ -420,7 +449,7 @@ par(mfrow=c(1,1), new=FALSE)
 nf <- layout(matrix(c(1,2,1,2), 1, 2, byrow = TRUE))
 layout.show(nf)
 #par(cex=0.6)
-plot(irf.y1,plot.type = c("single"), main="Response from BER BCI", xlab="Horizon in quarters")
+plot(irf.y1,plot.type = c("single"), main="Response from SACCI BCI", xlab="Horizon in quarters")
 par(new = TRUE)
 plot(irf.y2,plot.type = c("single"), main="Response from RGDP Growth", xlab="Horizon in quarters")
 
@@ -428,7 +457,7 @@ source("plot_varfevd.R")
 par(mfrow=c(1,1), new=FALSE)
 #dev.off()
 par(mfrow=c(1,2))
-plot.varfevd(fevd(var3, n.ahead = 10 ),plot.type = "single", xlab="Horizon in quarters", ylab="Percentage variance explained")
+plot.varfevd(fevd(var4, n.ahead = 10 ),plot.type = "single", xlab="Horizon in quarters", ylab="Percentage variance explained")
 
 
 #---------------------------------
@@ -481,6 +510,48 @@ plot.varfevd(fevd(vare, n.ahead = 10 ),plot.type = "single", xlab="Horizon in qu
 plot(fevd(vare, n.ahead = 10 ))
 
 
+#SACCI
+vardat <- cbind(SACCI_BCI=SACCI_BCI[129:223],JSE,Spread,RGDP_Growth=RGDP_Growth[129:223],
+                Production,Employment,Investment)  
+
+
+infocrit <- VARselect(vardat, lag.max = 16, type = "const")
+k_aic <- infocrit$selection[1]
+k_hq  <- infocrit$selection[2]
+k_sic <- infocrit$selection[3]
+k <- min(k_aic,k_sic,k_hq)
+vare <- VAR(vardat,p=4,type="const")
+
+irf.y1 <- irf(vare,impulse = c("SACCI_BCI"),
+              response = c("RGDP_Growth"), n.ahead = 12,runs = 1000, seed=12345) 
+irf.y2 <- irf(vare,impulse = "RGDP_Growth", response = "SACCI_BCI", 
+              n.ahead = 12,runs = 1000, seed=12345)
+
+par(mfrow=c(1,1), new=FALSE)
+nf <- layout(matrix(c(1,2,1,2), 1, 2, byrow = TRUE))
+layout.show(nf)
+#par(cex=0.6)
+plot(irf.y1,plot.type = c("single"), main="Response from SACCI BCI", xlab="Horizon in quarters")
+par(new = TRUE)
+plot(irf.y2,plot.type = c("single"), main="Response from RGDP Growth", xlab="Horizon in quarters")
+
+irf.y1 <- irf(vare,impulse = c("SACCI_BCI"),
+              response = c("RGDP_Growth","Production","Investment"), n.ahead = 12,runs = 1000, seed=12345) 
+
+par(mfrow=c(1,1), new=FALSE)
+par(mfrow=c(1,3),mar=c(4.2,4,2,1), cex=0.8)
+plot(irf.y1,plot.type = c("single"), main="Response from SACCI BCI", xlab="Horizon in quarters")
+
+source("plot_varfevd.R")
+#dev.off()
+par(mfrow=c(1,1))
+plot.varfevd(fevd(vare, n.ahead = 10 ),plot.type = "single", xlab="Horizon in quarters", ylab="Percentage variance explained")
+
+plot(fevd(vare, n.ahead = 10 ))
+
+
+#Tests
+
 
 adf.test(BER_BCI[-1:-60], alternative = "stationary")
 
@@ -505,5 +576,255 @@ plot(normT)
 
 
 
+
+#====================
+#Laubsscher
+
+MWH = read.table(textConnection(
+    "Peak, Trough
+    1975-12-31,1977-08-31
+    1981-08-31,1983-04-30
+    1984-04-30,1986-01-31
+    1988-10-31,1993-07-31
+    1994-12-31,1996-08-31
+    1996-12-31,1999-05-31
+    1999-12-31,2001-07-31
+    2002-06-30,2004-01-31
+    2007-10-31,2009-09-30
+    2013-12-31,2016-12-31"), sep=',',
+    colClasses=c('Date', 'Date'), header=TRUE)
+
+MPV = read.table(textConnection(
+    "Peak, Trough
+    1975-09-30,1977-11-30
+    1981-10-31,1983-05-31
+    1984-05-31,1986-02-28
+    1986-10-31,1987-07-31
+    1989-06-30,1992-05-31
+    1997-05-31,1999-07-31
+    2002-11-30,2003-11-30
+    2008-06-30,2009-08-31
+    2014-02-28,2015-12-31"), sep=',',
+    colClasses=c('Date', 'Date'), header=TRUE)
+
+MCU = read.table(textConnection(
+    "Peak, Trough
+    1976-03-31, 1977-12-31
+    1982-03-31, 1983-07-31
+    1984-06-30,1986-09-30
+    1989-07-31,1990-09-30
+    1992-03-31,1993-01-31
+    1995-03-31,1996-07-31
+    1998-03-31,1999-06-30
+    2001-03-31,2001-09-30
+    2008-08-31,2009-09-30
+    2013-11-30,2016-12-31"), sep=',',
+    colClasses=c('Date', 'Date'), header=TRUE)
+
+
+WSV = read.table(textConnection(
+    "Peak, Trough
+    1976-06-30,1978-01-31
+    1978-10-31,1979-09-30
+    1981-10-31,1983-01-31
+    1984-08-31,1986-01-31
+    1988-12-31,1989-10-31
+    1996-04-30,1997-02-28
+    2008-05-31,2009-11-30"), sep=',',
+    colClasses=c('Date', 'Date'), header=TRUE)
+
+
+
+g1 <- ggplot() 
+#g1 <- g1 + geom_line(aes(x=Date, y=Confidence, colour="Confidence"), size = 0.5)
+#g1 <- g1 + labs(color="Legend text")
+g1 <- g1 + geom_rect(data=recessions.l, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=0), fill='grey', alpha=0.5)
+g1 <- g1 + geom_rect(data=MWH, aes(xmin=Peak, xmax=Trough, ymin=0, ymax=+Inf), fill='black', alpha=0.5)
+g1 <- g1 + ylab("") + xlab("")
+g1 <- g1 + ggtitle("Manufacturing Working Hours") 
+g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g1 <- g1 + theme(legend.title=element_blank()) 
+g1 <- g1 + scale_x_date(expand=c(0,0),limits = as.Date(c("1973-12-31", NA)))
+g1 <- g1 + theme(legend.position="none")
+g1 <- g1 + theme(axis.text.y=element_blank(),axis.ticks.y=element_blank())
+
+g2 <- ggplot() 
+#g2 <- g2 + geom_line(aes(x=Date, y=Confidence, colour="Confidence"), size = 0.5)
+#g2 <- g2 + labs(color="Legend text")
+g2 <- g2 + geom_rect(data=recessions.l, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=0), fill='grey', alpha=0.5)
+g2 <- g2 + geom_rect(data=MPV, aes(xmin=Peak, xmax=Trough, ymin=0, ymax=+Inf), fill='black', alpha=0.5)
+g2 <- g2 + ylab("") + xlab("")
+g2 <- g2 + ggtitle("Manufacturing Production Volumes") 
+g2 <- g2 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g2 <- g2 + theme(legend.title=element_blank()) 
+g2 <- g2 + scale_x_date(expand=c(0,0),limits = as.Date(c("1973-12-31", NA)))
+g2 <- g2 + theme(legend.position="none")
+g2 <- g2 + theme(axis.text.y=element_blank(),axis.ticks.y=element_blank())
+
+g3 <- ggplot() 
+#g3 <- g3 + geom_line(aes(x=Date, y=Confidence, colour="Confidence"), size = 0.5)
+#g3 <- g3 + labs(color="Legend text")
+g3 <- g3 + geom_rect(data=recessions.l, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=0), fill='grey', alpha=0.5)
+g3 <- g3 + geom_rect(data=MCU, aes(xmin=Peak, xmax=Trough, ymin=0, ymax=+Inf), fill='black', alpha=0.5)
+g3 <- g3 + ylab("") + xlab("")
+g3 <- g3 + ggtitle("Manufacturing Capacity Utilisation") 
+g3 <- g3 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g3 <- g3 + theme(legend.title=element_blank()) 
+g3 <- g3 + scale_x_date(expand=c(0,0),limits = as.Date(c("1973-12-31", NA)))
+g3 <- g3 + theme(legend.position="none")
+g3 <- g3 + theme(axis.text.y=element_blank(),axis.ticks.y=element_blank())
+
+g4 <- ggplot() 
+#g4 <- g4 + geom_line(aes(x=Date, y=Confidence, colour="Confidence"), size = 0.5)
+g4 <- g4 + labs(color="Legend text")
+g4 <- g4 + geom_rect(data=recessions.l, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=0), fill='grey', alpha=0.5)
+g4 <- g4 + geom_rect(data=WSV, aes(xmin=Peak, xmax=Trough, ymin=0, ymax=+Inf), fill='black', alpha=0.5)
+g4 <- g4 + ylab("") + xlab("")
+g4 <- g4 + ggtitle("Wholesale Sales Volumes") 
+g4 <- g4 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g4 <- g4 + theme(legend.title=element_blank()) 
+g4 <- g4 + scale_x_date(expand=c(0,0),limits = as.Date(c("1973-12-31", NA)))
+g4 <- g4 + theme(legend.position="none")
+g4 <- g4 + theme(axis.text.y=element_blank(),axis.ticks.y=element_blank())
+
+library(gridExtra)
+grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
+
+
+
+Median_all = read.table(textConnection(
+    "Peak, Trough
+    1975-12-31,1977-12-31
+    1981-10-31,1983-04-30
+    1984-04-30,1986-01-31
+    1989-03-31,1992-11-30
+    1997-02-28,1999-05-31
+    2008-02-28,2009-09-30"), sep=',',
+    colClasses=c('Date', 'Date'), header=TRUE)
+
+
+Median_majority = read.table(textConnection(
+    "Peak, Trough
+    1975-10-31,1977-11-30
+    1981-10-31,1983-04-30
+    1984-04-30,1986-01-31
+    1989-03-31,1992-11-30
+    1997-02-28,1999-05-31
+    2008-02-28,2009-09-30
+    2014-02-28,2016-12-31"), sep=',',
+    colClasses=c('Date', 'Date'), header=TRUE)
+
+
+g1 <- ggplot() 
+#g1 <- g1 + geom_line(aes(x=Date, y=Confidence, colour="Confidence"), size = 0.5)
+#g1 <- g1 + labs(color="Legend text")
+g1 <- g1 + geom_rect(data=recessions.l, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=0), fill='grey', alpha=0.5)
+g1 <- g1 + geom_rect(data=Median_all, aes(xmin=Peak, xmax=Trough, ymin=0, ymax=+Inf), fill='black', alpha=0.5)
+g1 <- g1 + ylab("") + xlab("")
+g1 <- g1 + ggtitle("Median (all)") 
+g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g1 <- g1 + theme(legend.title=element_blank()) 
+g1 <- g1 + scale_x_date(expand=c(0,0),limits = as.Date(c("1973-12-31", NA)))
+g1 <- g1 + theme(legend.position="none")
+g1 <- g1 + theme(axis.text.y=element_blank(),axis.ticks.y=element_blank())
+
+g2 <- ggplot() 
+#g2 <- g2 + geom_line(aes(x=Date, y=Confidence, colour="Confidence"), size = 0.5)
+#g2 <- g2 + labs(color="Legend text")
+g2 <- g2 + geom_rect(data=recessions.l, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=0), fill='grey', alpha=0.5)
+g2 <- g2 + geom_rect(data=Median_majority, aes(xmin=Peak, xmax=Trough, ymin=0, ymax=+Inf), fill='black', alpha=0.5)
+g2 <- g2 + ylab("") + xlab("")
+g2 <- g2 + ggtitle("Median turning points") 
+g2 <- g2 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g2 <- g2 + theme(legend.title=element_blank()) 
+#g2 <- g2 + scale_x_date(expand=c(0,0),limits = as.Date(c("1973-12-31", NA)))
+g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"), expand=c(0,0),
+                      limits = as.Date(c("1973-12-31", NA)))
+g2 <- g2 + theme(legend.position="none")
+g2 <- g2 + theme(axis.text.y=element_blank(),axis.ticks.y=element_blank())
+g2
+#library(gridExtra)
+#grid.arrange(g1, g2, ncol=1, nrow =2)
+
+
+
+#Concordance
+colnames(S) <- c("Date","MWH","MPV","MCU","WSV","Median_all","Median")
+
+d <- NULL
+for(i in 1:nrow(MWH)) {
+    d <- c(d,seq(MWH[i,1], MWH[i,2], by="day")[-1]) 
+}
+S[,2] <- 1
+S[S$Date %in% d,2] <- 0
+
+d <- NULL
+for(i in 1:nrow(MPV)) {
+    d <- c(d,seq(MPV[i,1], MPV[i,2], by="day")[-1]) 
+}
+S[,3] <- 1
+S[S$Date %in% d,3] <- 0
+
+d <- NULL
+for(i in 1:nrow(MCU)) {
+    d <- c(d,seq(MCU[i,1], MCU[i,2], by="day")[-1]) 
+}
+S[,4] <- 1
+S[S$Date %in% d,4] <- 0
+
+d <- NULL
+for(i in 1:nrow(WSV)) {
+    d <- c(d,seq(WSV[i,1], WSV[i,2], by="day")[-1]) 
+}
+S[,5] <- 1
+S[S$Date %in% d,5] <- 0
+
+d <- NULL
+for(i in 1:nrow(Median_all)) {
+    d <- c(d,seq(Median_all[i,1], Median_all[i,2], by="day")[-1]) 
+}
+S[,6] <- 1
+S[S$Date %in% d,6] <- 0
+
+
+d <- NULL
+for(i in 1:nrow(Median_majority)) {
+    d <- c(d,seq(Median_majority[i,1], Median_majority[i,2], by="day")[-1]) 
+}
+S[,7] <- 1
+S[S$Date %in% d,7] <- 0
+
+#S[1:60,2:7] <- NA
+#S[1:127,6] <- NA
+
+
+figuur <- S[,c(1,7,2:5)]
+for(i in 1:5) {
+    for(j in 1:227)
+        ifelse(figuur[j,i+1]==0,figuur[j,i+1]<-i,figuur[j,i+1]<-NA)  
+}
+
+recessions.la <- recessions.l[-1:-4,]
+recessions.la[1,1] <- "1975-03-31"
+
+
+index_plot <- figuur
+g1 <- ggplot(index_plot) 
+g1 <- g1 + geom_rect(data=recessions.la, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='darkgrey', alpha=0.5)
+g1 <- g1 + geom_line(aes(x=Date, y=MWH), size = 10)
+g1 <- g1 + geom_line(aes(x=Date, y=MPV), size = 10)
+g1 <- g1 + geom_line(aes(x=Date, y=MCU), size = 10)
+g1 <- g1 + geom_line(aes(x=Date, y=WSV), size = 10)
+g1 <- g1 + geom_line(aes(x=Date, y=Median), size = 10)
+g1 <- g1 + labs(color="Legend text")
+g1 <- g1 + ylab("") + xlab("")
+g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g1 <- g1 + theme(legend.title=element_blank()) 
+g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"), expand=c(0,0),
+                        limits = as.Date(c("1973-12-31", NA)))
+g1 <- g1 + theme(legend.position="none")
+g1 <- g1 + scale_y_continuous(limits=c(0.5, 5.5),breaks = 0:6,
+                              labels = c(" ", "Median","Manufacturing \nWorking Hours", "Manufacturing \nProduction Volumes", "Manufacturing \nCapacity Utilisation", "Wholesale \nSales Volumes", " "))
+g1
 
 

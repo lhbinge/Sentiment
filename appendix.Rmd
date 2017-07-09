@@ -4,7 +4,7 @@ fontsize: 12pt
 geometry: margin=1in
 ---
 
-```{r ap1, echo=FALSE, results='asis',warning=FALSE, message=FALSE, cache = TRUE}
+```{r ap2, echo=FALSE, results='asis',warning=FALSE, message=FALSE, cache = TRUE}
 setwd("C:\\Users\\Laurie\\OneDrive\\Documents\\BING\\BER Confidence Surveys\\Sentiment")
 suppressMessages(library(xtable))
 
@@ -19,7 +19,7 @@ print(xt, "latex",comment=FALSE, include.rownames=FALSE,
 ```
 
 
-```{r ap2, echo=FALSE, results='asis',warning=FALSE, message=FALSE, cache = TRUE}
+```{r ap3, echo=FALSE, results='asis',warning=FALSE, message=FALSE, cache = TRUE}
 setwd("C:\\Users\\Laurie\\OneDrive\\Documents\\BING\\BER Confidence Surveys\\Sentiment")
 suppressMessages(library(xtable))
 

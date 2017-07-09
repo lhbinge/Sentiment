@@ -5,8 +5,6 @@ output:
         number_sections: true
 fontsize: 11pt
 geometry: margin=1in
-bibliography: References.bib
-csl: harvard.csl
 ---
 
 
@@ -103,3 +101,21 @@ Orders Placed            & X                      &                       & X   
 \end{tabular}
 \end{table}
 
+
+
+\begin{table}[ht]
+\centering
+\caption{Concordance Statistics} 
+\scalebox{0.8}{
+\begin{tabular}{rllllllll}
+  \hline
+  & \multicolumn{4}{c}{  SARB Cycle  } & \multicolumn{4}{c}{ RGDP Growth cycle }\\ \hline
+  & Activity & Confidence & BER\_BCI & SACCI\_BCI & Activity & Confidence & BER\_BCI & SACCI\_BCI \\ 
+  lag=0 & 0.684**  & 0.653*  & 0.579  & 0.653*  & 0.768*** & 0.653**  & 0.663**  & 0.632**  \\ 
+  lag=1 & 0.695**  & 0.705**  & 0.611*  & 0.684**  & 0.8*** & 0.684**  & 0.674**  & 0.558  \\ 
+  lag=2 & 0.705*** & 0.716**  & 0.642*  & 0.716*** & 0.684*** & 0.674**  & 0.642**  & 0.505  \\ 
+  lag=3 & 0.695**  & 0.705*** & 0.611*  & 0.695*** & 0.526  & 0.621*  & 0.568  & 0.463  \\ 
+   \hline
+\end{tabular}
+}
+\end{table}
