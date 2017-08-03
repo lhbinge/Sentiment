@@ -15,7 +15,7 @@ suppressMessages(library(vars))
 suppressMessages(library(tseries))
 suppressMessages(library(urca))
 
-GDPdata <- read.csv("GDP Data.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+GDPdata <- read.csv("GDP Data2.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
 GDPdata$Date <- as.Date(GDPdata$Date, format = "%Y/%m/%d")
 
 datums <- read.csv("dates2.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
@@ -30,7 +30,7 @@ recessions.df = read.table(textConnection(
     2013-11-30, 2016-12-31"), sep=',',
     colClasses=c('Date', 'Date'), header=TRUE)
 
-realGDP <- read.csv("RealGDP.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+realGDP <- read.csv("RealGDP2.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
 realGDP$Date <- as.Date(realGDP$Date, format = "%Y/%m/%d")
 
 GDPgrowth4 <- as.data.frame(sapply(log(realGDP[,-1]), diff, lag =4))
@@ -61,17 +61,18 @@ recessions.l = read.table(textConnection(
 #BRICS Business Cycles
 ##----------------------------------
 #Long term
-conf_indices <- cbind(brics[,c(1,5:9)])
-colnames(conf_indices) <- c("Date","RGDP_Growth","Coincident","Leading","BER_BCI","SACCI")
+conf_indices <- cbind(brics[,c(1,7:11)])
+colnames(conf_indices) <- c("Date","RGDP_Growth","Coincident_Growth","Leading_Growth","BER_BCI","SACCI_Growth")
 
+#Growth Rates
 index_plot <- conf_indices[-1:-60,]
 index_plot[,-1] <- scale(index_plot[,-1])
 g <- ggplot(index_plot) 
 #g <- g + theme_bw()
 g <- g + geom_line(aes(x=Date, y=BER_BCI, colour="BER_BCI", linetype="BER_BCI"), size = 1.1)
-g <- g + geom_line(aes(x=Date, y=Leading, colour="Leading", linetype="Leading"), size = 0.71)
-g <- g + geom_line(aes(x=Date, y=Coincident, colour="Coincident", linetype="Coincident"), size = 0.71)
-g <- g + geom_line(aes(x=Date, y=SACCI, colour="SACCI", linetype="SACCI"), size = 1.1)
+g <- g + geom_line(aes(x=Date, y=Leading_Growth, colour="Leading_Growth", linetype="Leading_Growth"), size = 0.71)
+g <- g + geom_line(aes(x=Date, y=Coincident_Growth, colour="Coincident_Growth", linetype="Coincident_Growth"), size = 0.71)
+g <- g + geom_line(aes(x=Date, y=SACCI_Growth, colour="SACCI_Growth", linetype="SACCI_Growth"), size = 1.1)
 g <- g + scale_linetype_manual(values=c("solid","dashed", "longdash","twodash"))
 #g <- g + scale_colour_manual(values=c("black","gray32", "gray32","black"))
 g <- g + labs(color="Legend text", linetype="Legend text")
@@ -84,8 +85,9 @@ g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"), e
 g <- g + theme(legend.position="bottom")
 g
 
-
-index_plot <- conf_indices[-1:-60,]
+conf_indicesl <- brics[,c(1:6)]
+#Levels
+index_plot <- conf_indicesl[-1:-60,]
 index_plot[,-1] <- scale(index_plot[,-1])
 g <- ggplot(index_plot) 
 #g <- g + theme_bw()
@@ -115,34 +117,39 @@ print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.p
 corstarsl(conf_indices[,c(2:6)])
 
 RGDP_Growth <- conf_indices[,2]
-Coincident <- conf_indices[,3]
-Leading <- conf_indices[,4]
+Coincident_Growth <- conf_indices[,3]
+Leading_Growth <- conf_indices[,4]
 BER_BCI <- conf_indices[,5]
-SACCI_BCI <- conf_indices[,6] 
+SACCI_Growth <- conf_indices[,6] 
 
 par(mfrow=c(2,2),mar=c(5,4,3,3), cex=0.7, cex.main=1.1)
-ccf(Coincident, RGDP_Growth, na.action = na.pass,ylim=c(-0.4, 0.9), 
+ccf(Coincident_Growth, RGDP_Growth, na.action = na.pass,ylim=c(-0.4, 0.9), 
     ylab = "Correlation", xlab = "Number of Lags")
-ccf(Leading, RGDP_Growth, na.action = na.pass, ylim=c(-0.4, 0.9), 
+ccf(Leading_Growth, RGDP_Growth, na.action = na.pass, ylim=c(-0.4, 0.9), 
     ylab = "Correlation", xlab = "Number of Lags")
 ccf(BER_BCI, RGDP_Growth, na.action = na.pass, ylim=c(-0.4, 0.9), 
     ylab = "Correlation", xlab = "Number of Lags")
-ccf(SACCI_BCI, RGDP_Growth, na.action = na.pass, ylim=c(-0.4, 0.9), 
+ccf(SACCI_Growth, RGDP_Growth, na.action = na.pass, ylim=c(-0.4, 0.9), 
     ylab = "Correlation", xlab = "Number of Lags")
 
 #------------------------------------------
 #Long term
+conf_indicesl <- brics[,c(1,7,3:6)]
+#conf_indicesl <- brics[,c(1,7:11)]
+#conf_indicesl[,-1] <- log(conf_indicesl[,-1])
+#colnames(conf_indices) <- c("Date","RGDP_Growth","Coincident","Leading","BER_BCI","SACCI")
+
 suppressMessages(library(BCDating))
 
-dat <- BBQ(ts(conf_indices[-1:-60,2],start =c(1975,1),end=c(2016,3),frequency=4), mincycle = 5, minphase = 2, name="Activity")
+dat <- BBQ(ts(conf_indicesl[-1:-60,2],start =c(1975,1),end=c(2016,3),frequency=4), mincycle = 5, minphase = 2, name="Activity")
 tp1 <- as.data.frame(show(dat))[,-3]
-dat <- BBQ(ts(conf_indices[-1:-60,3],start =c(1975,1),end=c(2016,3),frequency=4), mincycle = 5, minphase = 2, name="Activity")
+dat <- BBQ(ts(conf_indicesl[-1:-60,3],start =c(1975,1),end=c(2016,3),frequency=4), mincycle = 5, minphase = 2, name="Activity")
 tp2 <- as.data.frame(show(dat))[,-3]
-dat <- BBQ(ts(conf_indices[-1:-60,4],start =c(1975,1),end=c(2016,3),frequency=4), mincycle = 5, minphase = 2, name="Activity")
+dat <- BBQ(ts(conf_indicesl[-1:-60,4],start =c(1975,1),end=c(2016,3),frequency=4), mincycle = 5, minphase = 2, name="Activity")
 tp3 <- as.data.frame(show(dat))[,-3]
-dat <- BBQ(ts(conf_indices[-1:-60,5],start =c(1975,1),end=c(2016,3),frequency=4), mincycle = 5, minphase = 2, name="Activity")
+dat <- BBQ(ts(conf_indicesl[-1:-60,5],start =c(1975,1),end=c(2016,3),frequency=4), mincycle = 5, minphase = 2, name="Activity")
 tp4 <- as.data.frame(show(dat))[,-3]
-dat <- BBQ(ts(conf_indices[-1:-127,6],start =c(1991,3),end=c(2016,3),frequency=4), mincycle = 5, minphase = 2, name="Activity")
+dat <- BBQ(ts(conf_indicesl[-1:-127,6],start =c(1991,3),end=c(2016,3),frequency=4), mincycle = 5, minphase = 2, name="Activity")
 tp5 <- as.data.frame(show(dat))[,-3]
 
 maak_datums <- function(data) {
@@ -165,8 +172,8 @@ detach("package:BCDating", unload=TRUE)
 
 #----------------------------------
 
-index_plot <- conf_indices[-1:-60,c(1,3)]
-index_plot[,2] <- scale(index_plot[,2])
+index_plot <- conf_indicesl[-1:-60,c(1,3)]
+#index_plot[,2] <- scale(index_plot[,2])
 colnames(index_plot) <- c("Date","Confidence")
 g1 <- ggplot(index_plot) 
 g1 <- g1 + geom_line(aes(x=Date, y=Confidence, colour="Confidence"), size = 0.5)
@@ -180,8 +187,9 @@ g1 <- g1 + theme(legend.title=element_blank())
 g1 <- g1 + scale_x_date(expand=c(0,0),limits = as.Date(c("1973-12-31", NA)))
 g1 <- g1 + theme(legend.position="none")
 
-index_plot <- conf_indices[-1:-60,c(1,4)]
-index_plot[,2] <- scale(index_plot[,2])
+
+index_plot <- conf_indicesl[-1:-60,c(1,4)]
+#index_plot[,2] <- scale(index_plot[,2])
 colnames(index_plot) <- c("Date","Confidence")
 g2 <- ggplot(index_plot) 
 g2 <- g2 + geom_line(aes(x=Date, y=Confidence, colour="Confidence"), size = 0.5)
@@ -195,8 +203,8 @@ g2 <- g2 + theme(legend.title=element_blank())
 g2 <- g2 + scale_x_date(expand=c(0,0),limits = as.Date(c("1973-12-31", NA)))
 g2 <- g2 + theme(legend.position="none")
 
-index_plot <- conf_indices[-1:-60,c(1,5)]
-index_plot[,2] <- scale(index_plot[,2])
+index_plot <- conf_indicesl[-1:-60,c(1,5)]
+#index_plot[,2] <- scale(index_plot[,2])
 colnames(index_plot) <- c("Date","Confidence")
 g3 <- ggplot(index_plot) 
 g3 <- g3 + geom_line(aes(x=Date, y=Confidence, colour="Confidence"), size = 0.5)
@@ -210,8 +218,8 @@ g3 <- g3 + theme(legend.title=element_blank())
 g3 <- g3 + scale_x_date(expand=c(0,0),limits = as.Date(c("1973-12-31", NA)))
 g3 <- g3 + theme(legend.position="none")
 
-index_plot <- conf_indices[-1:-60,c(1,6)]
-index_plot[,2] <- scale(index_plot[,2])
+index_plot <- conf_indicesl[-1:-60,c(1,6)]
+#index_plot[,2] <- scale(index_plot[,2])
 colnames(index_plot) <- c("Date","Confidence")
 g4 <- ggplot(index_plot) 
 g4 <- g4 + geom_line(aes(x=Date, y=Confidence, colour="Confidence"), size = 0.5)
@@ -229,9 +237,26 @@ library(gridExtra)
 grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 
 
+
+
+index_plot <- conf_indicesl[-1:-60,c(1,2)]
+#index_plot[,2] <- scale(index_plot[,2])
+colnames(index_plot) <- c("Date","Confidence")
+g1 <- ggplot(index_plot) 
+g1 <- g1 + geom_line(aes(x=Date, y=Confidence, colour="Confidence"), size = 0.5)
+g1 <- g1 + labs(color="Legend text")
+g1 <- g1 + geom_rect(data=recessions.l, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=0), fill='grey', alpha=0.5)
+g1 <- g1 + geom_rect(data=tp1, aes(xmin=Peak, xmax=Trough, ymin=0, ymax=+Inf), fill='black', alpha=0.5)
+g1 <- g1 + ylab("Indicator") + xlab("")
+g1 <- g1 + ggtitle("GDP") 
+g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g1 <- g1 + theme(legend.title=element_blank()) 
+g1 <- g1 + scale_x_date(expand=c(0,0),limits = as.Date(c("1973-12-31", NA)))
+g1 <- g1 + theme(legend.position="none")
+g1
 #---------------------------------------
 #Concordance
-S <- conf_indices
+S <- conf_indicesl
 #d <- seq(tp2[1,3], tp2[1,4], by="day")[-1]
 #as.Date(tp2[1,3]:tp2[2,3], origin="1960-01-01")    
 
@@ -294,15 +319,16 @@ for(k in 0:4) {
     
     for(i in 3:6) {
         Concord1[i-2] <- (sum(S[1:(227-k),i]*S[(1+k):227,7], na.rm = TRUE)+sum((1-S[1:(227-k),i])*(1-S[(1+k):227,7]),na.rm = TRUE))/sum(!is.na(S[,i]))
-        Concord2[i-2] <- (sum(S[1:(227-k),i]*S[(1+k):227,2], na.rm = TRUE)+sum((1-S[1:(227-k),i])*(1-S[(1+k):227,2]),na.rm = TRUE))/sum(!is.na(S[,i]))
+        Concord2[i-2] <- (sum(S[1:(227-k),7]*S[(1+k):227,i], na.rm = TRUE)+sum((1-S[1:(227-k),7])*(1-S[(1+k):227,i]),na.rm = TRUE))/sum(!is.na(S[,7]))
     
-        s_x <- S[1:(227-k),i]/sqrt(var(S[1:(227-k),i], na.rm = TRUE))
+        s_x1 <- S[1:(227-k),i]/sqrt(var(S[1:(227-k),i], na.rm = TRUE))
+        s_x2 <- S[1:(227-k),7]/sqrt(var(S[1:(227-k),7], na.rm = TRUE))
         s_y1 <- S[(1+k):227,7]/sqrt(var(S[(1+k):227,7], na.rm = TRUE))
-        s_y2 <- S[(1+k):227,2]/sqrt(var(S[(1+k):227,2], na.rm = TRUE))
+        s_y2 <- S[(1+k):227,i]/sqrt(var(S[(1+k):227,i], na.rm = TRUE))
     
-        m <- lm(s_y1 ~ s_x, na.action=na.exclude)
+        m <- lm(s_y1 ~ s_x1, na.action=na.exclude)
         p1 <- coeftest(m,vcov. = NeweyWest)[2,4]
-        m <- lm(s_y2 ~ s_x, na.action=na.exclude)
+        m <- lm(s_y2 ~ s_x2, na.action=na.exclude)
         p2 <- coeftest(m,vcov. = NeweyWest)[2,4]
     
         p.1 <- rbind(p.1,p1)
@@ -343,6 +369,7 @@ recessions.la <- recessions.l[-1:-4,]
 recessions.la[1,1] <- "1975-03-31"
 
 index_plot <- figuur
+colnames(index_plot) <- c("Date","Coincident","Leading","BER_BCI","SACCI")
 g1 <- ggplot(index_plot) 
 g1 <- g1 + geom_rect(data=recessions.la, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='darkgrey', alpha=0.5)
 g1 <- g1 + geom_line(aes(x=Date, y=Coincident), size = 10)
@@ -358,8 +385,8 @@ g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"),
 g1 <- g1 + theme(legend.position="none")
 g1 <- g1 + scale_y_continuous(limits=c(0.5, 4.5),breaks = 0:5,
                    labels = c(" ", "Coincident", "Leading", "BER BCI", "SACCI BCI", " "))
+#g1 <- g1 + theme(axis.text.y=element_text(size=12))
 g1
-
 
 
 #---------------------------------------------------
@@ -377,25 +404,25 @@ calc_var <- function(data) {
     return(var_model)
 }
 
-var1 <- calc_var(cbind(Coincident,RGDP_Growth)[-1:-60,])
-var2 <- calc_var(cbind(Leading, RGDP_Growth)[-1:-60,])
+var1 <- calc_var(cbind(Coincident_Growth,RGDP_Growth)[-1:-60,])
+var2 <- calc_var(cbind(Leading_Growth, RGDP_Growth)[-1:-60,])
 var3 <- calc_var(cbind(BER_BCI, RGDP_Growth)[-1:-60,])
-var4 <- calc_var(cbind(SACCI_BCI, RGDP_Growth)[-1:-127,])
+var4 <- calc_var(cbind(SACCI_Growth, RGDP_Growth)[-1:-131,])
 
 
 
 ##Granger causality tests
 G <- data.frame()
-G[1,1] <- causality(var1,cause = "Coincident")$Granger[4]
-G[1,2] <- as.numeric(as.character(causality(var1,cause = "Coincident")$Granger[1]))
-G[1,3] <- as.numeric(as.character(causality(var1,cause = "Coincident")$Granger[3]))
+G[1,1] <- causality(var1,cause = "Coincident_Growth")$Granger[4]
+G[1,2] <- as.numeric(as.character(causality(var1,cause = "Coincident_Growth")$Granger[1]))
+G[1,3] <- as.numeric(as.character(causality(var1,cause = "Coincident_Growth")$Granger[3]))
 G[2,1] <- causality(var1,cause = "RGDP_Growth")$Granger[4]
 G[2,2] <- as.numeric(as.character(causality(var1,cause = "RGDP_Growth")$Granger[1]))
 G[2,3] <- as.numeric(as.character(causality(var1,cause = "RGDP_Growth")$Granger[3]))
 
-G[3,1] <- causality(var2,cause = "Leading")$Granger[4]
-G[3,2] <- as.numeric(as.character(causality(var2,cause = "Leading")$Granger[1]))
-G[3,3] <- as.numeric(as.character(causality(var2,cause = "Leading")$Granger[3]))
+G[3,1] <- causality(var2,cause = "Leading_Growth")$Granger[4]
+G[3,2] <- as.numeric(as.character(causality(var2,cause = "Leading_Growth")$Granger[1]))
+G[3,3] <- as.numeric(as.character(causality(var2,cause = "Leading_Growth")$Granger[3]))
 G[4,1] <- causality(var2,cause = "RGDP_Growth")$Granger[4]
 G[4,2] <- as.numeric(as.character(causality(var2,cause = "RGDP_Growth")$Granger[1]))
 G[4,3] <- as.numeric(as.character(causality(var2,cause = "RGDP_Growth")$Granger[3]))
@@ -407,9 +434,9 @@ G[6,1] <- causality(var3,cause = "RGDP_Growth")$Granger[4]
 G[6,2] <- as.numeric(as.character(causality(var3,cause = "RGDP_Growth")$Granger[1]))
 G[6,3] <- as.numeric(as.character(causality(var3,cause = "RGDP_Growth")$Granger[3]))
 
-G[7,1] <- causality(var4,cause = "SACCI_BCI")$Granger[4]
-G[7,2] <- as.numeric(as.character(causality(var4,cause = "SACCI_BCI")$Granger[1]))
-G[7,3] <- as.numeric(as.character(causality(var4,cause = "SACCI_BCI")$Granger[3]))
+G[7,1] <- causality(var4,cause = "SACCI_Growth")$Granger[4]
+G[7,2] <- as.numeric(as.character(causality(var4,cause = "SACCI_Growth")$Granger[1]))
+G[7,3] <- as.numeric(as.character(causality(var4,cause = "SACCI_Growth")$Granger[3]))
 G[8,1] <- causality(var4,cause = "RGDP_Growth")$Granger[4]
 G[8,2] <- as.numeric(as.character(causality(var4,cause = "RGDP_Growth")$Granger[1]))
 G[8,3] <- as.numeric(as.character(causality(var4,cause = "RGDP_Growth")$Granger[3]))
@@ -428,37 +455,38 @@ print(xt, "latex", include.rownames=FALSE,comment=FALSE, caption.placement = get
 
 
 
-irf.y1 <- irf(var1,impulse = "Coincident", response = "RGDP_Growth", 
+irf.y1 <- irf(var1,impulse = "Coincident_Growth", response = "RGDP_Growth", 
               n.ahead = 12,runs = 1000, seed=12345) 
-irf.y2 <- irf(var1,impulse = "RGDP_Growth", response = "Coincident",
+irf.y2 <- irf(var1,impulse = "RGDP_Growth", response = "Coincident_Growth",
               n.ahead = 12,runs = 1000, seed=12345)
-irf.y1 <- irf(var2,impulse = "Leading", response = "RGDP_Growth", 
+irf.y1 <- irf(var2,impulse = "Leading_Growth", response = "RGDP_Growth", 
               n.ahead = 12,runs = 1000, seed=12345) 
-irf.y2 <- irf(var2,impulse = "RGDP_Growth", response = "Leading", 
+irf.y2 <- irf(var2,impulse = "RGDP_Growth", response = "Leading_Growth", 
               n.ahead = 12,runs = 1000, seed=12345)
 irf.y1 <- irf(var3,impulse = "BER_BCI", response = "RGDP_Growth", 
               n.ahead = 12,runs = 1000, seed=12345) 
 irf.y2 <- irf(var3,impulse = "RGDP_Growth", response = "BER_BCI", 
               n.ahead = 12,runs = 1000, seed=12345)
-irf.y1 <- irf(var4,impulse = "SACCI_BCI", response = "RGDP_Growth", 
+irf.y1 <- irf(var4,impulse = "SACCI_Growth", response = "RGDP_Growth", 
               n.ahead = 12,runs = 1000, seed=12345) 
-irf.y2 <- irf(var4,impulse = "RGDP_Growth", response = "SACCI_BCI", 
+irf.y2 <- irf(var4,impulse = "RGDP_Growth", response = "SACCI_Growth", 
               n.ahead = 12,runs = 1000, seed=12345)
 
 par(mfrow=c(1,1), new=FALSE)
 nf <- layout(matrix(c(1,2,1,2), 1, 2, byrow = TRUE))
-layout.show(nf)
-#par(cex=0.6)
-plot(irf.y1,plot.type = c("single"), main="Response from SACCI BCI", xlab="Horizon in quarters")
-par(new = TRUE)
+#layout.show(nf)
+par(cex=1)
+plot(irf.y1,plot.type = c("single"), main="Response from SACCI Growth", xlab="Horizon in quarters")
+par(cex=1,new = TRUE)
 plot(irf.y2,plot.type = c("single"), main="Response from RGDP Growth", xlab="Horizon in quarters")
 
 source("plot_varfevd.R")
+#png(file="Figure6.png",width=7,height=4.5,res=150)
 par(mfrow=c(1,1), new=FALSE)
 #dev.off()
-par(mfrow=c(1,2))
-plot.varfevd(fevd(var4, n.ahead = 10 ),plot.type = "single", xlab="Horizon in quarters", ylab="Percentage variance explained")
-
+par(mfrow=c(1,2),cex=0.9)
+plot.varfevd(fevd(var3, n.ahead = 10 ),plot.type = "single", xlab="Horizon in quarters", ylab="Proportion of variance explained")
+#dev.off()
 
 #---------------------------------
 #In growth rates:
@@ -468,10 +496,10 @@ TBill <- GDPdata$T.Bill
 Spread <- Bond-TBill
 Employment <- GDPgrowth4$Employ
 Investment <- GDPgrowth4$Rinvestment 
-Production <- GDPgrowth4$RProduction
+Industrial_Production <- GDPgrowth4$RProduction
 
-vardat <- cbind(BER_BCI=BER_BCI[129:223],JSE,Spread,RGDP_Growth=RGDP_Growth[129:223],
-                Production,Employment,Investment)  
+vardat <- cbind(BER_BCI=BER_BCI[129:227],JSE,Spread,RGDP_Growth=RGDP_Growth[129:227],
+                Industrial_Production,Employment,Investment)  
 
 
 infocrit <- VARselect(vardat, lag.max = 16, type = "const")
@@ -495,24 +523,28 @@ par(new = TRUE)
 plot(irf.y2,plot.type = c("single"), main="Response from RGDP Growth", xlab="Horizon in quarters")
 
 irf.y1 <- irf(vare,impulse = c("BER_BCI"),
-              response = c("RGDP_Growth","Production","Investment"), n.ahead = 12,runs = 1000, seed=12345) 
+              response = c("RGDP_Growth","Industrial_Production","Investment"), n.ahead = 12,runs = 1000, seed=12345) 
 
 par(mfrow=c(1,1), new=FALSE)
-par(mfrow=c(1,3),mar=c(4.2,4,2,1), cex=0.8)
+par(mfrow=c(1,3),mar=c(4.2,4,2,1), cex=0.7)
 plot(irf.y1,plot.type = c("single"), main="Response from BER BCI", xlab="Horizon in quarters")
 
 
 source("plot_varfevd.R")
-#dev.off()
-par(mfrow=c(1,1))
-plot.varfevd(fevd(vare, n.ahead = 10 ),plot.type = "single", xlab="Horizon in quarters", ylab="Percentage variance explained")
 
-plot(fevd(vare, n.ahead = 10 ))
+#png("figure10",width = 598, height=382, units = "cm",res=120)
+par(mfrow=c(1,1),cex=0.9)
+#plot.varfevd(fevd(vare, n.ahead = 10 ),plot.type = "single", xlab="Horizon in quarters", 
+#             ylab="Proportion of variance explained")
+plot(fevd(vare, n.ahead = 10 ),plot.type = "single", xlab="Horizon in quarters", 
+             ylab="Proportion of variance explained")
+#dev.off()
+
 
 
 #SACCI
-vardat <- cbind(SACCI_BCI=SACCI_BCI[129:223],JSE,Spread,RGDP_Growth=RGDP_Growth[129:223],
-                Production,Employment,Investment)  
+vardat <- cbind(SACCI_Growth=SACCI_Growth[129:227],JSE,Spread,RGDP_Growth=RGDP_Growth[129:227],
+                Industrial_Production,Employment,Investment)[-1:-3,]  
 
 
 infocrit <- VARselect(vardat, lag.max = 16, type = "const")
@@ -522,30 +554,30 @@ k_sic <- infocrit$selection[3]
 k <- min(k_aic,k_sic,k_hq)
 vare <- VAR(vardat,p=4,type="const")
 
-irf.y1 <- irf(vare,impulse = c("SACCI_BCI"),
+irf.y1 <- irf(vare,impulse = c("SACCI_Growth"),
               response = c("RGDP_Growth"), n.ahead = 12,runs = 1000, seed=12345) 
-irf.y2 <- irf(vare,impulse = "RGDP_Growth", response = "SACCI_BCI", 
+irf.y2 <- irf(vare,impulse = "RGDP_Growth", response = "SACCI_Growth", 
               n.ahead = 12,runs = 1000, seed=12345)
 
 par(mfrow=c(1,1), new=FALSE)
 nf <- layout(matrix(c(1,2,1,2), 1, 2, byrow = TRUE))
 layout.show(nf)
-#par(cex=0.6)
-plot(irf.y1,plot.type = c("single"), main="Response from SACCI BCI", xlab="Horizon in quarters")
+par(cex=0.6)
+plot(irf.y1,plot.type = c("single"), main="Response from SACCI Growth", xlab="Horizon in quarters")
 par(new = TRUE)
 plot(irf.y2,plot.type = c("single"), main="Response from RGDP Growth", xlab="Horizon in quarters")
 
-irf.y1 <- irf(vare,impulse = c("SACCI_BCI"),
-              response = c("RGDP_Growth","Production","Investment"), n.ahead = 12,runs = 1000, seed=12345) 
+irf.y1 <- irf(vare,impulse = c("SACCI_Growth"),
+              response = c("RGDP_Growth","Industrial_Production","Investment"), n.ahead = 12,runs = 1000, seed=12345) 
 
 par(mfrow=c(1,1), new=FALSE)
-par(mfrow=c(1,3),mar=c(4.2,4,2,1), cex=0.8)
-plot(irf.y1,plot.type = c("single"), main="Response from SACCI BCI", xlab="Horizon in quarters")
+par(mfrow=c(1,3),mar=c(4.2,4,2,1), cex=0.62)
+plot(irf.y1,plot.type = c("single"), main="Response from SACCI Growth", xlab="Horizon in quarters")
 
 source("plot_varfevd.R")
 #dev.off()
-par(mfrow=c(1,1))
-plot.varfevd(fevd(vare, n.ahead = 10 ),plot.type = "single", xlab="Horizon in quarters", ylab="Percentage variance explained")
+par(mfrow=c(1,1),cex=0.9)
+plot.varfevd(fevd(vare, n.ahead = 10 ),plot.type = "single", xlab="Horizon in quarters", ylab="Proportion of variance explained")
 
 plot(fevd(vare, n.ahead = 10 ))
 
@@ -554,7 +586,12 @@ plot(fevd(vare, n.ahead = 10 ))
 
 
 adf.test(BER_BCI[-1:-60], alternative = "stationary")
+adf.test(conf_indicesl$SACCI[-1:-127], alternative = "stationary")
+adf.test(conf_indices$SACCI_Growth[-1:-131], alternative = "stationary")
+summary(ur.df(BER_BCI[-1:-60], c("none"), selectlags = c("AIC")))
+summary(ur.df(conf_indices$SACCI_Growth[-1:-131], c("none"), selectlags = c("AIC")))
 
+      
 summary(ur.df(BER_BCI[-1:-60], c("none"), selectlags = c("AIC")))
 summary(ur.df(BER_BCI[-1:-60], c("drift"), selectlags = c("AIC")))
 summary(ur.df(BER_BCI[-1:-60], c("trend"), selectlags = c("AIC")))
@@ -749,7 +786,7 @@ g2
 
 
 #Concordance
-colnames(S) <- c("Date","MWH","MPV","MCU","WSV","Median_all","Median")
+colnames(S) <- c("Date","MWH","MPV","MCU","WSV","BER_BCI","Median")
 
 d <- NULL
 for(i in 1:nrow(MWH)) {
@@ -780,8 +817,8 @@ S[,5] <- 1
 S[S$Date %in% d,5] <- 0
 
 d <- NULL
-for(i in 1:nrow(Median_all)) {
-    d <- c(d,seq(Median_all[i,1], Median_all[i,2], by="day")[-1]) 
+for(i in 1:nrow(tp4)) {
+    d <- c(d,seq(tp4[i,3], tp4[i,4], by="day")[-1]) 
 }
 S[,6] <- 1
 S[S$Date %in% d,6] <- 0
@@ -798,8 +835,8 @@ S[S$Date %in% d,7] <- 0
 #S[1:127,6] <- NA
 
 
-figuur <- S[,c(1,7,2:5)]
-for(i in 1:5) {
+figuur <- S[,c(1,7,2:6)]
+for(i in 1:6) {
     for(j in 1:227)
         ifelse(figuur[j,i+1]==0,figuur[j,i+1]<-i,figuur[j,i+1]<-NA)  
 }
@@ -815,6 +852,7 @@ g1 <- g1 + geom_line(aes(x=Date, y=MWH), size = 10)
 g1 <- g1 + geom_line(aes(x=Date, y=MPV), size = 10)
 g1 <- g1 + geom_line(aes(x=Date, y=MCU), size = 10)
 g1 <- g1 + geom_line(aes(x=Date, y=WSV), size = 10)
+#g1 <- g1 + geom_line(aes(x=Date, y=BER_BCI), size = 10)
 g1 <- g1 + geom_line(aes(x=Date, y=Median), size = 10)
 g1 <- g1 + labs(color="Legend text")
 g1 <- g1 + ylab("") + xlab("")
@@ -825,6 +863,7 @@ g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"),
 g1 <- g1 + theme(legend.position="none")
 g1 <- g1 + scale_y_continuous(limits=c(0.5, 5.5),breaks = 0:6,
                               labels = c(" ", "Median","Manufacturing \nWorking Hours", "Manufacturing \nProduction Volumes", "Manufacturing \nCapacity Utilisation", "Wholesale \nSales Volumes", " "))
+#g1 <- g1 + theme(axis.text.y=element_text(size=12))
 g1
 
 

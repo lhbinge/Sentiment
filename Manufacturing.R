@@ -175,6 +175,7 @@ geweeg <- function(sektor=all,streek=streke) {
 }
 
 Manufacturing <- geweeg(all)
+#Interpolasie:
 Manufacturing[24,c(seq(3,31,by=2),33:48)] <- pub[24,2:32]
 Manufacturing[33,c(seq(3,31,by=2),33:48)] <- pub[33,2:32]
 Manufacturing[56,c(seq(3,31,by=2),33:48)] <- pub[56,2:32]
@@ -1214,7 +1215,7 @@ ccf(Food_u[,c("Q1A")],ref[,c("Food.sa")], na.action = na.pass)
 
 
 #====================================================
-
+#Moving averages
 ma <- function(x,n=5) {filter(x,rep(1/n,n),method="convolution",sides=2)}
 
 Manu <- cbind(Manufacturing[,c("Q1A","Q3A")],Manufacturing_u[,c("Q1A","Q3A")],
@@ -1288,6 +1289,9 @@ kwartaal <- "1992Q1"
 temp <- man[man$surveyQ==kwartaal,]
 
 
+
+
+write.csv(Manufacturing,"Indicators.csv")
 
 
 

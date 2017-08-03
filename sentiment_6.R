@@ -139,9 +139,12 @@ g <- g + xlab("Date")
 g
 
 
+
+
 ##========================##
 ##----- CONFIDENCE -------##
 ##========================##
+#Use simple row means:
 calc_conf <- function(data) {
     confidence <- aggregate(data[,(match("surveyQ",colnames(data))+1):ncol(data)], by=list(data$surveyQ), FUN=mean, na.rm=TRUE)
     confidence$Conf_cc <- rowMeans(confidence[,c("Q1","Q2A","Q3A","Q4A","Q5A","Q6A")],na.rm = TRUE, dims = 1)
@@ -174,6 +177,48 @@ calc_wconf <- function(data) {
     return(w.confidence)
 }
 
+
+#Use PCA:
+pca_conf <- function(data) {
+    confidence <- aggregate(data[,(match("surveyQ",colnames(data))+1):ncol(data)], by=list(data$surveyQ), FUN=mean, na.rm=TRUE)
+    concc <- scale(confidence[,c("Q1","Q2A","Q3A","Q4A","Q5A","Q6A")])
+    concc[is.na(concc)] <- 0
+    confidence$Conf_cc <- princomp(concc[,c(1:6)])$scores[,1]
+    concc <- scale(confidence[,c("Q2P","Q3P","Q4P","Q5P","Q6P")])
+    concc[is.na(concc)] <- 0
+    confidence$Conf_fl <- princomp(concc[,c(1:5)])$scores[,1]
+    confidence <- merge(datums,confidence,by.x="Date",by.y="Group.1", all=TRUE)
+    confidence[,14:15] <- na.approx(confidence[,14:15],na.rm = FALSE)
+    return(confidence)
+}
+
+
+pca_wconf <- function(data) {
+    ##Weighted versions
+    weeg <- function(temp) {  #calculate weighted mean for each quarter for all columns
+        temp <- cbind(factor=temp$factor,temp$factor*temp[(match("surveyQ",colnames(temp))+1):ncol(temp)])
+        #temp <- colSums(temp, na.rm=TRUE, dims = 1)/sum(temp$factor, na.rm=TRUE)
+        #calculate the sum(wi*xi)/sum(wi)
+        temp <- colSums(temp, na.rm=TRUE, dims = 1)/    
+            sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])]))
+        #weight only by those that responded to a specific question
+        return(temp)
+    }
+    
+    w.confidence <- as.data.frame(t(sapply(levels(data$surveyQ), function(kwartaal) weeg(data[data$surveyQ==kwartaal,]))))
+    concc <- scale(w.confidence[,c("Q1","Q2A","Q3A","Q4A","Q5A","Q6A")])
+    concc[is.na(concc)] <- 0
+    w.confidence$Conf_cc <- princomp(concc[,c(1:6)])$scores[,1]
+    concc <- scale(w.confidence[,c("Q2P","Q3P","Q4P","Q5P","Q6P")])
+    concc[is.na(concc)] <- 0
+    w.confidence$Conf_fl <- princomp(concc[,c(1:5)])$scores[,1]
+    w.confidence <- merge(datums,w.confidence,by.x="Date",by.y="row.names", all=TRUE)[,-3]
+    w.confidence[,14:15] <- na.approx(w.confidence[,14:15],na.rm = FALSE)
+    
+    return(w.confidence)
+}
+
+
 ##======================##
 ## CALCULATE INDICATORS ##
 ##======================##
@@ -192,6 +237,25 @@ w.indicators.S <- calc_wconf(BER[BER$Sector=="Services",])
 indicators <- calc_conf(BER)[c(2,14:15)]
 colnames(indicators) <- c("Date","Activity","Confidence")
 
+
+
+indicators.B1 <- pca_conf(BER[BER$Sector=="Construction",])
+w.indicators.B1 <- pca_wconf(BER[BER$Sector=="Construction",])
+
+index_plot <- cbind(w.indicators.B1[,c(2,14:15)],scale(w.indicators.B[,c(14:15)]))
+colnames(index_plot) <- c("Date","Activity","Confidence","PCA_Act","PCA_Conf")
+index_plot <- melt(index_plot, id="Date")  # convert to long format
+g <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable)) 
+g <- g + geom_line()
+g <- g + theme(legend.title=element_blank())
+g <- g + ggtitle("Manufacturing") 
+g <- g + ylab("Indicator") + xlab("")
+g <- g + theme(legend.position="bottom")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g
+
+cor(index_plot[-1:-5,-1])
 ##=================================##
 ##Weighted versions
 weights <- GDPdata[,c(1:4,6)]
@@ -593,13 +657,13 @@ for(k in 0:3) {
         Concord1[i-1] <- (sum(S[1:(95-k),i]*S[(1+k):95,7], na.rm = TRUE)+sum((1-S[1:(95-k),i])*(1-S[(1+k):95,7]),na.rm = TRUE))/sum(!is.na(S[,i]))
         Concord2[i-1] <- (sum(S[1:(95-k),i]*S[(1+k):95,6], na.rm = TRUE)+sum((1-S[1:(95-k),i])*(1-S[(1+k):95,6]),na.rm = TRUE))/sum(!is.na(S[,i]))
         
-        s_x <- S[1:(95-k),i]/sqrt(var(S[1:(95-k),i], na.rm = TRUE))
-        s_y1 <- S[(1+k):95,7]/sqrt(var(S[(1+k):95,7], na.rm = TRUE))
-        s_y2 <- S[(1+k):95,6]/sqrt(var(S[(1+k):95,6], na.rm = TRUE))
+        s_x <- S[1:(95-k),i]/sqrt(var(S[1:(95-k),i], na.rm = TRUE))/sqrt(var(S[(1+k):95,7], na.rm = TRUE))
+        s_y1 <- S[(1+k):95,7]/sqrt(var(S[(1+k):95,7], na.rm = TRUE))/sqrt(var(S[1:(95-k),i], na.rm = TRUE))
+        s_y2 <- S[(1+k):95,6]/sqrt(var(S[(1+k):95,6], na.rm = TRUE))/sqrt(var(S[1:(95-k),i], na.rm = TRUE))
         
-        m <- lm(s_y1 ~ s_x, na.action=na.exclude)
+        m <- lm(s_x ~ s_y1, na.action=na.exclude)
         p1 <- coeftest(m,vcov. = NeweyWest)[2,4]
-        m <- lm(s_y2 ~ s_x, na.action=na.exclude)
+        m <- lm(s_x ~ s_y1, na.action=na.exclude)
         p2 <- coeftest(m,vcov. = NeweyWest)[2,4]
         
         p.1 <- rbind(p.1,p1)
@@ -686,6 +750,55 @@ calc_wuncert <- function(data) {
     return(w.uncertainty)
 }
 
+
+
+
+#PCA versions:
+pca_uncert <- function(data) {
+    uncertainty <- aggregate(data[,(match("surveyQ",colnames(data))+1):ncol(data)], by=list(data$surveyQ), FUN=se)
+    unc <- scale(uncertainty[,c("Q2A","Q3A","Q4A","Q5A","Q6A")])
+    unc[is.na(unc)] <- 0
+    uncertainty$Uncert_cc <- princomp(unc[,c(1:5)])$scores[,1]
+    unc <- scale(uncertainty[,c("Q2P","Q3P","Q4P","Q5P","Q6P")])
+    unc[is.na(unc)] <- 0
+    uncertainty$Uncert_fl <- princomp(unc[,c(1:5)])$scores[,1]
+    uncertainty <- merge(datums,uncertainty,by.x="Date",by.y="Group.1", all=TRUE)
+    uncertainty[,14:15] <- na.approx(uncertainty[,14:15],na.rm = FALSE)
+    for(t in 2:nrow(uncertainty)) { uncertainty$Disp[t-1] <- uncertainty$Uncert_fl[t-1]/uncertainty$Uncert_cc[t] }
+    uncertainty$Disp[t] <- NA
+    return(uncertainty)
+}
+
+pca_wuncert <- function(data) {
+    ##Weighted versions
+    weeg.2 <- function(temp) {  #calculate weighted standard deviation for each quarter for all columns
+        temp <- cbind(factor=temp$factor,temp$factor*temp[(match("surveyQ",colnames(temp))+1):ncol(temp)])
+        #calculate total that responded up (1) and down (-1) over sum(wi) = fractions up and down
+        frac.up <- sapply(1:ncol(temp), function(x) sum(temp[which(temp[,x]>0),x],na.rm=TRUE))/
+            sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])]))
+        frac.dn <- sapply(1:ncol(temp), function(x) sum(temp[which(temp[,x]<0),x],na.rm=TRUE))/
+            sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])]))
+        #weight only by those that responded to a specific question 
+        ind <- sqrt(frac.up-frac.dn-(frac.up+frac.dn)^2)        #this is the standard devation
+        return(ind)
+    }
+    
+    w.uncertainty <- as.data.frame(t(sapply(levels(data$surveyQ), function(kwartaal) weeg.2(data[data$surveyQ==kwartaal,]))))
+    unc <- scale(w.uncertainty[,c("Q2A","Q3A","Q4A","Q5A","Q6A")])
+    unc[is.na(unc)] <- 0
+    w.uncertainty$Uncert_cc <- princomp(unc[,c(1:5)])$scores[,1]
+    unc <- scale(w.uncertainty[,c("Q2P","Q3P","Q4P","Q5P","Q6P")])
+    unc[is.na(unc)] <- 0
+    w.uncertainty$Uncert_fl <- princomp(unc[,c(1:5)])$scores[,1]
+    w.uncertainty <- merge(datums,w.uncertainty,by.x="Date",by.y="row.names", all=TRUE)[,-3]
+    w.uncertainty[,14:15] <- na.approx(w.uncertainty[,14:15],na.rm = FALSE)
+    for(t in 2:nrow(w.uncertainty)) { w.uncertainty$Disp[t-1] <- w.uncertainty$Uncert_fl[t-1]/w.uncertainty$Uncert_cc[t] }
+    w.uncertainty$Disp[t] <- NA
+    return(w.uncertainty)
+}
+
+
+
 uncertainty.M <- calc_uncert(BER[BER$Sector=="Manufacturing",])
 w.uncertainty.M <- calc_wuncert(BER[BER$Sector=="Manufacturing",])
 
@@ -709,6 +822,27 @@ w.uncertainty[,-1] <- scale(w.uncertainty[,-1])
 w.uncertainty$Dispersion <- sapply(w.uncertainty$Date, function(x) weighted.mean(w.uncertainty[which(w.uncertainty$Date==x),c(2:5)], 
                                                                                  weights[weights$Date==x,-1],na.rm=TRUE))
 
+
+uncertainty.M1 <- pca_uncert(BER[BER$Sector=="Manufacturing",])
+w.uncertainty.M1 <- pca_wuncert(BER[BER$Sector=="Manufacturing",])
+
+w.uncertainty.M1$Disp[c(23,32,55)] <- 0
+
+index_plot <- cbind(uncertainty.M[,c(2,14:15)],uncertainty.M1[,c(14:15)])
+index_plot[,-1] <- scale(index_plot[,-1] )
+colnames(index_plot) <- c("Date","cc","fl")#,"pcacc","pcafl")
+index_plot <- melt(index_plot, id="Date")  # convert to long format
+g <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable)) 
+g <- g + geom_line()
+g <- g + theme(legend.title=element_blank())
+g <- g + ggtitle("Manufacturing") 
+g <- g + ylab("Indicator") + xlab("")
+g <- g + theme(legend.position="bottom")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g
+
+cor(index_plot[-95,-1])
 
 ##---------------------##
 ##Expectations Errors--
@@ -831,6 +965,78 @@ uncert_error.S <- calc_uncert.ee(s_errors)
 w.uncert_error.S <- calc_wuncert.ee(s_errors)
 
 uncert_error <- calc_uncert.ee(errors)
+
+
+#PCA Versions
+pca_uncert.ee <- function(data) {
+    idio.errors <- aggregate(data[,-1:-2], by=list(data$Datum), FUN=se)
+    unc <- scale(idio.errors[,2:6])
+    unc[is.na(unc)] <- 0
+    idio.errors$idio <- princomp(unc[,c(1:5)])$scores[,1]
+    idio.errors$idio <- na.approx(idio.errors$idio,na.rm=FALSE)
+    
+    agg.errors <- aggregate(data[,-1:-2], by=list(data$Datum), FUN= function(x) {mean(x, na.rm = TRUE)^2})
+    unc <- scale(agg.errors[,2:6])
+    unc[is.na(unc)] <- 0
+    agg.errors$aggregate  <- princomp(unc[,c(1:5)])$scores[,1]
+    agg.errors$aggregate <- na.approx(agg.errors$aggregate,na.rm=FALSE)
+    
+    exp.errors <- cbind(idio.errors[,c(1,7)],agg.errors[,7])
+    colnames(exp.errors) <- c("Date","Uncert_Idiosyncratic","Uncert_Aggregate")
+    exp.errors$Date <- as.Date(exp.errors$Date)
+    exp.errors <- merge(datums,exp.errors,by.x="Datum",by.y="Date", all=TRUE)
+    return(exp.errors)
+}
+
+
+
+pca_wuncert.ee <- function(data) {
+    ##Weighted versions
+    weeg.3 <- function(data) {  #calculate weighted standard deviation for each quarter for all columns
+        temp <- cbind(factor=data$factor,data$factor*data[,3:ncol(data)])
+        xbar <- colSums(temp, na.rm=TRUE, dims = 1)/
+            sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])]))
+        temp <- data[,-1]
+        #this is the weighted standard devation: sum[wi*(xi-xbar)^2]/sum(wi) 
+        idio <- sqrt(sapply(colnames(temp), function(x) sum((temp[,x]-xbar[x])*(temp[,x]-xbar[x])*temp$factor,na.rm=TRUE))/
+                         sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])],na.rm=TRUE))) 
+        aggr <- sapply(colnames(temp), function(x) xbar[x]*xbar[x]) 
+        ind <- cbind(idio,aggr)
+        return(ind)
+    }
+    w.errors <- as.data.frame(t(sapply(datums$Datum, function(kwartaal) weeg.3(data[data$Datum==kwartaal,]))))
+    w.errors <- cbind(datums$Datum,w.errors)
+    colnames(w.errors) <- c("Date","Idio.factor","Idio.Q2","Idio.Q3","Idio.Q4","Idio.Q5","Idio.Q6",
+                            "Aggr.factor","Aggr.Q2","Aggr.Q3","Aggr.Q4","Aggr.Q5","Aggr.Q6")
+    w.errors[w.errors==0] <- NA
+    w.errors[,-1] <- scale(w.errors[,-1])
+    w.errors[,-1][is.na(w.errors[,-1])] <- 0
+    w.errors$Idio  <- princomp(w.errors[,3:7])$scores[,1]
+    w.errors$Aggr  <- princomp(w.errors[,9:13])$scores[,1]
+    w.errors[,14:15] <- na.approx(w.errors[,14:15],na.rm=FALSE)
+    w.errors <- w.errors[,c(1,14:15)]
+    return(w.errors)
+}
+
+
+uncert_error.M1 <- pca_uncert.ee(m_errors)
+w.uncert_error.M1 <- pca_wuncert.ee(m_errors)
+
+index_plot <- cbind(w.uncert_error.M[,c(1,3)],w.uncert_error.M1[,c(3)])
+index_plot[,-1] <- scale(index_plot[,-1] )
+colnames(index_plot) <- c("Date","cc","fl")#,"pcacc","pcafl")
+index_plot <- melt(index_plot, id="Date")  # convert to long format
+g <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable)) 
+g <- g + geom_line()
+g <- g + theme(legend.title=element_blank())
+g <- g + ggtitle("Manufacturing") 
+g <- g + ylab("Indicator") + xlab("")
+g <- g + theme(legend.position="bottom")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g
+
+cor(index_plot[complete.cases(index_plot),][,2:3])
 
 #----------------------------------------------------------
 ##Weighted versions
@@ -1338,9 +1544,12 @@ plot(irf.y1,plot.type = c("single"), main="Response from Activity", xlab="Horizo
 par(new = TRUE)
 plot(irf.y2,plot.type = c("single"), main="Response from RGDP Growth", xlab="Horizon in quarters")
 
+
 source("plot_varfevd.R")
+par(mfrow=c(1,1), new=FALSE)
+#dev.off()
 par(mfrow=c(1,2))
-plot.varfevd(fevd(var1, n.ahead = 10 ),plot.type = "single")  
+plot.varfevd(fevd(var1, n.ahead = 10 ),plot.type = "single", xlab="Horizon in quarters", ylab="Percentage variance explained")
 
 
 vardat <- cbind(manufac[,2],manufac[,5])
