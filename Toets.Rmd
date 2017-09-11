@@ -119,3 +119,51 @@ Orders Placed            & X                      &                       & X   
 \end{tabular}
 }
 \end{table}
+
+
+
+
+Formally, one can define a $k$-period-ahead expectations measure of activity $(C_t^k)$ at time $t$ as: $C _t^k = E_tf(\Delta^h Y_{t+k})$, where $Y_{t+k}$ is a measure of real activity (usually output) at time $t+k$ and $\Delta^h Y_{t+k} = Y_{t+k} - Y_{t+k-h}$. A common definition of $f(\Delta^h Y_{t+k})$ relies on an up, unchanged, or down classification (e.g. Q2A in the BER survey asks about better, the same, or poorer conditions): 
+$$ f_t(\Delta^h Y_{t+k}) = \begin{cases} -1,& \text{if } \Delta^h Y_{t+k} < 0\\ 0,& \text{if } \Delta^h Y_{t+k} = 0\\ 1,& \text{if } \Delta^h Y_{t+k} > 0\\ \end{cases} $$
+
+An alternative would be to use a binary classification (e.g. Q1 in the BER survey asks about satisfactory or unsatisfactory conditions): $$ f(\Delta^h Y_{t+k}) = \begin{cases} 1,& \text{if } \Delta^h Y_{t+k} \geq a\\ -1,& \text{if } \Delta^h Y_{t+k} < a\\ \end{cases} $$ where $a$ is determined by the preferences of the agent. 
+
+In this chapter, a distinction is made between indicators of current conditions $C_t^k$ when $k=0$, and indicators of expected conditions $C_t^k$ when $k>0$. The confidence measure for current conditions $C^0_t$ is referred to as 'activity', as it is reflects confidence about the current quarter (in the second month of the quarter). The confidence measure for expected conditions $C^1_t$ is referred to as 'confidence', as it is reflects confidence about the following quarter.
+
+As discussed above, confidence indicators are almost always based on balance statistics. This presents a single summary figure of responses to each question [@Santero1996], which is the cross-sectional mean of survey responses if the standard quantification system is used: 'better' is quantified by +1, 'the same' by 0 and 'poorer by -1. Confidence relating to current conditions, or activity $C^0_t$, and confidence relating to expected conditions, or confidence $C^1_t$ may be defined as: 
+$$C^{CC}_t = \frac{1}{W_t} \sum^N_{i=1} w_{it} f_t(\Delta^4 Y_{i,t })$$
+
+$$C^{EC}_t = \frac{1}{W_t} \sum^N_{i=1} w_{it} f_t(\Delta^4 Y_{i,t+1}) ,$$
+
+
+where $Y_{i,t+k}$ is again a measure of real activity at time $t+k$ for firm $i = 1,...,N$; $\Delta^h Y_{i,t+k} = Y_{i,t+k} - Y_{i,t+k-h}$ for firm $i$; $w_i$ is the weighting that each firm receives; and $W = \sum^N_{i=1}w_i$ is the sum of all the weights. 
+
+In line with the @OECD recommendations, the weightings $w_i = f_i s_j / F_j$ is the product of a firm size weight $f_i$ for firm $i$, i.e. the inner weight reflecting turnover or number of employees, and a subsector weight $s_j$ for subsector $j$, i.e. the outer weight reflecting the percentage share of total income or value added, divided by the total firm/inner weight for subsector $j$, $F_j = \sum^N_{i=1} f_i$. For each question, the responses are weighted by firm and subsector size, and balances are calculated.[^29]
+
+[^29]: The weights for the construction and services subsectors were unavailable and therefore receive an equal weighting. 
+
+These weightings are equivalent to an explicit 2-step weighting procedure, whereby weighted means (using firm size weights) are calculated for each subsector separately, and then aggregated with the subsector weightings. The BER uses similar weighting, except that the weighting equals the product of firm and subsector weights $w_i = f_i s_j$, but does not divide by the total firm/inner weight for the subsector $F_j$.
+
+$$\mu_{t} = \frac{1}{W_t} \sum^N_{i=1} w_{it} f_t(\Delta^4 Y_{i,t})$$
+
+$$D_t = \frac{\frac{1}{W_t} \sum^N_{i=1} (w_{it} f_t(\Delta^4 Y_{i,t+1}) - \mu_{t+1})^2} {\frac{1}{W_{t+1}} \sum^N_{i=1} (w_{it+1} f_{t+1}(\Delta^4 Y_{i,t+1})- \mu_{t+1})^2}$$
+
+$$D^{1}_t = \frac{1}{W_t} \sum^N_{i=1} (w_{it} f_t(\Delta^4 Y_{i,t+1}) - \mu_{t+1})^2 ,$$
+
+
+$$D^{0}_{t+1} = \frac{1}{W_{t+1}} \sum^N_{i=1} (w_{it+1} f_{t+1}(\Delta^4 Y_{i,t+1}) - \mu_{t+1})^2 $$
+$$D_t = \frac{D^{1}_t}{D^{0}_{t+1}} $$
+
+
+$$\epsilon_{it+1} = f_{t+1}(\Delta^4 Y_{i,t+1}) - f_t(\Delta^4 Y_{i,t+1}) ,$$
+$$\bar \epsilon_{it} = \frac{1}{W_t}\sum_{i=1}^N w_{it} \epsilon_{it}$$
+
+$$I_t = \frac{1}{W_{t+1}}\sum_{i=1}^N (w_{it+1} \epsilon_{it+1} - \bar{\epsilon}_{t+1})^2 $$
+$$A_t = \bar \epsilon_{it+1}^2 $$
+
+
+
+
+
+
+

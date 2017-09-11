@@ -69,15 +69,20 @@ index_plot <- conf_indices[-1:-60,]
 index_plot[,-1] <- scale(index_plot[,-1])
 g <- ggplot(index_plot) 
 #g <- g + theme_bw()
-g <- g + geom_line(aes(x=Date, y=BER_BCI, colour="BER_BCI", linetype="BER_BCI"), size = 1.1)
-g <- g + geom_line(aes(x=Date, y=Leading_Growth, colour="Leading_Growth", linetype="Leading_Growth"), size = 0.71)
-g <- g + geom_line(aes(x=Date, y=Coincident_Growth, colour="Coincident_Growth", linetype="Coincident_Growth"), size = 0.71)
-g <- g + geom_line(aes(x=Date, y=SACCI_Growth, colour="SACCI_Growth", linetype="SACCI_Growth"), size = 1.1)
+g <- g + geom_line(aes(x=Date, y=BER_BCI, colour="BER_BCI", linetype="BER_BCI", size = "BER_BCI"))
+g <- g + geom_line(aes(x=Date, y=Leading_Growth, colour="Leading_Growth", linetype="Leading_Growth", size = "Leading_Growth"))
+g <- g + geom_line(aes(x=Date, y=Coincident_Growth, colour="Coincident_Growth", linetype="Coincident_Growth", size = "Coincident_Growth"))
+g <- g + geom_line(aes(x=Date, y=SACCI_Growth, colour="SACCI_Growth", linetype="SACCI_Growth", size = "SACCI_Growth"))
 g <- g + scale_linetype_manual(values=c("solid","dashed", "longdash","twodash"))
-#g <- g + scale_colour_manual(values=c("black","gray32", "gray32","black"))
-g <- g + labs(color="Legend text", linetype="Legend text")
+g <- g + scale_size_manual(values=c(1.1,0.71, 0.71,1.1))
+#g <- g + scale_linetype_manual(values=c("solid","dashed", "longdash","twodash"))
+#g <- g + geom_point(aes(x=Date, y=BER_BCI, shape="BER_BCI"))
+#g <- g + geom_point(aes(x=Date, y=Leading_Growth, shape="Leading_Growth"))
+#g <- g + geom_point(aes(x=Date, y=Coincident_Growth, shape="Coincident_Growth"))
+#g <- g + geom_point(aes(x=Date, y=SACCI_Growth,shape="SACCI_Growth"))#g <- g + scale_colour_manual(values=c("black","gray32", "gray32","black"))
+g <- g + labs(color="Legend text", linetype="Legend text", size="Legend text")
 g <- g + geom_rect(data=recessions.l, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
-g <- g + ylab("Indicator") + xlab("")
+g <- g + ylab("Standardised Indicator Value") + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + theme(legend.title=element_blank()) 
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"), expand=c(0,0),
@@ -99,7 +104,7 @@ g <- g + scale_linetype_manual(values=c("solid","dashed", "longdash","twodash"))
 g <- g + scale_size_manual(values=c(1.1,0.71, 0.71,1.1))
 g <- g + labs(color="Legend text", linetype="Legend text", size="Legend text")
 g <- g + geom_rect(data=recessions.l, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
-g <- g + ylab("Indicator") + xlab("")
+g <- g + ylab("Standardised Indicator Value") + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + theme(legend.title=element_blank()) 
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"), expand=c(0,0),
@@ -107,6 +112,67 @@ g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"), e
 g <- g + theme(legend.position="bottom")
 g
 
+
+
+index_plot <- conf_indices[-1:-60,]
+index_plot[,5] <- index_plot[,5]*100+50
+
+g1 <- ggplot(index_plot) 
+g1 <- g1 + geom_line(aes(x=Date, y=Coincident_Growth),size=1,colour="#00BFC4")
+g1 <- g1 + theme(legend.title=element_blank())
+g1 <- g1 + ggtitle("Coincident Indicator Growth Rate") 
+g1 <- g1 + ylab("Indicator Growth Rate") + xlab("")
+g1 <- g1 + theme(legend.position="none")
+g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g1 <- g1 + scale_x_date(labels = date_format("%Y"),expand=c(0,0),
+                      limits = as.Date(c("1973-12-31", NA)))
+g1 <- g1 + geom_rect(data=recessions.l, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
+g1 <- g1 + scale_y_continuous(labels = scales::percent)
+
+
+index_plot <- conf_indices[-1:-60,]
+g2 <- ggplot(index_plot) 
+g2 <- g2 + geom_line(aes(x=Date, y=Leading_Growth),size=1,colour="#7CAE00")
+g2 <- g2 + theme(legend.title=element_blank())
+g2 <- g2 + ggtitle("Leading Indicator Growth Rate") 
+g2 <- g2 + ylab("Indicator Growth Rate") + xlab("")
+g2 <- g2 + theme(legend.position="none")
+g2 <- g2 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g2 <- g2 + scale_x_date(labels = date_format("%Y"),expand=c(0,0),
+                        limits = as.Date(c("1973-12-31", NA)))
+g2 <- g2 + geom_rect(data=recessions.l, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
+g2 <- g2 + scale_y_continuous(labels = scales::percent)
+
+
+
+g3 <- ggplot(index_plot) 
+g3 <- g3 + geom_line(aes(x=Date, y=BER_BCI, colour="BER_BCI"),size=1)
+g3 <- g3 + theme(legend.title=element_blank())
+g3 <- g3 + ggtitle("BER BCI (levels)") 
+g3 <- g3 + ylab("Indicator in Levels") + xlab("")
+g3 <- g3 + theme(legend.position="none")
+g3 <- g3 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g3 <- g3 + scale_x_date(labels = date_format("%Y"),expand=c(0,0),
+                        limits = as.Date(c("1973-12-31", NA)))
+g3 <- g3 + geom_rect(data=recessions.l, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
+g3
+
+index_plot <- conf_indices[-1:-60,]
+g4 <- ggplot(index_plot) 
+g4 <- g4 + geom_line(aes(x=Date, y=SACCI_Growth),size=1,colour="#C77CFF")
+g4 <- g4 + theme(legend.title=element_blank())
+g4 <- g4 + ggtitle("SACCI BCI Growth Rate") 
+g4 <- g4 + ylab("Indicator Growth Rate") + xlab("")
+g4 <- g4 + theme(legend.position="none")
+g4 <- g4 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g4 <- g4 + scale_x_date(labels = date_format("%Y"), expand=c(0,0),
+                        limits = as.Date(c("1973-12-31", NA)))
+g4 <- g4 + geom_rect(data=recessions.l, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
+g4 <- g4 + scale_y_continuous(labels = scales::percent)
+
+
+library(gridExtra)
+grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 
 
 #Check correlations
@@ -454,6 +520,15 @@ print(xt, "latex", include.rownames=FALSE,comment=FALSE, caption.placement = get
       scalebox = 0.8)
 
 
+RGDP_Growth <- conf_indices[,2]*100
+Coincident_Growth <- conf_indices[,3]
+Leading_Growth <- conf_indices[,4]
+BER_BCI <- conf_indices[,5]
+SACCI_Growth <- conf_indices[,6]*100
+
+var3 <- calc_var(cbind(BER_BCI, RGDP_Growth)[-1:-60,])
+var4 <- calc_var(cbind(SACCI_Growth, RGDP_Growth)[-1:-131,])
+
 
 irf.y1 <- irf(var1,impulse = "Coincident_Growth", response = "RGDP_Growth", 
               n.ahead = 12,runs = 1000, seed=12345) 
@@ -472,13 +547,35 @@ irf.y1 <- irf(var4,impulse = "SACCI_Growth", response = "RGDP_Growth",
 irf.y2 <- irf(var4,impulse = "RGDP_Growth", response = "SACCI_Growth", 
               n.ahead = 12,runs = 1000, seed=12345)
 
+#r <- pretty_breaks(n=5)(runif(100))
+
+par(mfrow=c(1,1))
+nf <- layout(matrix(c(1,2,1,2), 1, 2, byrow = TRUE))
+#layout.show(nf)
+par(cex=1, new=FALSE)
+plot(irf.y1,plot.type = c("single"), main="Response from SACCI Growth", 
+     xlab="Horizon in quarters",ylab="RGDP Growth (in units)")
+#labs <- paste(ft,"\n",round(prop.table(ft)*100,2),"%",sep="")
+#axis(2,at=r,lab=percent(r),las=T)
+par(cex=1,new = TRUE)
+plot(irf.y2,plot.type = c("single"), main="Response from RGDP Growth", 
+     xlab="Horizon in quarters",ylab="SACCI Growth (in units)")#,yaxt="n")
+#axis(2,at=r,lab=percent(r),las=TRUE)
+
+
 par(mfrow=c(1,1), new=FALSE)
 nf <- layout(matrix(c(1,2,1,2), 1, 2, byrow = TRUE))
 #layout.show(nf)
 par(cex=1)
-plot(irf.y1,plot.type = c("single"), main="Response from SACCI Growth", xlab="Horizon in quarters")
+plot(irf.y1,plot.type = c("single"), main="Response from SACCI Growth", 
+     xlab="Horizon in quarters",ylab="RGDP Growth (in percent)")
+#labs <- paste(ft,"\n",round(prop.table(ft)*100,2),"%",sep="")
+#axis(2,at=r,lab=percent(r),las=T)
 par(cex=1,new = TRUE)
-plot(irf.y2,plot.type = c("single"), main="Response from RGDP Growth", xlab="Horizon in quarters")
+plot(irf.y2,plot.type = c("single"), main="Response from RGDP Growth", 
+     xlab="Horizon in quarters",ylab="SACCI Growth (in percent)")#,yaxt="n")
+#axis(2,at=r,lab=percent(r),las=TRUE)
+
 
 source("plot_varfevd.R")
 #png(file="Figure6.png",width=7,height=4.5,res=150)
@@ -490,13 +587,19 @@ plot.varfevd(fevd(var3, n.ahead = 10 ),plot.type = "single", xlab="Horizon in qu
 
 #---------------------------------
 #In growth rates:
+RGDP_Growth <- conf_indices[,2]*100
+Coincident_Growth <- conf_indices[,3]
+Leading_Growth <- conf_indices[,4]
+BER_BCI <- conf_indices[,5]
+SACCI_Growth <- conf_indices[,6]*100
+
 JSE <- GDPgrowth4$RJSE
 Bond <- GDPdata$Bond2
 TBill <- GDPdata$T.Bill
 Spread <- Bond-TBill
 Employment <- GDPgrowth4$Employ
-Investment <- GDPgrowth4$Rinvestment 
-Industrial_Production <- GDPgrowth4$RProduction
+Investment <- GDPgrowth4$Rinvestment*100 
+Industrial_Production <- GDPgrowth4$RProduction*100
 
 vardat <- cbind(BER_BCI=BER_BCI[129:227],JSE,Spread,RGDP_Growth=RGDP_Growth[129:227],
                 Industrial_Production,Employment,Investment)  
@@ -527,7 +630,8 @@ irf.y1 <- irf(vare,impulse = c("BER_BCI"),
 
 par(mfrow=c(1,1), new=FALSE)
 par(mfrow=c(1,3),mar=c(4.2,4,2,1), cex=0.7)
-plot(irf.y1,plot.type = c("single"), main="Response from BER BCI", xlab="Horizon in quarters")
+plot(irf.y1,plot.type = c("single"), main="Response from BER BCI", 
+     xlab="Horizon in quarters",ylab="(in percent)")
 
 
 source("plot_varfevd.R")
