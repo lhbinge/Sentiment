@@ -153,8 +153,8 @@ skoon <- function(data) {
     return(data)
 }
 
-BER.R <- skoon(read.csv("Retail_92Q2-17Q2.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
-BER.W <- skoon(read.csv("Wholesale_92Q2-17Q2.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
+BER.R <- skoon(read.csv("Retail_92Q2-17Q2_sep.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
+BER.W <- skoon(read.csv("Wholesale_92Q2-17Q2_sep.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
 BER.V <- skoon(read.csv("Motor_92Q2-17Q2.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
 BER.V$factor <- BER.V$weight*0.2
 
@@ -591,8 +591,8 @@ servicess <- unique(BER.S$sector)[!is.na(unique(BER.S$sector))]
 #Illustrating weights
 catering <- c(6001,6020,6030,6011,NA)
 transport <- c(7020,7010,7070,7090,7080,7060,7000,7040,7100,7120,7110,7050)
-realestate <- c(8000,8010)
-business <- c(8040,8080,8070,8090,8020,8060,8050,8030)
+realestate <- c(8000,8010,8020)
+business <- c(8040,8080,8070,8090,8060,8050,8030)
 other <- c(8150,8120,8210,8180,8140,8160,8190,8100,8200,8230,8130,8110,8170,8240,8220)
 community <- c(9000,9010,9030,9050,9060,9020,9040)
 

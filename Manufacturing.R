@@ -125,8 +125,7 @@ wood <- c(1109,1110,1080,1081)
 chemicals <- c(1130,1140,1149,1219)
 glass <- c(1153,1159)
 metals <- c(1160,1161,1170,1179,1181,1182,1189)
-electrical <- c(1190,1191,1199)
-radio <- c(1192,1194)
+electrical <- c(1190,1191,1199,1192,1194)
 transport <- c(1200,1201,1209)
 furniture <- c(1090,1099)
 all <- as.numeric(as.character(unique(BER.M$sector)))
@@ -372,6 +371,7 @@ grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 ##=============================
 #New faktor variable 
 BER.M <- read.csv("Manufacturing_new faktor.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+#BER.M$Faktor <- BER.M$Firmw * BER.M$Sectorw
 
 colnames(BER.M)[1:9] <- c("region","id","sector","weight","turnover","firmw","sectorw","factor","surveyQ")
 BER.M$surveyQ <- toupper(BER.M$surveyQ)
@@ -394,6 +394,71 @@ for(i in 45:51) {
     BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==0, 0.5)
     BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==-1, 0)
 }
+
+
+BER.M$Sector[BER.M$sector %in% food] <- "Food" 
+BER.M$Sector[BER.M$sector %in% textiles] <- "Textiles" 
+BER.M$Sector[BER.M$sector %in% wood] <- "Wood" 
+BER.M$Sector[BER.M$sector %in% chemicals] <- "Chemicals" 
+BER.M$Sector[BER.M$sector %in% glass] <- "Glass" 
+BER.M$Sector[BER.M$sector %in% metals] <- "Metals" 
+BER.M$Sector[BER.M$sector %in% electrical] <- "Eelectrical" 
+BER.M$Sector[BER.M$sector %in% transport] <- "Transport" 
+BER.M$Sector[BER.M$sector %in% furniture] <- "Furniture" 
+
+
+#BER.M$sectorw <- BER.M$factor/BER.M$weight
+BERplot <- aggregate(BER.M$sectorw, by=list(BER.M$surveyQ,BER.M$sector,BER.M$Sector), FUN = mean, na.rm=TRUE)
+colnames(BERplot) <- c("surveyQ","sector","Sector","weight")
+BERplot1 <- dcast(BERplot, formula = surveyQ ~ Sector + sector)
+BERplot1 <- merge(datums,BERplot1,by.x="Date",by.y ="surveyQ")
+BERplot1[,-1:-2] <- na.locf(BERplot1[,-1:-2],fromLast = TRUE)
+BERplot1[,-1:-2] <- na.locf(BERplot1[,-1:-2])
+
+BERplot <- BERplot1
+BERplot$Food <- rowMeans(BERplot1[,12:17])
+BERplot$Textiles <- rowMeans(BERplot1[,29:34])
+BERplot$Wood <- rowMeans(BERplot1[,38:41])
+BERplot$Chemicals <- rowMeans(BERplot1[,3:6])
+BERplot$Glass <- rowMeans(BERplot1[,20:21])
+BERplot$Metals <- rowMeans(BERplot1[,22:28])
+BERplot$Eelectrical <- rowMeans(BERplot1[,7:11])
+BERplot$Transport <- rowMeans(BERplot1[,35:37])
+BERplot$Furniture <- rowMeans(BERplot1[,18:19])
+BERplot <- BERplot[,c(1,42:50)]
+BERplot$Total <- rowSums(BERplot[,2:10])
+BERplot[,-1] <- BERplot[,-1]/BERplot[,11]
+
+
+BERplot$Date <- as.Date(as.yearqtr(BERplot$Date, format = "%YQ%q"), frac = 1)
+BERplot <- BERplot[,c(1,5,8,2,10,6,7,3,9,4,11)]
+index_plot <- melt(BERplot[,-11], id="Date")
+g <- ggplot(index_plot, aes(x=Date,y=value,group=variable,fill=variable)) 
+g <- g + geom_bar(stat="identity")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + scale_fill_discrete(name="Sub-sector")
+g <- g + scale_y_continuous(labels=comma)
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + ylab("Weights") + xlab("Date")
+g <- g + guides(fill = guide_legend(reverse = TRUE))
+g
+
+
+BERplot <- aggregate(BER.M$factor, by=list(BER.M$surveyQ,BER.M$Sector), FUN = sum, na.rm=TRUE)#[-1:-5,]
+BERplot1 <- aggregate(BER.M$factor, by=list(BER.M$surveyQ), FUN = sum, na.rm=TRUE)
+BERplot$y <- BERplot$x/BERplot1$x
+#BERplot <- aggregate(BER.M$factor, by=list(BER.M$surveyQ,BER.M$Sector), FUN = mean)
+BERplot$Group.1 <- as.Date(as.yearqtr(BERplot$Group.1, format = "%YQ%q"), frac = 1)
+g <- ggplot(BERplot, aes(x=Group.1, y=y,fill=Group.2))
+g <- g + geom_bar(stat="identity")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + scale_fill_discrete(name="Sub-sector")
+g <- g + scale_y_continuous(labels=comma)
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + ylab("Weights") + xlab("Date")
+g <- g + guides(fill = guide_legend(reverse = TRUE))
+g
+
 
 BER.M <- BER.M[,-6:-7]
 
@@ -432,12 +497,22 @@ BER.M$surveyQ <- toupper(BER.M$surveyQ)
 BER.M$sector <- factor(BER.M$sector) #could include labels
 BER.M$id <- factor(BER.M$id)
 BER.M$surveyQ <- factor(BER.M$surveyQ)
+BER.M$factor <- as.numeric(as.character(BER.M$factor))
+
+#BER.M$factor <- BER.M$firmw * BER.M$sectorw
 
 #Exlcude Latecomers and old questions
 BER.M <- BER.M[BER.M$Latecomer == FALSE | is.na(BER.M$Latecomer),]
 BER.M <- BER.M[,!grepl("X",colnames(BER.M))]    
 BER.M <- BER.M[,1:66]
 #==============================
+#Maak factor reg
+Ej <- aggregate(BER.M$firmw, by=list(BER.M$surveyQ,BER.M$sector), FUN=sum)
+BER.M <-  merge(BER.M, Ej, by.x=c("surveyQ","sector"), by.y=c("Group.1","Group.2"),all = TRUE)
+BER.M$factor <- BER.M$factor/BER.M$x
+BER.M <- BER.M[,c(3,4,2,5:9,1,10:66)]
+#==============================
+
 # replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
 for(i in 10:66) {
     BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==2, 0)
@@ -505,6 +580,7 @@ maak.index <- function(sektor=all,streek=streke) {
 }
 
 
+
 Manufacturing_2 <- maak.index(all)
 Manufacturing_2[24,c(seq(3,31,by=2),33:48)] <- pub[24,2:32]
 Manufacturing_2[33,c(seq(3,31,by=2),33:48)] <- pub[33,2:32]
@@ -530,11 +606,14 @@ WC_2 <- maak.index(all,1)
 KZN_2 <- maak.index(all,5)
 GP_2 <- maak.index(all,6)
 
+BER.M <- BER.M[,-6:-7]
+Manufacturing_n2 <- geweeg(all)
+
 #---------------------------------------------------
 #New faktor
-indicator_plot <- cbind(Manufacturing[,c("Datum","Q20")],
+indicator_plot <- cbind(Manufacturing[,c("Datum","Q20")],Manufacturing_n2[,c("Q20")],
                         Manufacturing_n[,c("Q20")],Manufacturing_2[,c("Q20")])
-colnames(indicator_plot) <- c("Date","Q20:Microdata","Q20:New","Q20:2-step")
+colnames(indicator_plot) <- c("Date","Q20:Microdata","Q20:New_2","Q20:New","Q20:2-step")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
@@ -544,6 +623,21 @@ g <- g + theme(legend.title=element_blank())
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
+
+
+
+indicator_plot <- cbind(Manufacturing_n2[,c("Datum","Q20")],Manufacturing_2[,c("Q20")])
+colnames(indicator_plot) <- c("Date","Q20:New_2","Q20:2-step")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Indicator") + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) 
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+
 
 
 indicator_plot <- cbind(Manufacturing[,c("Datum","Q1A")],

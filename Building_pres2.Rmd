@@ -85,7 +85,7 @@ for(i in 17:20) {
 #Impute Latecomers
 #Dit lyk asof die Latecomers klaar gedupliseer is en gemerk is as Imputed
 
-#Eclude Latecomers
+#Exclude Latecomers
 BER.B <- BER.B[BER.B$Latecomer == FALSE | is.na(BER.B$Latecomer),]
 
 BER.B <- BER.B[,1:22]
@@ -167,7 +167,7 @@ Subcon_nonres[c(3,22,29,51),c(3,4,6,8,10,12)] <- pub[c(3,22,29,51),47:52]
 
 ```
 
-## Buidling Results for Q1 (Confidence)
+##Building Results for Q1 (Confidence)
 
 ```{r figure1, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- cbind(Building[,c("Datum","Q1")],Residential[,"Q1"],Non_residential[,"Q1"]) 

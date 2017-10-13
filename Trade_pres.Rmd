@@ -1,0 +1,75 @@
+---
+title: "BER Trade Survey"
+subtitle: "Preliminary Results"
+author: Laurie Binge
+date: "17 October 2017"
+output:
+  beamer_presentation:
+    theme: "CambridgeUS"
+    colortheme: "dolphin"
+    fonttheme: "structurebold" 
+    toc: true
+    slide_level: 2
+---
+
+#BER Trade Survey Results
+
+#Retail Survey Results
+
+##Retail Survey Results
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Wholesale Survey Results
+##Wholesale Survey Results
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Motor Vehicle Survey Results
+##Motor Vehicle Survey Results
+
+
+
