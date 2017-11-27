@@ -1,0 +1,737 @@
+---
+output: 
+    pdf_document:
+        fig_caption: yes
+        number_sections: true
+fontsize: 11pt
+geometry: margin=1in
+bibliography: References.bib
+csl: harvard.csl
+---
+<!-- maketile -->
+\begin{center}
+\Large\scshape{Business Confidence and the South African Business Cycle} \\ 
+\vspace{1em}
+\large\normalfont{Laurie Binge}\footnote{PhD candidate at the Department of Economics at Stellenbosch University. Corresponding author at: lhbinge@gmail.com} \\
+\large\normalfont{Willem H. Boshoff}\footnote{Associate Professor at the Department of Economics at Stellenbosch University. Email address: wimpie2@sun.ac.za} \\
+\normalsize\textit{Stellenbosch University, Stellenbosch, South Africa.} \\
+\normalsize\normalfont{\today} 
+\end{center}
+\begin{small}
+
+The global financial crisis and subsequent Great Recession were associated with low levels of confidence and heightened uncertainty. This has motivated a large body of international literature investigating the impact of changes in business sentiment, and especially uncertainty, on real economic activity. Yet to date there has been little research on business sentiment in South Africa. This paper attempts to make two contributions to the literature. The first is to construct new composite indicators of confidence and uncertainty for South Africa, based on the microdata from the BER's business tendency surveys. The second is to examine the comovement between the sentiment indicators and real economic activity. The aim is to examine whether these survey-based indicators have plausible and significant relationships with real economic output. The composite sentiment indicators seem plausible and the results confirm the findings in the literature. The composite confidence indicators exhibit a significant positive correlation with real GDP growth and seem to contain predictive information for output growth. The composite uncertainty indicators exhibit a significant negative correlation with real GDP growth and a shock to uncertainty is generally followed by a decrease in output growth. 
+
+vspace{0.5em}
+\noindent{\textbf{JEL Classification:} C83, D81, E32} \\
+	\noindent{\textbf{Keywords:} Business Tendency Surveys, Confidence, Business Cycle Indicators}
+\end{small}
+\renewcommand{\thefootnote}{\arabic{footnote}}\renewcommand{\thefootnote}{\arabic{footnote}}
+
+
+#Introduction
+The idea that usually low levels of confidence and heightened uncertainty contributed to the Great Recession has inspired a large literature examining the impact of changes in sentiment on real economic activity (e.g. Barsky & Sims, 2012). To date there has been little research on business confidence in South Africa (e.g. Pellissier (2002)), in part due to the difficulty in defining the concept and measuring it directly. Only two business confidence indicators are regularly published for South Africa: the BER Business Confidence Index (BER BCI) and the South African Chamber of Commerce and Industry Business Confidence Index (SACCI BCI). 
+
+It is important to confirm the existence and nature of the relationship between confidence and economic activity in developing countries such as South Africa. Developing economies are often subject to lower and more volatile levels of confidence and higher uncertainty than developed economies (Bloom, 2014). South Africa's tumultuous political history and post-Apartheid structural transition has contributed to fluctuations in confidence. South Africa experienced declining confidence levels during the Great Recession, although it did not experience the same levels of financial stress and instability as developed countries (Redl, 2015). Examining the relationship between confidence and economic activity in South Africa may therefore help to distinguish between the effects of changes in confidence and other shocks. 
+
+This chapter will estimate new proxies for business confidence using micro-data from the BER business tendency surveys, with the aim of improving on the existing measures. Although measuring business confidence is challenging, survey-based indicators can be helpful in discovering key economic agents' opinions on future economic developments (Girardi & Ruiter, 2015). This chapter will analyse the leading indicator properties of the confidence indicators and evaluate the predictive content of the confidence indicators for real economic activity, using the standard agnostic econometric methods.
+
+Business confidence indicators have been found to be useful leading indicators in many countries, with examples including the Ifo Business Climate Indicator in Germany and the European Commission's Economic Sentiment Index (INIS, 2014). This is also the case in South Africa, where the BER BCI is used by the SARB as a leading indicator to identify the official business cycle turning points (Bosch, 2015). Confidence indicators have the advantage that they are published long before the official statistics become available and are usually not subject to revision (ECB, 2013). This chapter will evaluate business confidence indicators as potentially useful, timely and robust leading indicators of the South African business cycle. 
+
+A number of studies have shown that confidence indicators provide valuable information for forecasting real activity, after controlling for other economic variables (e.g. Taylor & McNabb (2007); Barsky & Sims (2012)). Even in cases where the unique information content is limited, the timeliness of survey indicators may make them useful for real-time forecasting (Gayer, Girardi & Reuter, 2014). This chapter will investigate the relationship between the micro-based business confidence indicators and real economic activity in South Africa, including the timing of this relationship and the extent to which correlation is conditional on other economic variables. The aim is to study the whether the indicators contain useful predictive information for fluctuations in real GDP growth. 
+
+For the purposes of this chapter, business confidence is the degree of optimism that firms hold, or their perceptions of, current and future business conditions [@Mendicino2013]. It is challenging to measure these concepts [@Santero1996], as both are not directly observable and their definitions are difficult to operationalise. 
+
+Analysts typically aggregate information from business and consumer surveys to construct proxies for confidence. Popular confidence indicators include the European Commission's Economic Sentiment Index and the Ifo Business Climate Indicator in Germany [@UN2015]. 
+
+The primary aim in this chapter is to explore aggregation methods for estimating business confidence in South Africa, using the microeconomic data from the BER business tendency surveys. Although measuring business sentiment is challenging, survey-based indicators can be helpful in discovering agents' opinions on future economic developments [@OECD2003]. Survey-based measures have the advantage that they are derived from the opinions of key economic agents [@Girardi2015], are available earlier than official statistics, and are usually not subject to revisions [@ECB2013]. This chapter will use the responses from the BER surveys to create proxies for business confidence and uncertainty in South Africa.
+
+To date, there has been little research on business sentiment in South Africa, in part due to the difficulty of measurement. As far as research on confidence is concerned, only two business confidence indicators are regularly published for South Africa: the SACCI BCI and the BER BCI. The SACCI BCI is a composite measure of economic activity, rather than a confidence indicator in the way used in the literature. The BER BCI is a measure of confidence derived from the BER's business tendency surveys. It is based on a single question on current conditions. The survey responses are weighted in an ad hoc manner, and the services sector survey is excluded from the calculation. 
+
+Two composite confidence indicators are calculated in this chapter. The first is the cross-sectional mean of responses to questions on current business conditions, and the second is the cross-sectional mean of responses to questions on expected future business conditions [@OECD2003]. 
+
+The new composite indicators attempt to improve on the existing measures of sentiment for South Africa, by incorporating more of the available information from the qualitative business tendency surveys. The composite indicators incorporate the survey responses from questions on general business conditions, output, employment, orders placed and profitability. For each question, the responses are weighted by firm size and subsector size to produce sectoral indicators, including the services sector. The sectoral indicators are then weighted by GDP share to produce the overall aggregate composite indicators.
+
+The indicators are evaluated to determine whether they improve on the existing indicators. In this chapter, the indicators are evaluated according to their comovement with real GDP growth (i.e. their tracking record). The leading indicator properties of the confidence indices are also evaluated, in terms of the timing of their turning points and concordance with the official SARB business cycle. 
+
+To demonstrate the usefulness of the aggregation methods and the estimated indicators, as well as provide an additional validity test, this chapter further examines the relationship between business sentiment and real economic activity in South Africa. There has been little analysis of this relationship in the South African context (e.g. @Pellissier2002 and @Redl2015). The newly constructed sentiment indicators are therefore exploited to examine the relationship between business sentiment and real economic activity in South Africa. In particular, the hypothesis is tested that there is significant comovement between the sentiment indicators and real GDP growth, using a standard VAR framework. The chapter presents an investigation into the relationship between the indicators and real GDP growth, including the timing of this relationship and the extent to which correlation is conditional on other economic variables. The following sections provide a review of the literature on confidence and uncertainty.
+
+#Confidence
+For the purposes of this chapter, business confidence involves firms' perceptions of, or degree of optimism regarding, current business conditions and the expected future business climate [@Mendicino2013]. In this chapter, firms' perceptions of current and future business conditions are measured using the BER business tendency surveys. Two sets of composite confidence indicators are calculated: one as the cross-sectional mean of responses to questions on current business conditions, and the other as the cross-sectional mean of responses to questions on expected future business conditions [@OECD2003].
+
+This section demonstrates the importance of accurate measures of business confidence. It begins with a review of the theoretical links between confidence and macroeconomic outcomes. The section then discusses the empirical literature. First, the measurement challenges and the approaches to operationalising the definition of confidence are discussed. Second, the evidence on the impact of confidence on economic outcomes is examined. It is argued that improved empirical measures may be useful as leading indicators of the business cycle, as well as for forecasting real GDP growth. 
+
+##Macro Theory and Confidence
+In this section, the theoretical channels through which confidence may influence economic outcomes are discussed. While confidence measures are popular indicators, the stance of the academic literature is more ambiguous [@Barsky2012]. A review of the literature suggests three alternative views, which range from the view that confidence measures have an important causal role in the business cycle, to the view that they contain useful predictive information but play a limited causal role, to the view that they have no value, even in forecasting. In this section these three views are briefly discussed.
+
+According to the so-called 'animal spirits' view, psychological factors have a causal impact on economic fluctuations distinct from fundamentals [@Carroll1994]. This view is most closely associated with @Keynes1936, who argued that: "Our decisions to do something positive, the full consequence of which will be drawn out over many days to come, can only be taken as a result of animal spirits - of a spontaneous urge to action rather than inaction, and not as the outcome of a weighted average of quantitative benefits multiplied by quantitative probabilities." The original Keynesian view finds resonance in the more recent literature, with @Akerlof2015 arguing that in the face of uncertainty, decisions about the future are based on animal spirits, rather than a weighted average of quantitative benefits and probabilities, as rational theory would dictate. 
+
+Thus, psychological factors are drivers of consumption and investment decisions in the face of uncertainty, due to the difficulty of making accurate forecasts [@Pagan2013]. For firms, waves of optimism and pessimism may cause errors in their expectations about future demand and profits. When firms are optimistic about future demand and profits, they decide to accumulate capital. If their expectations are not met, there will be a period of reduced investment, which may cause a recession [@Beaudry2004]. These errors therefore generate cycles through increases and decreases in investment [@Leduc2010]. 
+
+For consumers, optimistic income expectations lead them to increase their discretionary expenditures. These expectations depend not only on economic fundamentals, such as income or prices, but also on psychological factors. Psychological factors therefore influence consumers' perceptions of their economic environment and may become an independent source of economic fluctuations through their impact on their decisions [@Mendicino2013]. @Blanchard1993, for instance, argued that a negative consumption shock, which was associated with an exogenous shift in pessimism, was the cause of the 1990/1991 US recession. @Akerlof2015 argued that deteriorating confidence, one of the main elements of animal spirits, was an important reason for the global financial crisis and subsequent recession.
+
+Models with multiple equilibria provide a potential causal link between confidence and fluctuations in economic activity, where the equilibria may be determined by sentiment [@Taylor2007]. The level of confidence is a potential variable that can determine which equilibrium occurs. For example, if a crisis of confidence causes a banking panic, the economy may settle at a suboptimal equilibrium, in respect of social welfare. If confidence is high, the economy may settle at an optimal equilibrium [@Leduc2010]. In this context, confidence is a prediction of a future outcome, which may become self-fulfilling [@Akerlof2015].
+
+According to the animal spirits view, therefore, confidence has a potentially important causal impact on economic outcomes. In contrast, the so-called 'news' view argues that confidence indicators contain useful predictive information for economic output, but play a limited causal role. 
+
+According to the news view, any relationship between confidence measures and subsequent real activity means that confidence measures contain information about current and future fundamentals of the economy [@Barsky2012]. Confidence can proxy for news that agents receive about future productivity, which is not yet reflected in econometricians' information sets, by aggregating information from various sources [@Cochrane1994; @Barsky2012]. Confidence indicators reflect agents' expectations about future fundamentals and economic conditions, which are not summarised in other macroeconomic variables. When agents are optimistic, they give positive responses to surveys. These are confirmed, on average, and real activity eventually increases as predicted by the confidence indicator [@Carroll1994]. 
+
+From the rational expectations point of view, confidence should reflect the expected values of economic fundamentals and should not offer any additional predictive information [@Beaudry2004]. However, a number of studies (e.g. @Beaudry2004 and @VanAarle2012) analyse models where agents receive imperfect signals about future productivity growth and use these signals to make investment decisions. In this context, confidence refers to a state where agents receive an above-average signal, which may generate a wave of optimism. Rational agents then learn gradually about the true state of the economy and adjust their expectations. In this environment, occasional recessions reflect the availability of good quality information on which agents act.
+
+Other factors, such as frictions in capital markets, may explain the predictive information contained in confidence indicators. For instance, an increase in confidence may reflect higher future income, but borrowing constraints can prevent higher current consumption in anticipation of an increase in income. As a result, consumption will increase only when actual income increases, and a rise in consumer confidence will predict the future consumption increase [@ECB2013]. 
+
+The literature therefore sets out various theoretical links between confidence and economic activity. Yet, it is not clear whether confidence indicators repackage information already contained in other economic variables, or whether they contain useful independent predictive information about the economy. If they contain predictive information, it is not clear whether they reflect animal spirits, or aggregated information on agents' expectations of future outcomes not captured by the macroeconomic data [@Mendicino2013; @Akerlof2015]. The following section provides a review of the empirical literature on confidence, by discussing the approaches to calculating proxies for confidence, as well as the evidence on the impact of confidence on economic outcomes. 
+
+##Empirical Findings
+The empirical literature has tried to establish whether there is predictive information in confidence indicators, over and above economic fundamentals, and if so, whether confidence has a separate causal impact on economic activity. Although the findings have not been conclusive, the majority of studies seems to find that confidence indicators are at least positively related to real economic activity [@Taylor2007]. The inconclusive findings may be due to two main challenges: how to construct proxies for confidence and how to establish whether it has a separate causal impact on real economic activity. In the following sections these two challenges are discussed. 
+
+###Measuring Confidence
+Confidence cannot be observed or measured directly, which makes it challenging to construct proxies for it [@Santero1996]. Analysts typically aggregate responses from business and consumer surveys. These surveys usually contain a small number of qualitative questions, which can be answered quickly by respondents. Indicators are derived from the subjective answers to questions on past, current and future developments. The assumption is that agents' form opinions about economic conditions before a specific business activity is implemented (e.g. new production plans, employment, or purchases). These opinions may be called 'confidence'. The most important advantage of these surveys is that they are available long before official statistics become available. Moreover, they are not subject to revisions and avoid problems with trends and seasonality.   
+
+The most common and widely used method to aggregate survey responses is to calculate so-called balance statistics. In the context of business tendency surveys, balances are simple averages of survey responses. For most survey questions, there are three reply options, e.g. 'up', 'the same', or 'down'. Balances are calculated as the difference between the percentage of positive answers and negative answers. Balances are simple to implement and understand, and are considered both practical and entirely adequate for cyclical analysis [@OECD2003].[^21]
+
+[^21]: Diffusion indices are a slight variation on balances. In the context of business tendency surveys, they indicate the degree to which the change is diffused throughout the sample. The most common way to calculate a diffusion index consists of taking the percentage of respondents answering positively and adding it to half of the percentage of respondents reporting 'unchanged'. Thus, diffusion indices are a linear transformation of balances and have the same information content (OECD 2003).
+
+Although balances are by far the most common method used by statistical agencies and analysts to aggregate the surveys, a few more sophisticated methods have been discussed in the literature, including a probabilistic approach, a regression approach, and a latent factor approach [@Nardo2003].[^22] However, these approaches usually require actual quantitative reference series for the relevant variables, which is restrictive in the case of business confidence, where quantitative reference series are unavailable. Moreover, these methods can become unreliable when exceptional events have a large impact on the correlation between the survey data and the quantitative reference data [@UN2015].
+
+[^22]: The probabilistic approach assumes a probability distribution for the variable concerned, and the measure is a function of this specific probability distribution. The regression approach uses the relationship between survey responses of the past and actual values to quantify respondents' expectations about the future. The measures are a function of specific regression models (Nardo, 2003). In the latent factor approach, the percentages of each response are a function of a common 'latent measure' observed by respondents, but not by econometricians. 
+
+Nevertheless, the evidence suggests that balance statistics tend to produce indicators that are very similar to those produced by more sophisticated methods. For instance, the Italian National Statistical Agency found a very high correlation between balances and more sophisticated indictors when using three-option responses [@OECD2003]. @Driver2004 assessed different ways of aggregating qualitative data from the UK employers' business survey into quantitative indicators for a number of variables. They found that the balance statistic was a satisfactory aggregation method for the survey responses on output, investment, and exports. Weighted balance statistics are therefore used in this chapter to calculate summary statistics for the responses to each survey question.
+
+The balances from multiple questions are typically used to calculate composite confidence indicators, as opposed to using a single question. As no single cause explains all cyclical fluctuations over the long term, it necessary to have information from many possible sources of change, i.e. to use all potentially important information [@VanAarle2012]. Composite indicators have the capacity to react to various sources of economic fluctuations, while being resilient to fluctuations affecting single components. They often have fewer false alarms and fewer missed turning points than individual components and tend to have more stable lead-times. [@ECB2013]. In this chapter, composite confidence indicators are calculated by incorporating the responses to a number of questions.
+
+Composite confidence indicators of this type are available for most countries. The European Commission, for instance, builds composite indicators by aggregating the survey responses from five sectors, using multiple questions on current and expected conditions. For example, the industrial indicator is an average of the balances of questions relating to production expectations, stocks of goods (with an inverted sign), and order books, while the retail trade indicator is an average of balances of questions relating to the present and future business situation and stocks (with an inverted sign) [@OECD2003]. The aggregate Economic Sentiment Index is a weighted average, using value added shares, of confidence in the manufacturing, construction, retail, and services sectors, as well as for consumers [@ECB2013]. @Taylor2007 and @Mendicino2013 used these composite confidence indicators for a number of European countries in investigating the impact of confidence on economic activity.
+
+Another prominent example is the Ifo Business Climate Indicator, which is used as a leading indicator in Germany. It is computed as a geometric mean of the balances referring to the current business situation and the business outlook in the next six months [@UN2015]. The results for the manufacturing, construction, wholesale and retail sectors are weighted according to the importance of the industry. @Bachmann2010 and @Bachmann2013 used the Ifo Business Climate Survey, as well as the Philadelphia Fed's Business Outlook Survey, to calculate composite indices of current and expected conditions. @Barsky2012 used the Consumer Sentiment Index, published by the University of Michigan as a composite forward-looking measure of confidence. @Kabundi2004 used a dynamic factor model to calculate a composite indicator from the French Statistics Institute's business survey data. 
+
+Two indicators of confidence are published in South Africa: the RMB/BER Business Confidence Index (BER BCI) and the South African Chamber of Commerce and Industry Business Confidence Index (SACCI BCI). The BER BCI, discussed in more detail below, is constructed from the BER's quarterly business tendency surveys, which are similar to the business tendency surveys conducted all over the world. The BER BCI is constructed from a specific question (Q1) that appears in all of the surveys: "Are prevailing business conditions: satisfactory, or unsatisfactory?" The BCI is the weighted percentage of respondents who rated prevailing business conditions as 'satisfactory' and is therefore based on the perceptions of business people [@Kershoff2002]. The survey responses are weighted (except the building survey), and the BER BCI is calculated as the unweighted mean of five sectoral indices (excluding the services sector). The BER BCI is an index of current conditions, as opposed to expected conditions, which is independent of external macroeconomic variables [@Pellissier2002].
+
+The SACCI BCI, formerly known as the SACOB BCI, is a composite index of 13 quantitative sub-indices thought to have the greatest influence on the business mood. These include the exchange rate, inflation, the prime rate, retail sales volumes, credit extension, commodity prices, import and export volumes, new vehicle sales, utility services, manufacturing production, building plans passed, and the stock market index. The SACCI BCI is an *ex post* measure of actual activity, which is dependent on external macroeconomic variables. The rationale is that recent business activity is indicative of the degree of business confidence [@SACCI2011]. In this sense, the SACCI BCI is a composite measure of economic activity, rather than a confidence indicator in the way it is used in the literature.
+
+In summary, to construct proxies of confidence, analysts typically calculate balances to aggregate responses from business and consumer surveys. They often calculate composite measures based on a set of questions for each sector, including questions on current and expected conditions. In South Africa there are only two regularly published business confidence indicators: the BER BCI and the SACCI BCI. The SACCI BCI is not a true confidence measure, and the BER BCI is a measure of current conditions, based on a single question, with survey responses weighted in an ad hoc manner. 
+
+A primary objective of this chapter is to explore aggregation methods, to try to improve on the existing measures of confidence for South Africa. The chapter calculates composite indicators of business confidence based on the BER business tendency survey microeconomic data. The composite indicators incorporate the survey responses to a number of questions, maintaining a distinction between current and expected conditions. The responses are weighted to produce sectoral and aggregate indicators, which are analysed separately. The indices also incorporate the services sector, which is not currently part of the BER BCI. These confidence indicators are then used to investigate the relationship between confidence and economic activity. The following section provides a review of the evidence on the impact of confidence on economic outcomes.
+
+###The Impact of Confidence
+The majority of studies seems to find that confidence indicators are at least positively related to real economic activity, although this does not necessarily imply a causal relationship [@ECB2013]. Confidence indicators have been found to be useful in some cases as leading indicators, as well as for forecasting, even after controlling for other economic variables. Even in cases where the unique information content is limited, the timeliness of survey indicators may make them useful for monitoring developments and for real-time forecasting (nowcasting). 
+
+The empirical literature has often investigated the extent to which confidence indicators contain predictive information over and above economic fundamentals [@UN2015]. A number of studies have shown that both consumer and business confidence indicators provided valuable information for forecasting real activity, which was not contained in other economic variables [e.g. @Santero1996; @Ludvigson2004; @Kabundi2004; @Parigi2004; @Taylor2007; @Leduc2013; @Mendicino2013; @Martinsen2014; and @Kilic2016]. 
+
+In an influential study, @Barsky2012 found that positive shocks to consumer confidence led to significant, slow-building, and permanent responses in consumption and income. If confidence contained no news about future fundamentals, and reflected only animal spirits, one would expect transitory responses. @Barsky2012 concluded that their results supported the 'news' view of confidence.
+
+The @ECB2013 found that confidence indicators can play a significant role in predicting recessions. They included the European Consumer Sentiment Index, along with the OECD leading indicator for the euro area in a probit model. This model captured business cycle phases relatively well, with probabilities increasing when recessions occurred. The drawback was that probabilities also increased in some periods when there were no recessions, i.e. there were some false positives.
+
+The forecasting ability of confidence indicators might be offset by other indicators during ordinary times, while increasing notably during unusual events [@UN2015]. The @ECB2013 found that shocks to confidence played a relatively small role during normal times, but were important during more extreme episodes such as financial crises and recessions. The impact was asymmetric: large decreases in confidence were more important in predicting future changes in consumption than large increases. This pointed to a non-linear and asymmetric relationship between confidence and economic fluctuations. 
+
+Even if confidence indicators are just a synthesis of economic variables and do not carry information over and above other economic series, they may still be useful for monitoring economic developments and for real-time forecasting of economic activity. This is because they are available before official quantitative statistics and are subject only to limited revisions [@Santero1996]. In the euro area, for instance, official statistics are released at least 45 days after the reference month (e.g. data for January is only available by mid-March). Business surveys are usually available before the end of the reference month (e.g. the Italian survey data are released about 45 days before industrial production). Confidence indicators can provide valuable information on the evolution of the economy over this period, which is one of the reasons why they are popular [@Parigi2004]. In this sense, even if the confidence indicators are coincident indicators of real activity, that they are available earlier means that they are quasi-leading indicators.
+
+A number of studies have demonstrated that confidence indicators are useful for nowcasting economic activity. @Gayer2014 evaluated the impact of new releases of financial, real and survey data (using the EC surveys) on nowcasting euro-area GDP throughout each quarter. They found that survey and real data improved forecast accuracy throughout the sequence of nowcasts. Confidence indicators contained predictive content even after controlling for timeliness, due to their broad sectoral coverage and forward-looking nature. Similarly, @Matheson2007 found that business survey indicators improved real-time forecasting accuracy. This was due not only to their timeliness, but also to the underlying quality of the data. The results were consistent with the literature showing that survey indicators are not only timely proxies for hard data, but also contain complementary information for understanding business cycle developments.
+
+Relatively few studies have analysed confidence indicators in South Africa. @Pellissier2002 examined the ability of the two South African business confidence indicators, the BER BCI and SACCI BCI, as business cycle indicators. He argued that both BCIs seemed to exhibit a coincident rather than a leading relationship with the business cycle, and that the BER BCI seemed to display stable turning point attributes. More recently, @Laubscher2014 found that the BER BCI was one of the closest predictors of the official reference business cycle turning points and was useful as a leading indicator. The BER's BCI is also used by the SARB as one of the component series of its official leading indicator of the business cycle [@Venter2005a].
+
+The BER BCI has occasionally been included in larger datasets in forecasting exercises. For instance, @Gupta2010 analysed the impact of monetary policy on house price growth in South Africa using a factor augmented vector autoregression. The models were based on 241 quarterly series, including real, nominal, financial and intangible variables, such as confidence indices. @Gupta2011 used similar large factor models, with a large cross-section of macroeconomic time series, to forecast per capita growth, inflation, and the interest rate. Confidence indices were also included in the dataset of 267 quarterly series. 
+
+@Kabundi2016 included the BER Consumer Confidence Index (BER CCI) and the SACCI BCI to forecast real GDP growth in South Africa in real time. They argue that the timeliness of the variables was especially important. The BER CCI and the SACCI BCI are published four and two weeks before the end of the reference quarter. This implies that soft data can be useful in forecasting exercises. 
+
+In this chapter, the relationship between business confidence and real activity in South Africa is examined. An attempt is made to establish whether there is a significant positive relationship between the indicators and real GDP growth, the timing of this relationship, and whether it remains significant after taking other economic variables into account. The following section turns to the literature on uncertainty. 
+
+#Data: Business Tendency Surveys
+Business tendency surveys are conducted to obtain qualitative information that is useful in monitoring the current business situation and in forecasting developments in the business cycle. This is reflected in the extensive use of confidence measures as leading indicators of the business cycle [@OECD2003]. Qualitative surveys often can be completed more easily and quickly than quantitative surveys. The results can be published before official statistics, which are often released with a significant delay. Survey data have the advantage of focusing on the assessments and expectations of economic developments by relevant economic decision makers. Variables related to expectations may reflect cyclical changes earlier than corresponding quantitative statistical series (i.e. expectations lead to plans that are implemented and which will then be picked up in quantitative statistics). 
+
+##The BER Business Tendency Surveys
+```{r readdata, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+setwd("C:\\Users\\Laurie\\OneDrive\\Documents\\BING\\BER Confidence Surveys\\Sentiment")
+
+suppressMessages(library(ggplot2))
+suppressMessages(library(plyr))
+suppressMessages(library(dplyr))
+suppressMessages(library(reshape2))
+suppressMessages(library(stargazer))
+suppressMessages(library(xtable))
+suppressMessages(library(scales))
+suppressMessages(library(quantmod))
+suppressMessages(library(vars))
+suppressMessages(library(tseries))
+suppressMessages(library(urca))
+
+GDPdata <- read.csv("GDP Data2.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+GDPdata$Date <- as.Date(GDPdata$Date, format = "%Y/%m/%d")
+
+datums <- read.csv("dates2.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+datums$Datum <- as.Date(datums$Datum, format = "%Y/%m/%d")
+
+##For Grpahing Business cycles
+recessions.df = read.table(textConnection(
+    "Peak, Trough
+    1990-12-31, 1993-05-30
+    1996-11-30, 1999-08-31
+    2007-11-30, 2009-08-31
+    2013-11-30, 2016-12-31"), sep=',',
+    colClasses=c('Date', 'Date'), header=TRUE)
+
+realGDP <- read.csv("RealGDP2.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+realGDP$Date <- as.Date(realGDP$Date, format = "%Y/%m/%d")
+
+GDPgrowth4 <- as.data.frame(sapply(log(realGDP[,-1]), diff, lag =4))
+GDPgrowth1 <- as.data.frame(sapply(log(realGDP[,-1]), diff, lag =1))
+
+
+##====================================##
+## READING IN THE DATA ##
+##====================================##
+BER.M <- read.csv("Manufacturing_new faktor.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+BER.M$Faktor <- BER.M$Gewig * BER.M$Sectorw
+BER.M <- BER.M[,c(1:5,8:75)]
+colnames(BER.M)[1:7] <- c("region","id","sector","weight","turnover","factor","surveyQ")
+exclude <- c("2016Q4","2017Q1","2017Q2")
+BER.M <- subset(BER.M, !(surveyQ %in% exclude))
+BER.M$factor <- as.numeric(as.character(BER.M$factor))
+
+##===============================##
+BER.B <- read.csv("Building_93Q2-17Q2.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+colnames(BER.B)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
+
+BER.B$factor[BER.B$sector ==5000] <- 0.30
+BER.B$factor[BER.B$sector ==5010] <- 0.15
+BER.B$factor[BER.B$sector ==6000] <- 0.10
+BER.B$factor[BER.B$sector ==6010] <- 0.15
+BER.B$factor <- BER.B$factor*BER.B$weight
+
+BER.B$temp <- NULL
+for(i in 1:nrow(BER.B)) {
+    ifelse(substr(BER.B$surveyQ[i], 1, 1)==9, 
+           BER.B$temp[i] <- paste0("19",BER.B$surveyQ[i],sep=""),
+           BER.B$temp[i] <- paste0("20",BER.B$surveyQ[i],sep=""))
+}
+BER.B$surveyQ <- BER.B$temp
+BER.B <- BER.B[,-ncol(BER.B)]
+BER.B$surveyQ <- factor(BER.B$surveyQ)
+BER.B <- subset(BER.B, !(surveyQ %in% exclude))
+
+##===============================##
+skoon <- function(data) {
+    colnames(data)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
+    data$surveyQ <- toupper(data$surveyQ)
+    data$sector <- factor(data$sector) #could include labels
+    data$id <- factor(data$id)
+    data$region <- factor(data$region)
+    
+    data$temp <- NULL
+    for(i in 1:nrow(data)) {
+        data$temp[i] <- paste0("20",data$surveyQ[i],sep="")
+    }
+    data$surveyQ <- data$temp
+    data <- data[,-ncol(data)]
+    data$surveyQ <- factor(data$surveyQ)
+    
+    data$weight <- replace(data$weight, data$weight==0, 1)
+    data$factor <- data$weight*0.10
+    
+    #data <- data[data$Latecomer == FALSE | is.na(data$Latecomer),]
+    data <- data[,1:(ncol(data)-6)]
+    
+    data <- subset(data, !(surveyQ %in% exclude))
+    return(data)
+}
+
+
+arc <- skoon(read.csv("Argitekte.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
+civil <- skoon(read.csv("Civils.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
+qs <- skoon(read.csv("QS.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
+
+##============================##
+skoon <- function(data) {
+    colnames(data)[1:7] <- c("region","id","sector","weight","sectorw","factor","surveyQ")
+    data$surveyQ <- toupper(data$surveyQ)
+    data$sector <- factor(data$sector) #could include labels
+    data$id <- factor(data$id)
+    data$region <- factor(data$region)
+    
+    data$temp <- NULL
+    for(i in 1:nrow(data)) {
+        ifelse(substr(data$surveyQ[i], 1, 1)==9, 
+               data$temp[i] <- paste0("19",data$surveyQ[i],sep=""),
+               data$temp[i] <- paste0("20",data$surveyQ[i],sep=""))
+    }
+    data$surveyQ <- data$temp
+    data <- data[,-ncol(data)]
+    data$surveyQ <- factor(data$surveyQ)
+    
+    data$sectorw <- as.numeric(as.character(data$sectorw))
+    data$factor <- as.numeric(as.character(data$factor))
+    data$factor <- data$weight*data$sectorw
+    
+    #data <- data[data$Latecomer == FALSE | is.na(data$Latecomer),]
+    data <- data[,1:(ncol(data)-5)]
+    
+    data <- subset(data, !(surveyQ %in% exclude))
+    return(data)
+}
+
+BER.R <- skoon(read.csv("Retail_92Q2-17Q2.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
+BER.W <- skoon(read.csv("Wholesale_92Q2-17Q2.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
+BER.V <- skoon(read.csv("Motor_92Q2-17Q2.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
+BER.V$factor <- BER.V$weight*0.2
+
+##===============================##
+BER.S <- read.csv("Services_05Q2-17Q2.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+colnames(BER.S)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
+
+BER.S$temp <- NULL
+for(i in 1:nrow(BER.S)) {
+    BER.S$temp[i] <- paste0("20",BER.S$surveyQ[i],sep="")
+}
+BER.S$surveyQ <- BER.S$temp
+BER.S <- BER.S[,-ncol(BER.S)]
+BER.S$surveyQ <- factor(BER.S$surveyQ)
+
+BER.S$sector[BER.S$sector==6000] <- 6001
+BER.S$sector[BER.S$sector==6010] <- 6011
+
+catering <- c(6001,6020,6030,6011)
+transport <- c(7020,7010,7070,7090,7080,7060,7000,7040,7100,7120,7110,7050)
+realestate <- c(8000,8010)
+business <- c(8040,8080,8070,8090,8020,8060,8050,8030)
+other <- c(8150,8120,8210,8180,8140,8160,8190,8100,8200,8230,8130,8110,8170,8240,8220)
+community <- c(9000,9010,9030,9050,9060,9020,9040)
+
+BER.S$factor[BER.S$sector %in% catering] <- 0.15
+BER.S$factor[BER.S$sector %in% transport] <- 0.15 
+BER.S$factor[BER.S$sector %in% realestate] <- 0.15
+BER.S$factor[BER.S$sector %in% business] <- 0.05 
+BER.S$factor[BER.S$sector %in% other] <- 0.45 
+BER.S$factor[BER.S$sector %in% community] <- 0.05 
+
+BER.S$factor <- BER.S$factor*BER.S$weight
+BER.S <- subset(BER.S, !(surveyQ %in% exclude))
+
+#==================
+#AGGREGATING
+#==================
+#Create an unweighted stacked version of all the surveys
+#Match the same or similar questions from the different surveys (see survey question examples)
+#Create NAs for missing questions
+tempBER.M <- cbind(BER.M[,c("id","sector","weight","factor","surveyQ","Q20","Q7A","Q7P","Q1A","Q1P","Q8A","Q8P",            "Q4A","Q4P")],"Manufacturing")
+colnames(tempBER.M) <-    c("id","sector","weight","factor","surveyQ", "Q1","Q2A","Q2P","Q3A","Q3P","Q4A","Q4P",            "Q6A","Q6P",  "Sector")
+tempBER.M[,c("Q5A","Q5P")] <- NA
+tempBER.B <- cbind(BER.B[,c("id","sector","weight","factor","surveyQ", "Q1","Q2A","Q2P","Q3A","Q3P","Q4A","Q4P","Q5A","Q5P")],            "Construction")
+colnames(tempBER.B) <-    c("id","sector","weight","factor","surveyQ", "Q1","Q2A","Q2P","Q3A","Q3P","Q4A","Q4P","Q5A","Q5P",              "Sector")
+tempBER.B[,c("Q6A","Q6P")] <- NA
+tempBER.R <- cbind(BER.R[,c("id","sector","weight","factor","surveyQ", "Q1","Q2A","Q2P","Q3A","Q3P","Q5A","Q5P","Q8",       "Q4A","Q4P")],"Trade")
+colnames(tempBER.R) <-    c("id","sector","weight","factor","surveyQ", "Q1","Q2A","Q2P","Q3A","Q3P","Q4A","Q4P","Q5A",      "Q6A","Q6P"  ,"Sector")
+tempBER.R[,c("Q5P","Q6A","Q6P")] <- NA
+tempBER.W <- cbind(BER.W[,c("id","sector","weight","factor","surveyQ", "Q1","Q2A","Q2P","Q3A","Q3P","Q5A","Q5P","Q8",       "Q4A","Q4P")],"Trade")
+colnames(tempBER.W) <-    c("id","sector","weight","factor","surveyQ", "Q1","Q2A","Q2P","Q3A","Q3P","Q4A","Q4P","Q5A",      "Q6A","Q6P"  ,"Sector")
+tempBER.W[,c("Q5P","Q6A","Q6P")] <- NA
+tempBER.V <- cbind(BER.V[,c("id","sector","weight","factor","surveyQ", "Q1","Q2A","Q2P","Q3A","Q3P",                        "Q4A","Q4P")],"Trade")
+colnames(tempBER.V) <-    c("id","sector","weight","factor","surveyQ", "Q1","Q2A","Q2P","Q3A","Q3P",                        "Q6A","Q6P"  ,"Sector")
+tempBER.V[,c("Q4A","Q4P","Q5A","Q5P")] <- NA
+tempBER.S <- cbind(BER.S[,c("id","sector","weight","factor","surveyQ", "Q1","Q2A","Q2P","Q3A","Q3P","Q4A","Q4P","Q5A","Q5P")],            "Services")
+colnames(tempBER.S) <-    c("id","sector","weight","factor","surveyQ", "Q1","Q2A","Q2P","Q3A","Q3P","Q4A","Q4P","Q5A","Q5P",              "Sector")
+tempBER.S[,c("Q6A","Q6P")] <- NA
+
+temparc <- cbind(arc[,c("id","sector","weight","factor","surveyQ", "Q1","Q6A","Q6P","Q5A","Q5P","Q2A","Q2P",                "Q4A","Q4P")],"Construction")
+colnames(temparc) <-    c("id","sector","weight","factor","surveyQ", "Q1","Q2A","Q2P","Q3A","Q3P","Q4A","Q4P",              "Q6A","Q6P","Sector")
+temparc[,c("Q5A","Q5P")] <- NA
+tempqs <- cbind(qs[,c("id","sector","weight","factor","surveyQ", "Q1","Q6A","Q6P","Q5A","Q5P","Q2A","Q2P",                "Q4A","Q4P")],"Construction")
+colnames(tempqs) <-    c("id","sector","weight","factor","surveyQ", "Q1","Q2A","Q2P","Q3A","Q3P","Q4A","Q4P",              "Q6A","Q6P","Sector")
+tempqs[,c("Q5A","Q5P")] <- NA
+tempcivil <- cbind(civil[,c("id","sector","weight","factor","surveyQ", "Q1","Q2A","Q2P","Q3A","Q3P","Q4A","Q4P","Q5A","Q5P")],            "Construction")
+colnames(tempcivil) <-    c("id","sector","weight","factor","surveyQ", "Q1","Q2A","Q2P","Q3A","Q3P","Q4A","Q4P","Q5A","Q5P",              "Sector")
+tempcivil[,c("Q6A","Q6P")] <- NA
+
+BER <- tempBER.M
+BER <- rbind(BER,tempBER.B,tempBER.R,tempBER.W,tempBER.V,tempBER.S,temparc,tempqs,tempcivil)
+BER <- BER[,c(15,1:12,16,17,13,14)]
+rm(tempBER.M,tempBER.B,tempBER.R,tempBER.W,tempBER.V,tempBER.S,temparc,tempqs,tempcivil)
+rm(BER.M,BER.B,BER.R,BER.W,BER.V,BER.S,arc,qs,civil)
+
+#Clean data
+BER$surveyQ <- toupper(BER$surveyQ)
+BER$sector <- factor(BER$sector) #could include labels
+BER$id <- factor(BER$id)
+BER$surveyQ <- factor(BER$surveyQ)
+
+# replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
+for(i in 7:ncol(BER)) {
+    BER[,i] <- replace(BER[,i], BER[,i]==2, 0)
+    BER[,i] <- replace(BER[,i], BER[,i]==3,-1)
+}
+BER$Q1 <- replace(BER$Q1, BER$Q1==0,-1) # replace 0 (Unsatisfactory) responses with -1
+
+#Maak factor reg
+Ej <- aggregate(BER$weight, by=list(BER$surveyQ,BER$sector), FUN=sum)
+BER <-  merge(BER, Ej, by.x=c("surveyQ","sector"), by.y=c("Group.1","Group.2"))
+BER$factorn <- BER$factor/BER$x
+BER <- BER[,c(3,4,2,5,6,19,1,7:17)]
+```
+
+The BER, a research institute attached to Stellenbosch University, has been conducting business tendency surveys in South Africa since March 1954. The BER's quarterly business surveys are similar to the business tendency surveys conducted all over the world, including the European Commission Business Tendency Surveys, the German Ifo Business Climate Survey, the Federal Reserve Bank of Philadelphia's Business Outlook Survey, and the Bank of Japan's Tankan Survey [@OECD2003].
+
+During the last month of each quarter, questionnaires are sent to 1,000 firms in each of the manufacturing and services sectors and 1,400 firms in each of the construction and trade sectors (i.e. retail, wholesale and motor vehicles). The questionnaires are completed by senior executives of the firms. The questions have remained largely unchanged since inception, and include those on current and expected future developments regarding, among others, sales, orders, inventories, prices, employment, and constraints. For the most part, the survey answers fall into three categories: 'up', 'the same' or 'down'. 
+
+Table 1 reports the details of the survey data. The sample runs from 1992Q1 to 2016Q3, although the survey of the services sector started only in 2005Q2. Figure 1 illustrates the number of respondents over time per sector. Around 1,000 completed questionnaires are received every quarter, leading to an overall sample size of 119,438. All of the surveys have a few missing quarters, when the microeconomic data was lost. The overall panel sizes and response rates have remained relatively stable over time, although the response rates are relatively low by international standards [@Kershoff2015]. 
+
+```{r table1, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+tafel <- aggregate(BER$id, by=list(BER$surveyQ,BER$Sector), FUN = length)
+tafel <- cbind(obs=aggregate(tafel$x, by=list(tafel$Group.2), FUN = sum ),ave=aggregate(tafel$x, by=list(tafel$Group.2), FUN = mean ))[,-3]
+tafel$obs.Group.1 <- as.character(tafel$obs.Group.1)
+tafel$Resp <- tafel$ave.x/c(1000,1400,1400,1000)
+tafel$Sample <- c("1992Q1-2016Q3","1993Q2-2016Q3","1992Q2-2016Q3","2005Q2-2016Q3") 
+tafel$Missing <- c("1997Q4,2000Q1,2005Q4","1993Q4,1998Q3,2000Q2,2005Q4","1992Q4,1993Q3,2005Q4","2005Q4") 
+tafel <- tafel[,c(1,5,2:4,6)]
+tafel <- rbind(tafel,c("Total","1992Q1-2016Q3",nrow(BER),mean(aggregate(BER$id, by=list(BER$surveyQ),FUN = length)[,2]),
+                       mean(aggregate(BER$id, by=list(BER$surveyQ), FUN = length)[,2])/4800,"2005Q4"))
+tafel[, c(4:5)] <- sapply(tafel[, c(4:5)], as.numeric)
+colnames(tafel) <- c("Sector","Sample","Total Obs","Obs/Quarter", "Response Rate","Missing Quarters")     
+xt <- xtable(tafel, caption="Sample characteristics", digits=c(2), align= c('r', "p{3cm}", rep('r',5) ) )
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8,
+      include.rownames=FALSE)
+```
+
+```{r figure1, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="The number of respondents over time per sector (1992Q1-2016Q3)"}
+BERplot <- aggregate(BER$id, by=list(BER$surveyQ,BER$Sector), FUN = length)
+BERplot$Group.1 <- as.Date(as.yearqtr(BERplot$Group.1, format = "%YQ%q"), frac = 1)
+g <- ggplot(BERplot, aes(x=Group.1, y=x,fill=Group.2))
+g <- g + geom_bar(stat="identity")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + scale_fill_discrete(name="Sector")
+g <- g + scale_y_continuous(labels=comma)
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + ylab("Number of Respondents") + xlab(" ")
+g <- g + guides(fill = guide_legend(reverse = TRUE))
+g
+```
+
+The sample of firms remains relatively stable from one survey to the next, effectively creating a panel. The panel is partly fixed and partly rotating, as inactive firms that fail to respond for a period of two years are removed and replaced with new firms. The fixed part reflects the opinions of the same firms over time, which ensures that the results remain comparable between surveys. The results are more likely to reflect changes in the variables under consideration than changes in the sample from one survey to the next [@Kershoff2002]. 
+
+Stratified deliberate sampling is used to design the BER's survey panels, which is the international norm. Participants are selected to be representative of particular sectors, regions and firm sizes. The respondents are reviewed periodically to ensure reasonable representation of the population universe. The exact number of firms in the universe is unknown to the BER, as censuses of the business sector are not conducted regularly and the BER does not have access to the National Business Register [@Kershoff2002]. Practical experience has shown that non-random samples can give acceptable results in conducting these types of surveys [@OECD2003]. 
+
+The BER makes no provision for firms that were not selected or did not respond during sampling, implicitly assuming that the non-participating or non-responding firms have the same distribution as the responding firms for the period. This corresponds to with the 'missing at random' assumption suggested by the @OECD2003. @Kershoff2015 argued that this is a reasonable assumption, given that the responses cannot vary infinitely, and the same factors influence firms in the same sector. He found evidence for this assumption when the inclusion of latecomers had almost no effect on the volatility and tracking record of the results, even at lower levels of aggregation.[^24]
+
+[^24]: The BER does not adjust individual weights for changes in the response pattern. No calibration or post-stratification is carried out to correct the estimated value. Missing items (specific questions) and missing responses (questionnaires) are not imputed, and the results are not revised to provide for questionnaires received after the results have been processed (Kershoff 2015).
+
+Panel sizes and response rates determine the representativeness of the sample. In order to be representative, panels have to include a minimum number of participants, which depends on the level of aggregation and the size of the population universe. The results often remain valid even if the sample size is small and the response rate relatively low. According to the @OECD2003, even as few as 30 respondents might be sufficient to obtain an acceptable level of precision for each stratum. This is because the variance of responses for ordinal-scaled data based on a stable panel is lower than for quantitative data derived from independent surveys. Moreover, certain activities are dominated by a few large firms. Representativeness therefore has a smaller impact on qualitative survey results than on quantitative surveys results. A panel that is not fully representative will probably produce similar results to a fully representative one [@Kershoff2002]. 
+
+The sample sizes illustrated in Figure 3.1 therefore seem adequate to uncover trends in the data. @Kershoff2002 found that the degree of representation of the BER's construction and trade panels adequately reflects the universes, taking response rates into account and comparing the composition of the survey panels with census and other official data. However, the number of participants per subsector may be too low to consider subsectors or provinces as sub-panels. The survey responses are therefore not disaggregated further into subsectors below.
+
+###The BER Business Confidence Indicator
+The BER uses these business tendency surveys to construct its business confidence indicator. The BER BCI has proved useful as a leading indicator of the business cycle and economic growth in South Africa. It is used as one of twelve leading indicator series by the SARB to date official turning points in the business cycle. @Laubscher2014 also found that it can improve estimates of cyclical turning points. This is particularly useful in view of the early availability of the index. The BER index results for a particular quarter are available approximately two months before the official GDP estimates [@Kershoff2000]. 
+
+In calculating the business confidence indicator, the most important issues are which survey questions to use and the weightings applied to the responses. The BER BCI is constructed from a specific question (Q1) that appears in all of the surveys: "Are prevailing business conditions: satisfactory, or unsatisfactory?" The BCI is the weighted percentage of respondents who rated prevailing business conditions as 'satisfactory' in a particular sector. The BCI is therefore a rating of business conditions at a specific point in time.
+
+According to @Kershoff2000 there are two reasons for the use of this one question to construct the confidence indicator. Firstly, it is reasonable to assume that respondents who are satisfied with business conditions will have more confidence than those experiencing unsatisfactory conditions. Secondly, respondents take a variety of factors into account when rating prevailing business conditions, which solves the problem of weighting different factors [@Kershoff2000]. The @OECD2003 argues that responses on general business conditions are usually based on a combination of factors, such as order book appraisals, expectations of interest rates, exchange rates and political developments.
+
+In line with international best practice, all survey responses are weighted (except for the building survey). Each response is multiplied by a factor, which is calculated as the product of a firm size weight and a subsector size weight (except for the motor trade, where there are no subsectors). Each firm receives a weighting in relation to turnover, or the size of workforce in the case of manufacturing.[^25] The subsector size weights are based on the composition of production or sales in each subsector, as calculated by StatsSA. The BER does not apply sample weights, as it does not have access to the National Business Register and cannot calculate selection probabilities.[^26] Responses are weighted by firm size and subsector size to obtain five sectoral indices: manufacturing, building contractors (other construction subsectors are omitted), retailers, wholesalers and new vehicle dealers. The BER BCI is calculated as the unweighted mean of the five sectoral indices (services are excluded altogether).
+
+[^25]: Unlike quantitative surveys, where weighting is usually inherent in the variables, weighting is necessary for qualitative surveys, because the variables typically collected do not inherently represent the size of a business. The size weights are necessary because the economic significance of the responses should reflect the size of the firm (UN 2015). 
+
+[^26]: The BER does not apply sample weights (i.e. the inverse of the probability of selection). This assumes that the probability of selection is the same for all units, which would be the case if firms were selected randomly (OECD 2003).
+
+The BER BCI is a measure of current conditions, based on a single question, with survey responses weighted in an ad hoc manner. The business surveys contain a number of questions, all of which potentially have an impact on business confidence. A composite indicator can be calculated by combining the responses to a number of questions, which is often done internationally [@ECB2013]. Moreover, the BER BCI reflects confidence in current conditions, rather than forward-looking confidence. As the surveys contain questions on expectations, forward-looking responses may also provide valuable information. One of the aims in this chapter is to build on the BER BCI by calculating composite weighted indicators of confidence on current and expected conditions, at a sectoral level and in aggregate. The BER business tendency surveys are also uniquely suited to obtaining measures of uncertainty. Another aim in this chapter is to construct composite weighted forward-looking indicators of uncertainty, at the sectoral and aggregate levels. In the following section, the methodology for constructing these indicators of sentiment is set out.
+
+##Methodology
+This section provides the methodology for calculating the sentiment indicators based on the microdata from the BER business tendency surveys. Indicators of sentiment are constructed from the first and second moments of responses to business tendency survey questions. Two sets of composite confidence indicators are calculated: the first as the weighted cross-sectional mean of responses to questions on current business conditions and the second as the weighted cross-sectional mean of responses to questions on expected future business conditions [@OECD2003]. Three sets of composite uncertainty indicators are calculated. The first is the scaled weighted cross-sectional standard deviation of forward-looking responses. The second is the weighted cross-sectional mean of individual firm forecast errors, and the third is the weighted cross-sectional standard deviation of firm forecast errors [@Arslan2011; @Bachmann2013; @Girardi2015].
+
+###Confidence
+In this chapter, a distinction is made between confidence indicators of current conditions and of expected conditions. Both the Conference Board and the University of Michigan make this distinction and report two consumer confidence indices: a current conditions component and an expectations component [@Ludvigson2004]. 
+
+Formally, one can define a $k$-period-ahead expectations measure of confidence $(C_t^k)$ at time $t$ as: $C _t^k = E_t f(\Delta^h Y_{t+k})$, where $Y_{t+k}$ is a measure of real activity (usually output) at time $t+k$ and $\Delta^h Y_{t+k} = Y_{t+k} - Y_{t+k-h}$. A common definition of $f(\Delta^h Y_{t+k})$ relies on an up, unchanged, or down classification (e.g. Q2A in the BER survey): 
+$$ f(\Delta^h Y_{t+k}) = \begin{cases} -1,& \text{if } \Delta^h Y_{t+k} < 0\\ 0,& \text{if } \Delta^h Y_{t+k} = 0\\ 1,& \text{if } \Delta^h Y_{t+k} > 0\\ \end{cases} $$
+
+An alternative would be to use a binary classification (e.g. Q1 in the BER survey): $$ f(\Delta^h Y_{t+k}) = \begin{cases} -1,& \text{if } \Delta^h Y_{t+k} < a\\ 1,& \text{if } \Delta^h Y_{t+k} \geq a\\ \end{cases} $$ where $a$ is determined by the preferences of the agent. 
+
+In this chapter, a distinction is made between indicators of current conditions $C_t^k$ when $k=0$, and indicators of expected conditions $C_t^k$ when $k=1$. The confidence measure for current conditions $C^0_t$ is referred to as 'current', as it is reflects confidence about the current quarter (in the second month of the quarter). The confidence measure for expected conditions $C^1_t$ is referred to as 'expected', as it is reflects confidence about the following quarter.
+
+The BER business tendency surveys make this distinction possible by asking for separate responses relating to current and expected future conditions. The questions on current conditions (e.g. Q2A) all have the following format: "(Estimated development in current quarter) Compared with the same quarter of a year ago, are general business conditions: better, the same, or poorer?" In other words, these questions ask whether the factor under consideration in time $t$ is better, the same, or poorer, compared with $t-4$. 
+
+The forward-looking questions (e.g. Q2P) all have the following format: "(Expected development in next quarter) Compared with the same quarter of a year ago, will general business conditions be: better, the same, or poorer?" As with the questions on current conditions, these questions ask whether the factor under consideration in time $t+1$ is expected to be better, the same, or poorer, compared with $t-3$. Responses are relative to the same quarter of the previous year, which corresponds with year-on-year growth rates. 
+
+Although the survey questions imply that seasonal adjustment is not required, a common challenge is that respondents may not use the correct reference period when answering the question [@OECD2003]. For example, answers to the forward-looking questions may compare expected outcomes in the next quarter $t+1$ with period $t$, instead of with period $t-3$. In many cases, the time series of balances show some residual seasonality. The indicators are therefore adjusted for seasonality [@UN2015]. The results are similar without seasonal adjustments.
+
+As discussed above, confidence indicators are almost always based on balance statistics, which present a single figure summarising the responses of all participants to a particular question [@Santero1996]. It is the cross-sectional mean of survey responses if the standard quantification system is used: 'better' is quantified by +1, 'the same' by 0, and 'poorer' by -1. Confidence in period $t$ relating to current conditions $C_t^{0}$, and confidence in period $t$ relating to expected conditions $C_t^{1}$, may be defined as: 
+$$C^{0}_t = \frac{1}{W_t} \sum^N_{i=1} w_{it} E_t f(\Delta^4 Y_{i,t })$$ 
+$$C^{1}_t = \frac{1}{W_t} \sum^N_{i=1} w_{it} E_t f(\Delta^4 Y_{i,t+1}) ,$$ 
+where $Y_{i,t+k}$ is again a measure of real activity at time $t+k$ for firm $i = 1,...,N$; $\Delta^h Y_{i,t+k} = Y_{i,t+k} - Y_{i,t+k-h}$ for firm $i$; $w_{it}$ is the weight that each firm $i$ receives at time $t$; and $W_{t} = \sum^N_{i=1}w_i$ is the sum of the weights. 
+
+The weights are calculated as: $w_{it} = f_{it} s_{jt} / F_{jt} ,$ where $f_{it}$ the firm size weight (i.e. the inner weight reflecting turnover or number of employees) for firm $i$ at time $t$; $s_{jt}$ is the subsector weight (i.e. the outer weight reflecting the share of total value added) for subsector $j$ at time $t$; and $F_{jt} = \sum^N_{i=1} f_{it}$ is the total firm weight for subsector $j$ at time $t$. These weights are equivalent to an explicit two-step weighting procedure, whereby weighted means are calculated for each subsector separately (using firm size weights), and then aggregated with the subsector weightings [@UN2015]. The BER uses similar weights, except that the weightings equal the product of firm and subsector weights $w_{it} = f_{it} s_{jt}$, without dividing by the total firm weight for the subsector $F_{jt}$.
+
+The weighted means are calculated for each question separately. The BER business surveys contain a number of questions that may be useful in gauging business sentiment in South Africa. These include questions on general business conditions, production, orders placed, employment, and profitability. Most international institutions calculate composite confidence indicators by combining the responses to a number of questions [@ECB2013]. Composite indicators react to various sources of economic fluctuations, while being resilient to fluctuations affecting single components. They may therefore exhibit fewer false alarms and fewer missed turning points than indicators based on a single question. 
+
+This chapter therefore combines the responses to a number of questions in the BER surveys to calculate composite indicators. For consistency, the composite indicators are derived from questions that are present in most of the sectoral business surveys. Table 3.2 reports the questions included in each of the sectoral surveys. These questions cover six types of variables, namely business conditions, activity (production or sales),[^27] orders placed, employment, and profitability. Not all of the variables are covered in all the surveys. The measure of confidence about current conditions also include the question (Q1) on business satisfaction used to calculate the BER BCI. The composite sectoral indicators are calculated as the average of the weighted balances for the questions for each sector, as reported in Table 3.2. The results were very similar when the different questions were combined using principal components rather than averages. The sectoral indicators are then weighted by GDP share to form the overall aggregate composite indicators [@UN2015].
+
+[^27]: The wording of the questions is adopted to the characteristics of each sector (Kershoff 2015). Activity is referred to as the 'volume of production' in the manufacturing survey, 'volume of building activity' in the construction survey, 'volume of sales' in the trade surveys, and 'volume of business' in the services survey.
+
+\begin{table}[]
+\centering
+\caption{Survey questions used by sector}
+\label{my-label}
+\begin{tabular}{|l|r|r|r|r|}
+\hline
+\textbf{Survey Question} & \textbf{Manufacturing} & \textbf{Construction} & \textbf{Trade} & \multicolumn{1}{l|}{\textbf{Services}} \\ \hline
+Business Conditions      & X                      & X                     & X              & X                                      \\ \hline
+Activity                 & X                      & X                     & X              & X                                      \\ \hline
+Employment               & X                      & X                     & X              & X                                      \\ \hline
+Profitability            &                        & X                     & X              & X                                      \\ \hline
+Orders Placed            & X                      &                       & X              &                                        \\ \hline
+\end{tabular}
+\end{table}
+
+###Weighing the Survey Responses
+In this section the weights used to calculate the sentiment indicators are presented. As discussed above, the weights for each respondent consist of a firm size weight, reflecting turnover, and a subsector weight, reflecting the share of value added for the subsector. The weights are calculated as: $w_{it} = f_{it} s_{jt} / F_{jt} ,$ where $f_{it}$ the firm size weight for firm $i$ at time $t$; $s_{jt}$ is the subsector weight for subsector $j$ at time $t$; and $F_{jt} = \sum^N_{i=1} f_{it}$ is the total firm weight for subsector $j$ at time $t$. These weights are equivalent to an explicit two-step weighting procedure, whereby weighted means are calculated for each subsector separately (using firm size weights), and then aggregated with the subsector weights [@UN2015].
+
+Firm size weights were recorded by the BER for all respondents. The firm size weights are divided into nine categories. In this chapter, these firm size weights are applied to all the responses in all of the subsectors. In contrast, the BER uses exponential firm weights based on the nine categories, except for the building and motor vehicle surveys, where no weights are applied. 
+
+Figure 3.2 to Figure 3.5 illustrate the subsector weights for each of the four main sectors: manufacturing, construction, trade and services. The weights for the manufacturing subsectors are updated periodically by the BER, based on the composition of production or sales in each subsector, as calculated by StatsSA. The subsector weights are cleaned versions of those used by the BER in calculating its Manufacturing BCI.
+
+```{r manweights, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+
+```
+
+```{r figure2, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Subsector weights applied in the manufacturing sector"}
+
+```
+
+Subsector weights are not recorded by the BER for the construction sector. The BER Building BCI is based on the unweighted responses for contractors only. In this chapter, the relative subsector weights are set equal to the average number of respondents for each subsector over the period. The results are similar when using an equal weighting procedure. The microdata for architects, quantity surveyors and civil engineers are only available from 2001Q1.
+
+```{r buildweights, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+
+```
+
+```{r figure3.3, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Subsector weights applied in the construction sector"}
+
+```
+
+The BER also updates the weights for the retail and wholesale subsectors periodically. The weights for these subsectors in this chapter are the same as those used by the BER in calculating its Retail and Wholesale BCIs. The BER Motor Vehicle BCI does not receive a subsector weighting. The BER assumes an equal weighting for the retail, wholesale and motor vehicle subsectors when calculating its total BCI. In this chapter, the relative weights are set equal to the average number of respondents for each subsector over the sample period. The results are similar when using an equal weighting procedure.
+
+```{r tradeweights, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+
+```
+
+```{r figure3.4, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Subsector weights applied in the trade sector"}
+
+```
+
+Subsector weights are not recorded by the BER for the services sector and the BER does not publish a Services BCI. In this chapter, the weights are set equal to the average number of respondents for each subsector over the sample period, although the results are similar when using equal weights. 
+
+```{r serveweights, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+
+```
+
+```{r figure3.5, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Subsector weights applied in the services sector"}
+
+```
+
+Figure 3.6 illustrates the GDP share weights that are used in aggregating the four sector indicators to calculate the aggregate indicators. The BER BCI, in contrast, is a simple equal weighted average of the sectoral indicators for manufacturing, contractors, retail, wholesale, and motor vehicles.  
+
+```{r GDPweights, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+
+```
+
+```{r figure3.6, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="GDP share weights applied to the main sectors"}
+
+```
+
+Naturally, there are other ways to weigh the responses, but experience has shown that the balances are not very sensitive to the choice of weighting procedure [@OECD2003]. Indeed, in this case the specific weighting procedure turns out to have little impact on the confidence indices. The unweighted versions of the indicators, calculated by stacking all of the available responses from all the surveys (i.e. completely unweighted), are very similar to the weighted versions. The application of the BER weights also provides similar results.  The specific weighting procedure adopted therefore does not significantly alter the results.
+
+This confirms the findings by @Kershoff2015, who tested alternative weighting procedures: a different allocation of firm size weights; the introduction of dynamic individual weights (post-stratification), to provide for changes in response patterns (to handle non-responses); the application of a two-step weighting procedure; the inclusion of latecomers to increase the number of responses; and the use of different sector size weights for export variables. The findings showed that the balance statistics were not sensitive to the use of alternative weighting procedures. The following section presents the confidence and uncertainty indicators.
+
+##Results: Confidence
+This section presents the composite sectoral and aggregate business confidence indicators for South Africa. Simple linear interpolation is used for the few missing quarters. The validity of the indicators is assessed by comparing them with existing measures of confidence for South Africa. The indicators are then evaluated according to their comovement with real GDP growth (i.e. their tracking record), to assess whether they improve on the existing indicators of confidence.
+
+###Confidence Indicators
+```{r confidence, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+
+```
+
+Figure 3.7 illustrates the weighted sectoral confidence indicators for current conditions (current) and expected conditions (expected). The confidence indicators on expected conditions lead the indicators on current conditions in each of the sectors, with turning points generally before the current conditions measures. This is what one would expect, given that the expected conditions indicators are based on forward-looking questions. 
+
+The indicators appear to capture cyclical movements in the sectors. In general, they display an increase in the early 1990s until just after the first Democratic Elections in 1994Q2. They show a sustained decrease from 1995 into the recession of 1997-1998, associated with the East Asian and Russian crises. After troughs around the start of 1999, the indicators increase up to the global financial crisis at the end of 2007. During this extended upswing phase, the manufacturing and trade sectors reflect the two ambiguous periods in 2001 and 2003, when contractions in the SARB leading and coincident indicators obliged an evaluation of possible reference turning points [@Venter2005a]. The construction sector exhibited a particularly strong and sustained increase in confidence during this upswing phase, possibly due to the construction projects associated with hosting the FIFA World Cup.
+
+The global financial crisis was followed by a large decline in the indicators for all of the sectors, which continued into the subsequent Great Recession. There was a relatively quick recovery in confidence in the manufacturing and trade sectors. Confidence in the construction sector showed a more gradual recovery, especially in confidence about current conditions (current). In the services sector, confidence about current conditions showed a slight recovery and then continued to decline, whereas confidence about expected conditions was quite erratic. The indicators for the other sectors exhibit a gradual decrease from around 2012, continuing into the downswing phase at the end of the sample period.
+
+```{r figure3.7, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted sectoral confidence indicators on current and expected conditions"}
+
+```
+
+Figure 3.8 illustrates the weighted aggregate confidence indicators on current and expected conditions. The shaded areas denote the recessionary periods according to the official turning points of the SARB. The indices follow a similar cyclical trend over the period and are very highly correlated, as is reported in Table 3.4, below. 
+
+The confidence indicator on expected conditions leads changes in the confidence indicator on current conditions to some extent. The indicators appear to match the different phases of the business cycle relatively well. Turning points are generally before the official turning points, as is discussed in more detail below. The indicators exhibit an increase following the recession of the early 1990s, with peaks around 1995. There is a prolonged decrease into the recession of 1997-1998, and a strong recovery just before the official trough in 1999. Both ambiguous periods are reflected in moderate decreases in the indicators in 2001 and 2003. Both indicators exhibit a significant decrease following the global financial crisis in 2007, and a relatively mild recovery just before the official trough in 2009. The indicators are relatively flat during the previous upswing phase (2010-2013) and decrease gradually during the downswing phase at the end of the sample period. 
+
+```{r figure3.8, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted confidence indicators on current and expected conditions"}
+
+```
+
+The survey-based confidence indicators therefore appear to be plausible and potentially useful indicators of business confidence in South Africa. The following section provides an assessment of the validity of the confidence indicators, by testing their conformity to the BER and SACCI BCIs, and evaluates the indicators in terms of their tracking record, i.e. the extent to which they track real GDP growth. 
+
+###Validity Tests and Evaluation
+This section provides a comparison of the characteristics of the confidence indicators on current and expected conditions to the two existing South African business confidence indices, the BER BCI and the SACCI BCI. Correlations are used to analyse the tracking record of the indicators with respect to their reference series (i.e. real GDP growth). The relationships between turning points is reported, to assess their usefulness as leading indicators of the business cycle. 
+
+####Correlations between confidence indicators and real GDP growth
+Figure 3.9 compares the confidence indicators on current and expected conditions with the BER and SACCI BCIs, as well as real GDP growth. Real GDP growth is calculated as annual quarter-on-quarter growth rates, e.g. 2015Q1 over 2014Q1, which corresponds to the reference period in the BER surveys. The official recessionary periods are shaded, and the indicators are standardised for plotting. The indicators appear to be strongly pro-cyclical, and follow real GDP growth closely. 
+
+```{r figure3.9, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Confidence indicators compared to real GDP growth"}
+
+```
+
+The tracking record of the indicators is measured by their correlation with the corresponding quantitative reference series. Table 3.4 reports the contemporaneous correlations of the indicators and real GDP growth. Growth rates in the SACCI BCI are used to remove unit roots and are calculated as annual quarter-on-quarter growth rates. All the indicators exhibit a significant positive correlation with one another and with real GDP growth. The current conditions confidence indicator has a higher contemporaneous correlation with real GDP growth than the BER BCI or SACCI BCI, which are also based on current conditions. One would expect indicators of current conditions to have a better tracking record than indicators of expected conditions, although the correlation of the expected conditions confidence indicator is still relatively high.
+
+```{r table3.4, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+
+```
+
+Cross-correlations can be used to illustrate the dynamic relationships between the indicators and real GDP growth. Figure 3.10 illustrates the cross-correlograms for the indicators and real GDP growth. All three survey-based measures exhibit relatively high correlations with lagged GDP growth. The highest correlation coefficient between the indicators of current conditions and real GDP growth occur contemporaneously. The confidence measure of expected conditions leads GDP growth, and exhibits the highest correlation coefficient when lagged by one period. The results imply that the indicators are all potentially useful leading or quasi-leading indicators of real activity.
+
+```{r figure3.10, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Cross-correlograms of the confidence indicators and real GDP growth"}
+
+```
+
+Figure 3.11 compares the sectoral current and expected conditions confidence indicators with the BER sectoral indicators, as well as with the corresponding real sectoral GDP growth rates. The indicators capture cyclical movements in real output over the period. Table 3.5 reports the contemporaneous correlations of the sectoral indicators and their respective sectoral real GDP growth rates. All the indicators are highly positively correlated with real sectoral GDP growth rates. For the most part, the current conditions confidence indicators display the best tracking record, with the highest correlation with the reference series. In this sense, they are an improvement on existing confidence indicators. The exception is the construction sector, where the BER Building BCI has the highest correlation. This is interesting, as the BER Building BCI includes only building contractors. 
+
+```{r figure3.11, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Sectoral confidence indicators compared to real sectoral GDP growth"}
+
+```
+
+```{r table3.5, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+
+```
+
+Figure 3.12 illustrates the cross-correlograms for the manufacturing indicators and real GDP growth in the manufacturing sector. The results are similar to the aggregate results. Again, all three survey-based measures exhibit relatively high correlations with lagged GDP growth, and the expected conditions confidence measure leads the other indicators and real GDP growth. The cross-correlograms for the other sectors are very similar, except for the services sector, where the expected conditions confidence measure has an even longer leading relationship with real GDP growth. 
+
+```{r figure3.12, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Cross-correlograms of the indicators and real GDP growth in the manufacturing sector"}
+
+```
+
+####Turning points
+An accurate leading indicator should show general conformity to economic activity (i.e. a high correlation), as well as a consistent matching of turning points with the reference cycle. Although there are too few cycles over the sample period to analyse cyclical turning points in full detail, it is still of interest to assess whether the indicators behave in a systematic way around cyclical turning points. In other words, do they systematically lead, coincide with, or lag the peaks and troughs of the business cycle. 
+
+The turning points in the indicators are determined with the so-called Bry-Boschan method. This is a non-parametric dating algorithm that automates the Burns & Mitchell approach to determining classical turning points [@Bry1971]. The algorithm identifies local minima (troughs) and maxima (peaks) in a single time series. Censoring rules in the algorithm ensure that phases and cycles have a minimum duration. The algorithm has the advantage that it is a simple, transparent, easily replicable, and provides intuitively appealing results [@DuPlessis2006]. A variant of this algorithm for dealing with quarterly data, called the BBQ method, was developed by @Harding2002. Following their suggestion, a censoring rule based on a minimum of two quarters for each phase and five quarters for a full cycle is applied. 
+
+The resulting phases are illustrated in Figure 3.13, with the recessionary periods shaded. The top panel of each graph illustrates the turning points of the confidence indices, while the bottom panel of each graph shows the official SARB reference turning points. The sample period includes three upswing phases and four downswing phases. In addition, in 2001 and 2003 the SARB indicators pointed to possible reference turning points. Although the SARB dating committee decided at the time that neither of these periods qualified, subsequent data revisions have shown that in hindsight there could have been official peaks, especially in 2003, if the dating procedure had been followed mechanically [@Venter2005a]. 
+
+```{r turn, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+
+```
+
+```{r figure3.13, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Confidence indicator turning points compared to the official SARB turning points"}
+
+```
+
+The BBQ algorithm identifies eight recessionary periods in the current conditions confidence indicator and seven in the expected conditions confidence indicator. Four of these correspond to the official downswing phases. The turning points in the BER and SACCI BCI are similar to those for the current and expected conditions confidence indicators. As the indicators are quite volatile, the default censoring rule produces a few recessions (or false positives) during the ambiguous period (2001 and 2003), and the previous upswing phase (2012). 
+
+The indicators exhibit troughs before the three official trough dates, between one and four quarters before they occurred. The indicators exhibit peaks long before the official peak dates, in some cases as much as 12 quarters before they occurred. Therefore, the indicators provided advanced warning of turning points, albeit long before the official peaks. The false positives are problematic for the use of the indicators as early warning signals, implying that the indicators should be used in conjunction with other series, as in @Laubscher2014. Still, the reference series, real GDP growth, exhibits even more phases when dated with the BBQ method. Its cycles corresponded more closely with those of the indicators. 
+
+The comovement between these cycle phases can be measured with the concordance statistic suggested by @Harding2002. The concordance statistic measures the comovement of two series, by considering the proportion of time the two series are simultaneously in the same phase. This entails testing whether $I=Pr(S_{xt} =S_{yt})$ is close to 1, where $S_{xt} = 1$ identifies an expansion in indicator $x_t$, and $S_{yt}=1$ identifies a business cycle upswing phase at time $t$. The statistic is calculated as follows: $I = 1/T [\sum^T_{t=1} S_{xt} S_{yt} + \sum^T_{t=1} (1-S_{xt}) (1- S_{yt})$. Following @Harding2006, statistical significance is calculated with heteroskedasticity and autocorrelation consistent standard errors.
+
+Table 3.6 reports the concordance statistics for the phases of the indicator variables, compared with the official SARB reference turning points. The indicators all exhibit significant concordance with the official SARB business cycle. The current conditions indicator has the highest concordance statistic with the official SARB cycle out of all the indicators, which occurs when it is lagged by one quarter, i.e. it leads the official cycle by one quarter. In this sense, it is an improvement on the existing indicators. The other three measures have the highest concordance statistics when they are lagged by two quarters, i.e. when they lead the official SARB cycle by two quarters. 
+
+```{r concordance, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+
+```
+
+```{r table3.6, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+
+```
+
+This section has presented the new composite confidence indicators. The validity tests indicate that the two composite confidence indicators on current and expected conditions are highly correlated with each other and with the two existing measures of confidence. All the indicators examined in this section exhibit a significant positive correlation with real GDP growth. The confidence indicators on current conditions generally have the highest correlation with real GDP growth and therefore the most successful tracking record. 
+
+The indicators provide advanced warning of turning points, although there are a few false signals, especially over the ambiguous period of 2001-2003. The indicators also exhibit significant concordance with the phases of the business cycle, with a lead of one or two quarters. This implies that they are potentially useful leading indicators. The false positives imply that the indicators should be used in conjunction with other series when identifying turning points, as in @Laubscher2014.
+
+As more microeconomic data from the BER's business tendency surveys become available, the analysis could be expanded by analysing the cyclical properties of the indicators in terms of duration, amplitude and steepness. The composite confidence indicator on current conditions is an improvement on existing confidence indicators in that it has a higher correlation with GDP growth and a higher concordance statistic with the official SARB business cycle. 
+
+##The Relationship between Business Sentiment and Real Economic Activity
+The ancillary aim in this chapter is to further examine the relationship between business sentiment and real economic activity in South Africa, including the timing of this relationship and the extent to which correlation is conditional on other economic variables. This demonstrates the usefulness of the aggregation methods and the estimated indicators, and provides an additional validity test of the indicators. In this section the hypothesis is tested that there is significant comovement between the sentiment indicators and real GDP growth. Granger causality tests are used to illuminate the timing of the relationships between the indicators and real output growth. Simple bivariate VARs are then estimated to investigate the dynamic effects of confidence and uncertainty shocks on the economy. A three-variable VAR and an extended VAR are then estimated to examine whether the results hold after the inclusion of additional variables.
+
+###Granger Causality Tests
+Granger causality tests are often performed when investigating the comovement between variables. This test determines whether one time series is useful in forecasting another, by measuring the ability of lagged values of a time series to predict the future values of another time series. A time series $Z$ is said to Granger-cause $Y$ if it can be shown that the $Z$ values provide statistically significant information of future values of $Y$. If the hypothesis that a sentiment indicator does not Granger-cause an economic variable is rejected, it implies that past values of sentiment provide significant information for the economic variable, in addition to its own history.
+
+Table 3.9 reports the results for Granger causality tests for the confidence indicators and real GDP growth. The results suggest that the lagged values of all four confidence indicators significantly predict real GDP growth, with no evidence of Granger-causality in the reverse direction. In other words, the results suggest that all the confidence indicators contain relevant information for the prediction of output growth. This implies that the measures all exhibit a leading relationship with real GDP growth.
+
+```{r vars, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+
+```
+
+```{r table3.9, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+
+```
+
+Table 3.10 reports the results of the Granger causality tests for the sectoral confidence indicators and their corresponding real sectoral GDP growth rates. The results are similar to those for the aggregate indicators, except for the trade sector, where lagged values of real GDP growth significantly predict all three survey-based confidence indicators. This implies that the confidence indicators for the trade sector are lagging indicators of real GDP growth in that sector.
+
+```{r table3.10, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+
+```
+
+
+###VAR Analysis
+This section provides evidence on the dynamic effects of sentiment shocks on real economic activity. As many economic variables move together over time, without an obvious causal direction, it can be challenging to identify the directions of relationships. In the literature, timing has often been relied on for identification. In this section, the literature (e.g. @Taylor2007; @Barsky2012; @Bachmann2013) is followed in using standard recursive VARs to trace out the dynamic responses of economic activity to surprise shocks in sentiment. The aim is to investigate whether the indicators have a significant dynamic relationship with real output, whether they contain predictive content for output growth, and whether shocks to sentiment generate responses that are in line with the theory and the findings in the literature. 
+
+The relationships were investigated for the aggregate variables, as well as separately for each sector, using bivariate recursive VARs featuring a measure of sentiment and real GDP growth. A bivariate system is a parsimonious way to model the joint dynamics of sentiment and real economic activity [@Bachmann2013]. In the bivariate case, both variables are treated as endogenous:
+$$y_t = \beta_{10} - \beta_{12} z_t + \gamma_{11} y_{t-1} + \gamma_{12} z_{t-1} + \epsilon_{yt}$$
+$$z_t = \beta_{20} - \beta_{21} y_t + \gamma_{21} y_{t-1} + \gamma_{22} z_{t-1} + \epsilon_{zt} ,$$
+where $y$ is output, $z$ is sentiment, and $\epsilon$ is the residual of each equation. 
+
+A range of VARs were estimated for the quarterly data running from 1992Q1 to 2016Q3. The indicators enter in levels, while the real GDP series enter as annual quarter-on-quarter growth rates, which corresponds with the survey reference period. Unit root tests indicate that virtually all of the aggregate and sectoral indicators, and the corresponding real GDP growth rates are stationary. The exception is real GDP growth in the services sector, which may be due to the shorter sample period. The appropriate number of lags are selected by means of the Akaike information criterion (AIC), the Schwarz criterion (SC) and the Hannan-Quinn criterion (HQ). The most parsimonious model is selected, provided that the diagnostic tests (i.e. no serial correlation, homoscedasticity and normality) are satisfied. In the majority of cases, the information criteria point to two lags. The model fit is best when a constant term is included. 
+
+The sentiment indicators are ordered first in a recursive identification strategy, with the Cholesky decomposition used to identify structural shocks. With this ordering, shocks to sentiment are allowed to have a contemporaneous impact on output, but shocks to output have no contemporaneous impact on sentiment ($\beta_{21} = 0$). In other words, innovations to the confidence indicators influence economic output on impact, but not vice versa. This is the identification strategy and ordering used in the literature (e.g. @Leduc2013, @Bachmann2013, @Girardi2015, @Baker2015, and @Redl2015). It can be motivated by the timing of the surveys before the release of most macroeconomic data [@Leduc2015]. When the survey is completed in time $t$, the respondents do not know the realisations of output growth in time $t$, as the response deadline is generally the second month of the quarter. 
+
+####Confidence
+Impulse response functions (IRFs) can be generated to illustrate the dynamic impact of a shock to sentiment on the system. The shock is an innovation to the residual in the equation. Figure 3.21 illustrates the IRFs of a bivariate VAR for the confidence indicator on current conditions and real GDP growth. The left panel plots the responses of real GDP growth to an orthogonal shock in the indicator, with 95% bootstrap confidence intervals. Following an increase in confidence, real GDP growth increases by around 0.3% on impact, with a peak at two quarters. The impact on the growth rate is transitory, dying out after approximately seven quarters. This is equivalent to a permanent increase in the level of output, which confirms the findings in the literature (e.g. @Barsky2012). The right panel plots the response of confidence to an orthogonal shock in real GDP growth. Following an increase in real GDP growth, there is an insignificant increase in confidence of around 2% after two quarters. The results are virtually identical for the confidence indicator on expected conditions and the BER BCI, whereas the SACCI growth rate exhibits a smaller significant relationship with real activity after two quarters. The results are similar for alternative orderings.
+
+```{r figure3.21, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="IRFs of confidence (current conditions) and real GDP growth"}
+
+```
+
+The importance of innovations can also be examined with variance decompositions. While the IRFs describe the reaction of a variable of interest to an exogenous shock, the decomposition of the forecast error variance of a given variable shows how much of the error can be explained by exogenous shocks to the other variables in the system [@Girardi2015]. The forecast error variance decomposition (FEVD) shows the proportion of the movements in a sequence due to its own shocks and shocks to the other variable. Figure 3.22 illustrates the FEVDs for the current conditions confidence indicator and real GDP growth. Up to around half (46%) of the movements in real GDP growth are explained by the confidence indicator over the longer term, while real GDP explains up to 2% of the variance in the confidence indicator.
+
+```{r figure3.22, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="FEVDs of confidence (current conditions) and real GDP growth"}
+
+```
+
+The results for the sectoral indicators are very similar to the aggregate results. Figure 3.23 illustrates the IRFs of a bivariate VAR for the current conditions confidence indicator in the manufacturing sector and real GDP growth in the manufacturing sector. Following an increase in confidence, real GDP growth increases on impact, with a peak at two quarters. The impact on the growth rate dies out after approximately four quarters. Following an increase in real GDP growth, there is a significant increase in confidence in the following quarter. The results are similar for alternative orderings. The results for the other sectoral indicators are very similar to those for the manufacturing sector, with the exception that in the construction sector, the impact of a shock to confidence on GDP growth does not die out within the forecast horizon of 12 quarters.
+
+```{r figure3.23, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="IRFs of confidence (current conditions) and real GDP growth in the manufacturing sector"}
+
+```
+
+Figure 3.24 illustrates the FEVDs for the current conditions confidence indicator and real GDP growth in the manufacturing sector. Up to more than a third (37%) of the movements in real GDP growth are explained by confidence over the longer term, while real GDP explains up to 5% of the variance in confidence. Overall, the results suggest that shocks to the confidence indicators account for between 20% and 60% of the forecast error variance of the real GDP growth rate, depending on the level of aggregation and the indicator.
+
+```{r figure3.24, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="FEVDs of confidence (current conditions) and real GDP growth in the manufacturing sector"}
+
+```
+
+####Expanded VAR
+Though instructive, the results from a bivariate system are prone to misspecification [@Girardi2015]. In order to test the robustness of the negative effect of uncertainty shocks, a number of authors have extended the baseline setup to include measures of confidence (@Girardi2015, @Leduc2015, @Baker2015 and @Bachmann2010). Periods of increased uncertainty also tend to be periods of bad economic news. Confidence is usually included to control for the possibility that the impact of uncertainty may reflect respondents' perceptions of bad news rather than of an uncertain future [@Baker2015]. 
+
+Figure 3.30 illustrates the current conditions measure of confidence and the combined uncertainty indicator with recessionary periods shaded. The two sentiment indicators do not appear to be mirror images of each other, with a correlation of -0.36. Although confidence is pro-cyclical and uncertainty is mostly anti-cyclical, they appear to capture different phenomena. 
+
+```{r figure3.30, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4, fig.width=7.5, fig.cap="Confidence (Current) and Uncertainty (Combined)"}
+
+```
+
+Figure 3.31 illustrates the IRFs of a three-variable VAR including confidence on current conditions, combined uncertainty and real GDP growth. Following @Girardi2015, confidence was ordered first under a recursive identification scheme. The results are very similar to the IRFs for the bivariate VARs reported earlier. A positive shock to confidence is followed by a significant increase in real GDP growth, while a positive shock to uncertainty is followed by a significant decrease in real GDP growth. Figure 3.32 illustrates the FEVDs for this three-variable VAR. Up to around 30% of the variance in real GDP growth is explained by confidence over the longer term, while uncertainty explains around 25% of the variance.
+
+```{r figure3.31, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4, fig.width=7.5, fig.cap="IRFs of real GDP growth to confidence and uncertainty in the three-variable VAR"}
+
+```
+
+```{r figure3.32, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="FEVDs of the three-variable VAR"}
+
+```
+
+A larger VAR system was also estimated to test the robustness of the relationships. The extended VAR includes the variables suggested by @Redl2015 for South Africa: confidence, uncertainty, the JSE All Share Index, the yield spread (i.e. the Government Bond Yield minus the three-month T-Bill rate), GDP, industrial production, investment, and an employment index. These variables are typically included in the literature (e.g. @Leduc2013, @Bachmann2013, and @Baker2015). 
+
+The variables were ordered with the sentiment variables first, the financial variables next and the real variables last. The financial variables were expected to move faster than the real variables [@Redl2015]. An alternative ordering of placing the sentiment indicators last provides qualitatively similar results. As was the case in the previous VARs, the variables enter as real annual quarter-on-quarter growth rates, except for the sentiment indices and the yield spread. The model was estimated with two lags, with the caveat that the information criteria indicate that more than the maximum number of lags are appropriate. The results with four lags are qualitatively similar. 
+
+The IRFs for the impact of confidence (current conditions) and uncertainty (combined) on the growth rate of real GDP, real production and real investment are illustrated in Figure 3.33. The top panels illustrate the responses of the real variables to a shock in confidence, and the bottom panels show the responses to a shock in uncertainty. The larger system seems to provide similar results to the findings in bivariate VARs. The response in real GDP growth are similar to those in the three-variable model. The impacts of the shocks are larger on real production and investment growth than on real GDP growth. This is what the wait-and-see theory would predict. The responses of employment (not illustrated) are very similar to those of real GDP growth. According to the FEVD, confidence explains around 35%, 25%, and 40% of the variance in real GDP growth, real production growth and real investment growth, while uncertainty explains around 15%, 25% and 20% of the variance in the three real variables.
+
+```{r figure3.33, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="IRFs of real GDP, production and investment growth to confidence and uncertainty shocks in the extended VAR"}
+
+```
+
+###Summary and Suggested Future Research
+The ancillary aim in this chapter was to examine the relationship between business sentiment and real economic activity in South Africa. In this section the hypothesis was tested that there was significant comovement between the sentiment indicators and real GDP growth. The aim was to investigate whether the indicators have a significant dynamic relationship with real output, whether they contain predictive content for output growth, and whether shocks to sentiment generate responses that are in line with the theory and the findings in the literature.
+
+This section presented evidence that the confidence indicators contain relevant information for predicting output growth. The lagged values of both new confidence indicators significantly Granger-caused real GDP growth, with limited evidence of Granger-causality in the reverse direction. The indicators had a positive and significant impact on real GDP growth in the bivariate VAR models, which confirmed the results in the literature. Shocks to the indicators accounted for a sizeable fraction of variation in economic activity. This is the case for the aggregate indicators as well as the sectoral indicators. This implies that the confidence indicators contain useful information about current and future economic developments. As a result, the confidence indicators may be useful for monitoring developments in a timely manner and for forecasting future economic activity. 
+
+The results from the larger VAR systems confirmed the findings from the bivariate VARs. The impulse responses of real GDP growth were similar to those in the bivariate model. The responses of real production and investment growth to shocks to the sentiment indicators were larger than the responses of real GDP growth. This is what the wait-and-see theory would predict for the uncertainty indicators [@Bloom2009]. Overall, the results provide evidence at least of significant comovement between the sentiment indicators and real economic activity. 
+
+#Conclusion

@@ -7,6 +7,8 @@ fontsize: 11pt
 geometry: margin=1in
 header-includes:
    - \usepackage{multirow}
+bibliography: References.bib
+csl: harvard.csl
 ---
 
 \begin{center}
@@ -17,23 +19,15 @@ header-includes:
 \end{center}
 
 #Introduction
-This reports sets out the BER business tendency survey results calculated with the microdata.
+This reports sets out the BER business tendency survey results calculated with the microdata. First, we calculate the balance statistics for all of the sectors and subsectors and check that the microdata provides results that are consistent with the BER's published results. After cleaning the microdata, we calculate new series for all of the questions for all of the subsectors and the three main regions. In some cases the new series follow an explicit two-step weighting procedure. Finally, we compare the results to the reference series, to evaluate the tracking record of responses to the activity questions. In all cases the new updated series for all the questions are calculated in R and exported to Excel.
 
-In this report, we first check that the microdata provides results that are consistent with the BER's published results. We calculate the balance statistics for all of the sectors and subsectors. Next, we compare the results to the reference series, to evaluate the tracking record of responses to the activity questions.
+We have interpolated the few missing values by replacing the missing values with the published series, where available. In the cases where there were no published series we have just used simple linear interpolation to create complete continuous series. All the duplicates have been removed. Duplicated may arise due to some respondents answering in both email/fax format, as well as via post. The BER only uses the first response that it receives.
 
-In all cases the new updated series for all the questions are calculated in R and exported to Excel.
+Since 2016Q2, we have included imputed values, in order to increase the number of responses and to decrease the volatility of the balances. An imputed value refers to a latecomer in period $t-1$, who had not responded in time in period $t$. For example, all the latecomers in 2017Q1, who had not responded in time in 2017Q2, were added to the 2017Q2 responses. If such a firm was also a latecomer in 2017Q2, the response may potentially be an imputed value in 2017Q3, if it is a latecomer again. The imputed values are reflected in the published results sine 2016Q2, and are therefore included in the comparisons below. The latecomers are still excluded, as we have decided to stick with this convention. The results below illustrate that the inclusion of latecomers does not influence the results substantially, with slightly changes at the subsector level. We can try to create a balanced panel, by only including those respondents that answered in consecutive quarters.
 
-Since 2016Q2, we have included imputed values, in order to increase the number of responses and to decrease the volatility of the balances. An imputed value refers to a latecomer in period $t-1$, who had not responded in time in period $t$. For example, all the latecomers in 2017Q1, who had not responded in time in 2017Q2, were added to the 2017Q2 responses. If such a firm was also a latecomer in 2017Q2, the response may potentially be an imputed value in 2017Q3, if it is a latecomer again. The imputed values are reflected in the published results sine 2016Q2, and are therefore included in the comparisons below. The latecomers are still excluded, as we have decided to stick with this convention. The results below illustrate that the inclusion of latecomers does not influence the results substantially, with slightly changes at the subsector level.
+The report proceeds as follows: the survey results for the main sectors are evaluated separately. The report discusses the changes to the raw microdata that were necessary to produce results that were consistent with the BER's published series. The balances calculated from the microdata are then compared to the published series. The new series are then calculated with alternative weighting procedures. All the series are then compared to the references series to evaluate their tracking record and the volatility of the alternative series. 
 
-All the duplicates have been removed. Duplicated may arise due to some respondents answering in both email/fax format, as well as via post. The BER only uses the first response that it receives.
-
-We can try to create a balanced panel, by only including those respondents that answered in consecutive quarters.
-
-#The Building Survey
-In this section we are going to look at the Building sector surveys and results. We have used the Building survey microdata to update the results for the period 1993Q2-2017Q2.
-
-##Collating and Cleaning the Microdata
-```{r B.build, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+```{r readdata, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
 setwd("C:\\Users\\Laurie\\OneDrive\\Documents\\BING\\BER Confidence Surveys\\Sentiment")
 #change the working directory
 
@@ -48,23 +42,113 @@ suppressMessages(library(quantmod))
 suppressMessages(library(vars))
 suppressMessages(library(tseries))
 suppressMessages(library(urca))
-source("corstarsl.R")
+suppressMessages(library(zoo))
 
 ##=====================##
 ## READING IN THE DATA ##
 ##=====================##
 
-datums <- read.csv("dates.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)[-1:-4,]
+datums <- read.csv("dates.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
 datums$Datum <- as.Date(datums$Datum, format = "%Y/%m/%d")
 
-pub <- read.csv("Building_BER_Published.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+##=====================##
+##Define Functions
+##=====================##
 
-ref <- read.csv("Ref Series.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+ongeweeg <- function(data,sektor,streek,d) {
+    data <- data[data$sector %in% sektor & data$region %in% streek,]
+    sector <- aggregate(data[,(match("surveyQ",colnames(data))+1):ncol(data)], 
+                        by=list(data$surveyQ), FUN=mean, na.rm=TRUE)
+    sector$Obs <- aggregate(data$Q2A, by=list(data$surveyQ), FUN=length)[,2]
+    sector <- merge(datums[d,],sector, by.x="Date", by.y="Group.1", all=TRUE)
+    sector <- sector[,c(1:2,ncol(sector),3:(ncol(sector)-1))]
+    sector[,-1:-3] <- na.approx(sector[,-1:-3]*100)
+    return(sector)
+}
 
-#library(xlsx)
-#write.xlsx(BER.B, "check.xlsx")
 
-##=============================
+geweeg <- function(data,sektor,streek,d) {
+    weeg <- function(temp) {  #calculate weighted mean for each quarter for all columns
+        temp <- cbind(factor=temp$factor,temp$factor*temp[(match("surveyQ",colnames(temp))+1):ncol(temp)])
+        temp <- colSums(temp, na.rm=TRUE, dims = 1)/    #calculate the sum(wi*xi)/sum(wi)
+            sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])]))
+        return(temp) #weight only by those that responded to a specific question
+    }
+    
+    data <- data[data$sector %in% sektor & data$region %in% streek,]
+    sector <- data.frame()
+    for(kwartaal in levels(data$surveyQ)) {
+        sector <- rbind(sector,weeg(data[data$surveyQ==kwartaal,]))
+    }
+    sector[,1] <- levels(data$surveyQ)
+    colnames(sector) <- colnames(data)[(match("surveyQ",colnames(data))):ncol(data)]
+    sector$Obs <- aggregate(data$Q2A, by=list(data$surveyQ), FUN=length)[,2]
+    sector <- merge(datums[d,],sector, by.x="Date", by.y="surveyQ", all=TRUE)
+    sector <- sector[,c(1:2,ncol(sector),3:(ncol(sector)-1))]
+    sector[,-1:-3] <- na.approx(sector[,-1:-3]*100)
+    return(sector)
+}
+
+
+#Explicit 2-step weighting
+geweeg2 <- function(sektor=all,streek=streke) {
+    weeg2 <- function(temp) {  #calculate weighted mean for each quarter for all columns
+        sectorw=temp$sectorw[1]
+        temp <- cbind(firmw=temp$firmw,temp$firmw*temp[(match("surveyQ",colnames(temp))+1):ncol(temp)])
+        #temp <- colSums(temp, na.rm=TRUE, dims = 1)/sum(temp$factor, na.rm=TRUE)
+        #calculate the sum(wi*xi)/sum(wi)
+        temp <- colSums(temp, na.rm=TRUE, dims = 1)/    
+            sapply(colnames(temp), function(x) sum(temp$firmw[!is.na(temp[colnames(temp) == x])]))
+        temp <- c(sectorw,temp)
+        #weight only by those that responded to a specific question
+        return(temp)
+    }
+    man <- BER.M2[BER.M2$sector %in% sektor & BER.M2$region %in% streek,]
+    sector <- data.frame()
+    for(kwartaal in levels(man$surveyQ)) {
+        sector <- rbind(sector,weeg2(man[man$surveyQ==kwartaal,]))
+    }
+    sector <- sector *100
+    sector[,2] <- levels(man$surveyQ)
+    colnames(sector) <- colnames(man)[c(7,9:ncol(man))]
+    sector <- merge(datums,sector, by.x="Date", by.y="surveyQ", all=TRUE)
+    #sector <- as.data.frame(t(sapply(levels(man$surveyQ), function(kwartaal) weeg(man[man$surveyQ==kwartaal,]))))
+    sector[,3:58] <- na.approx(sector[,3:58],na.rm = FALSE)
+    return(sector)
+}
+
+maak.index <- function(sektor=all,streek=streke) {
+    lys <- list()
+    t <- 0
+    for(k in sektor) {
+        t <- t+1
+        lys[[t]] <- geweeg2(k)
+    }
+    saam <- lys[[1]]
+    for(j in 4:60) {
+        for(i in 1:100) {
+            x <- NULL
+            w <- NULL
+            for(t in 1:length(sektor)) {
+                x <- c(x,lys[[t]][i,j])
+                w <- c(w,lys[[t]][i,3])
+            }
+            saam[i,j] <- weighted.mean(x,w,na.rm=TRUE) 
+        }
+    }
+    saam <- saam[,-3]
+    return(saam)
+}
+```
+
+#The Building Survey
+```{r B.build, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+pub_b <- read.csv("Building_BER_Published.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+ref_b <- read.csv("Ref Series_Build.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+
+pub_a <- read.csv("Arc_Published.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+
+#BUILDING
 BER.B <- read.csv("Building_93Q2-17Q2.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
 #BER.B <- read.csv("Building_full.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
 colnames(BER.B)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
@@ -73,7 +157,6 @@ BER.B$sector <- factor(BER.B$sector) #could include labels
 BER.B$id <- factor(BER.B$id)
 BER.B$region <- factor(BER.B$region)
 
-#==============================
 #Clean SurveyQ variable
 BER.B$temp <- NULL
 for(i in 1:nrow(BER.B)) {
@@ -85,8 +168,20 @@ BER.B$surveyQ <- BER.B$temp
 BER.B <- BER.B[,-ncol(BER.B)]
 BER.B$surveyQ <- factor(BER.B$surveyQ)
 
-#==============================
-#Exlcude old questions
+#Clean regions
+#Mode <- function(x) {
+#    ux <- na.remove(unique(x))
+#    ux[which.max(tabulate(match(x, ux)))]
+#}
+#fout <- c("1995Q1")
+#for(i in levels(BER.B$id)) {
+#    BER.B$region[(BER.B$surveyQ %in% fout) & (BER.B$id == i)] <- Mode(BER.B$region[(BER.B$id == i)]) 
+#    
+#}
+
+#Exclude Latecomers and old quesions
+BER.B <- BER.B[BER.B$Latecomer == FALSE | is.na(BER.B$Latecomer),]
+BER.B <- BER.B[,1:20]
 BER.B <- BER.B[,!grepl("X",colnames(BER.B))]    
 
 #Replace Values
@@ -94,7 +189,6 @@ for(i in 7:16) {
     BER.B[,i] <- replace(BER.B[,i], BER.B[,i]==2, 0)
     BER.B[,i] <- replace(BER.B[,i], BER.B[,i]==3,-1)
 }
-
 for(i in 17:20) {
     BER.B[,i] <- replace(BER.B[,i], BER.B[,i]==1, 1)
     BER.B[,i] <- replace(BER.B[,i], BER.B[,i]==2, 0.5)
@@ -104,99 +198,159 @@ for(i in 17:20) {
 #Impute Latecomers
 #Dit lyk asof die Latecomers klaar gedupliseer is en gemerk is as Imputed
 
-#Exclude Latecomers
-BER.B <- BER.B[BER.B$Latecomer == FALSE | is.na(BER.B$Latecomer),]
+#--------------------------
+#Architects, QSs and Civil Engineers
+skoon <- function(data) {
+    colnames(data)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
+    data$surveyQ <- toupper(data$surveyQ)
+    data$sector <- factor(data$sector) #could include labels
+    data$id <- factor(data$id)
+    data$region <- factor(data$region)
+    
+    data$temp <- NULL
+    for(i in 1:nrow(data)) {
+        data$temp[i] <- paste0("20",data$surveyQ[i],sep="")
+    }
+    data$surveyQ <- data$temp
+    data <- data[,-ncol(data)]
+    data$surveyQ <- factor(data$surveyQ)
+    
+    for(i in 7:(ncol(data)-6)) {
+        data[,i] <- replace(data[,i], data[,i]==2, 0)
+        data[,i] <- replace(data[,i], data[,i]==3,-1)
+    }
+    
+    if(ncol(data)>23) {
+        for(i in 17:20) {
+            data[,i] <- replace(data[,i], data[,i]==0, 0.5)
+            data[,i] <- replace(data[,i], data[,i]==-1, 0)
+        }
+    }
+    
+    data <- data[data$Latecomer == FALSE | is.na(data$Latecomer),]
+    data <- data[,1:(ncol(data)-6)]
+    return(data)
+}
 
-BER.B <- BER.B[,1:22]
+arc <- skoon(read.csv("Argitekte.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
+qs <- skoon(read.csv("QS.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
+civil <- skoon(read.csv("Civils.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))[,-21:-22]
 
-##================================##
-## CALCULATE INDICATORS: BUILDING ##
-##================================##
+#BUILDING
 residential <- c(5000,6000)
 non_residential <- c(5010,6010)
-all <- c(5000,5010,6000,6010)
 contractor_res <- 5000
 contractor_nonres <- 5010
 contractor <- c(5000,5010)
 subcon_res <- 6000
 subcon_nonres <- 6010
 subcon <- c(6000,6010)
-
+all_b <- c(5000,5010,6000,6010)
 streke <- unique(BER.B$region)
 
+arcs <- 99
+civils <- c(700,701,702,703)
+qss <- 88
 
-ongeweeg <- function(sektor=all,streek=streke) {
-    build <- BER.B[BER.B$sector %in% sektor & BER.B$region %in% streek,]
-    sector <- aggregate(build[,(match("surveyQ",colnames(build))+1):ncol(build)], by=list(build$surveyQ), FUN=mean, na.rm=TRUE)
-    sector <- merge(datums,sector, by.x="Date", by.y="Group.1", all=TRUE)
-    sector[,3:16] <- na.approx(sector[,3:16]*100)
-    return(sector)
-}
+##======================##
+## CALCULATE INDICATORS ##
+##======================##
+#BUILDING
+Building <- ongeweeg(BER.B,all_b,streke,6:102)
+BER.B$factor <- BER.B$weight
+Building_w <- geweeg(BER.B,all_b,streke,6:102)
 
-geweeg <- function(sektor=all,streek=streke) {
-    
-    weeg <- function(temp) {  #calculate weighted mean for each quarter for all columns
-        temp <- cbind(factor=temp$factor,temp$factor*temp[(match("surveyQ",colnames(temp))+1):ncol(temp)])
-        #temp <- colSums(temp, na.rm=TRUE, dims = 1)/sum(temp$factor, na.rm=TRUE)
-        #calculate the sum(wi*xi)/sum(wi)
-        temp <- colSums(temp, na.rm=TRUE, dims = 1)/    
-            sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])]))
-        #weight only by those that responded to a specific question
-        return(temp)
-    }
-    
-    BER.B$factor <- BER.B$weight
-    build <- BER.B[BER.B$sector %in% sektor & BER.B$region %in% streek,]
-    sector <- data.frame()
-    for(kwartaal in levels(build$surveyQ)) {
-        sector <- rbind(sector,weeg(build[build$surveyQ==kwartaal,]))
-    }
-    sector <- sector *100
-    sector[,1] <- levels(build$surveyQ)
-    colnames(sector) <- colnames(build)[-1:-5]
-    sector <- merge(datums,sector, by.x="Date", by.y="surveyQ", all=TRUE)
-    #sector <- as.data.frame(t(sapply(levels(man$surveyQ), function(kwartaal) weeg(man[man$surveyQ==kwartaal,]))))
-    sector[,3:16] <- na.approx(sector[,3:16])
-    return(sector)
-}
+Residential <- ongeweeg(BER.B,residential,streke,6:102)
+Non_residential <- ongeweeg(BER.B,non_residential,streke,6:102)
+Contractor_res <- ongeweeg(BER.B,contractor_res,streke,6:102)
+Contractor_nonres <- ongeweeg(BER.B,contractor_nonres,streke,6:102)
+Contractor <- ongeweeg(BER.B,contractor,streke,6:102)
+Subcon_res <- ongeweeg(BER.B,subcon_res,streke,6:102)
+Subcon_nonres <- ongeweeg(BER.B,subcon_nonres,streke,6:102)
+Subcon <- ongeweeg(BER.B,subcon,streke,6:102)
 
-Building <- ongeweeg(all)
-Building_w <- geweeg(all)
+WC.B <- ongeweeg(BER.B,all_b,1,6:102)
+KZN.B <- ongeweeg(BER.B,all_b,5,6:102)
+GP.B <- ongeweeg(BER.B,all_b,6,6:102)
 
-Residential <- ongeweeg(residential)
-Non_residential <- ongeweeg(non_residential)
-Contractor_res <- ongeweeg(contractor_res)
-Contractor_nonres <- ongeweeg(contractor_nonres)
-Contractor <- ongeweeg(contractor)
-Subcon_res <- ongeweeg(subcon_res)
-Subcon_nonres <- ongeweeg(subcon_nonres)
-Subcon <- ongeweeg(subcon)
+#Interpolasie
+Contractor[c(3,22,29,51),c(4,5,7,9,11,13)] <- pub_b[c(3,22,29,51),2:7]
+Contractor_res[c(3,22,29,51),c(4,5,7,9,11,13)] <- pub_b[c(3,22,29,51),11:16]
+Contractor_nonres[c(3,22,29,51),c(4,5,7,9,11,13)] <- pub_b[c(3,22,29,51),20:25]
+Subcon[c(3,22,29,51),c(4,5,7,9,11,13)] <- pub_b[c(3,22,29,51),29:34]
+Subcon_res[c(3,22,29,51),c(4,5,7,9,11,13)] <- pub_b[c(3,22,29,51),38:43]
+Subcon_nonres[c(3,22,29,51),c(4,5,7,9,11,13)] <- pub_b[c(3,22,29,51),47:52]
 
-WC <- ongeweeg(all,1)
-KZN <- ongeweeg(all,5)
-GP <- ongeweeg(all,6)
+#----------------------------
+Architects <- ongeweeg(arc,arcs,streke,38:102)
+Civils <- ongeweeg(civil,civils,streke,38:102)
+QSs <- ongeweeg(qs,qss,streke,38:102)
 
-#Interpolasie:
-Contractor[c(3,22,29,51),c(3,4,6,8,10,12)] <- pub[c(3,22,29,51),2:7]
-Contractor_res[c(3,22,29,51),c(3,4,6,8,10,12)] <- pub[c(3,22,29,51),11:16]
-Contractor_nonres[c(3,22,29,51),c(3,4,6,8,10,12)] <- pub[c(3,22,29,51),20:25]
-Subcon[c(3,22,29,51),c(3,4,6,8,10,12)] <- pub[c(3,22,29,51),29:34]
-Subcon_res[c(3,22,29,51),c(3,4,6,8,10,12)] <- pub[c(3,22,29,51),38:43]
-Subcon_nonres[c(3,22,29,51),c(3,4,6,8,10,12)] <- pub[c(3,22,29,51),47:52]
+#Interpolasie
+Architects[c(19),c(3,4,6,8,10,12)] <- pub_a[c(19),2:7]
+QSs[c(11,19),c(3,4,6,8,10,12)] <- pub_a[c(11,19),8:13]
+Civils[c(19),c(3,4,6,8,10,12:15)] <- pub_a[c(19),14:22]
 
 ```
 
+In this section we examine the Building sector surveys and results. We have used the Building survey microdata to update the results for the period 1993Q2-2017Q2. 
+
+##Collating and Cleaning the Microdata
 In order to match the questions and responses in the different versions of the surveys, the surveys in the old records were compared to the current incarnations. We printed and marked the questions in the old (pre-2001) Building surveys. We then matched them to the new survey questions. The old questionnaires have been uploaded to the Dropbox folder.[^1] 
 
-There were a number of errors in the raw microdata files.[^2] We corrected the errors in the raw microdata files relating to the questionnaires. There were also a number of errors relating to the regions codes[^3], which have been corrected. Figure 1 illustrates the total number of responses in the Building survey microdata, by region code. The corrected files have been uploaded to the Dropbox folder.
+There were a number of errors in the raw microdata files.[^2] We corrected the errors in the raw microdata files relating to the questionnaires. There were also a number of errors relating to the regions codes[^3], which have been corrected. The corrected files have been uploaded to the Dropbox folder.
 
-```{r figure1, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="The number of respondents in the building sector by region (1993Q2-2017Q2)"}
-BERplot <- aggregate(BER.B$id, by=list(BER.B$surveyQ,BER.B$region), FUN = length)
-BERplot$Group.1 <- as.Date(as.yearqtr(BERplot$Group.1, format = "%YQ%q"))
-g <- ggplot(BERplot, aes(x=Group.1, y=x,fill=Group.2))
+[^1]: In the scanned copies, X's denote questions that are no longer asked. Yellow denotes the Q1 consistency check - all the responses must be either 1s or 2s. Green denotes the questions that were only asked in earlier (pre-1996Q3) surveys. Red denotes apparent coding mistakes that we have corrected.
+
+[^2]: In the pre-2001 data, Q8 and Q6 seemed to have changed, which led to large spikes (e.g. in 1995Q1). In the post-2001, responses for Q11 were recorded, but the question does not seem to exist.
+
+[^3]: In the pre-2001 sample there were 9 region codes, but in the post-2001 sample there were 8 region codes. We assume that the following key holds in both samples: 01=WC, 05=KN, 06=GP. There was a clear change in region codes in 1995Q1, and region code before that (1993Q2-1994Q4) are different again. We have corrected these region codes by taking the mode for each individual respondent, i.e. the codes with the highest frequencies for each id code.
+
+Table 1 reports some characteristics of the Building survey microdata. The Building microdata are missing for the following quarters: 1993Q4, 1998Q3, 2000Q2 and 2005Q4. Where published series were available, we used the published values for those missing values. Where they were unavailable, we used simple linear interpolation to create complete continuous series. We compared the substitution of the published values (for the series that are available) with simple linear interpolation. There is very little difference (only a few values were missing).
+
+```{r table1, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+ave <- mean(aggregate(BER.B$id, by=list(BER.B$surveyQ), FUN = length)[,2])
+tafel <- cbind("1993Q2-2017Q2",length(BER.B$id),round(ave,2),round(ave/1400,2),
+               "1993Q4,1998Q3,2000Q2,2005Q4")
+colnames(tafel) <- c("Sample","Total Obs","Obs/Quarter", "Response Rate","Missing Quarters")     
+row.names(tafel) <- "Building Survey"
+xt <- xtable(tafel, caption="Sample characteristics")
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8,
+      include.rownames=TRUE)
+```
+
+Table 2 reports the subsector codes that were used to split the sample. The subsectors that the BER calculated before are *contractors* (total, residential and non-residential), and *subcontractors* (total, residential and non-residential). The new sectors are the *residential*, *non-residential* and *total building* sectors. These aggregations are added to make the survey results comparable to the official data. Official data is only available for the residential sector, non-residential sector and the total. No high frequency data for contractors and sub-contractors is published. Figure 1 illustrates the number of respondents by subsector.
+
+\begin{table}[]
+\centering
+\caption{Building sector codes}
+\label{my-label}
+\scalebox{0.9}{
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Sector}                  & \textbf{Code} \\ \hline
+Contractors: Residential         & 5000          \\ \hline
+Contractors: Non-Residential     & 5010          \\ \hline
+Sub-Contractors: Residential     & 6000          \\ \hline
+Sub-Contractors: Non-Residential & 6010          \\ \hline
+\end{tabular}}
+\end{table} 
+
+```{r figure1, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="The number of respondents by subsector (1993Q2-2017Q2)"}
+#Weights
+BERplot <- BER.B
+BERplot$Sector[BERplot$sector %in% contractor_res] <- "Contractor (Residential)" 
+BERplot$Sector[BERplot$sector %in% contractor_nonres] <- "Contractor (Non-Residential)" 
+BERplot$Sector[BERplot$sector %in% subcon_res] <- "Sub-contractor (Residential)" 
+BERplot$Sector[BERplot$sector %in% subcon_nonres] <- "Sub-contractor (Non-Residential)" 
+BERplot$sectorw <- BERplot$factor/BERplot$weight
+
+BERplot1 <- aggregate(BERplot$id, by=list(BERplot$surveyQ,BERplot$Sector), FUN = length)
+BERplot1$Group.1 <- as.Date(as.yearqtr(BERplot1$Group.1, format = "%YQ%q"))
+g <- ggplot(BERplot1, aes(x=Group.1, y=x,fill=Group.2))
 g <- g + geom_bar(stat="identity")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + scale_fill_discrete(name="Region")
+g <- g + scale_fill_discrete(name="Subsector")
 g <- g + scale_y_continuous(labels=comma)
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + ylab("Number of Respondents")
@@ -204,29 +358,20 @@ g <- g + xlab("Date")
 g
 ```
 
-[^1]: In the scanned copies, X's denote questions that are no longer asked. Yellow denotes the Q1 consistency check - all the responses must be either 1s or 2s. Green denotes the questions that were only asked in earlier (pre-1996Q3) surveys. Red denotes apparent coding mistakes that we have corrected.
-
-[^2]: In the pre-2001 data, Q8 and Q6 seemed to have changed, which led to large spikes (e.g. in 1995Q1). In the post-2001, responses for Q11 were recorded, but the question does not seem to exist.
-
-[^3]: In the pre-2001 sample there were 9 region codes, but in the post-2001 sample there were 8 region codes. We assume that the following key holds in both samples: 01=WC, 05=KN, 06=GP. There was a clear change in region codes in 1995Q1, and region code before that (1993Q2-1994Q4) are different again. We have corrected these region codes.
-
 ##The Building Sector Indicators
-The indicators (balances) for a number of groupings were calculated, as is illustrated below, without any weighting (i.e. equal weights). A selection of the indicators are illustrated below, although balances have been calculated for all of the questions, and are included in the Excel files. Table 1 reports the subsector codes that were used to split the sample. The subsectors that the BER calculated before are *contractors* (total, residential and non-residential), and *subcontractors* (total, residential and non-residential). The new sectors are the *residential*, *non-residential* and *total building* sectors. 
+Formally, one can define a $k$-period-ahead expectations measure of confidence $(C_t^k)$ at time $t$ as: $C _t^k = E_t f(\Delta^h Y_{t+k})$, where $Y_{t+k}$ is a measure of real activity (usually output) at time $t+k$ and $\Delta^h Y_{t+k} = Y_{t+k} - Y_{t+k-h}$. A common definition of $f(\Delta^h Y_{t+k})$ relies on an up, unchanged, or down classification (e.g. Q2A in the BER survey): 
+$$ f(\Delta^h Y_{t+k}) = \begin{cases} -1,& \text{if } \Delta^h Y_{t+k} < 0\\ 0,& \text{if } \Delta^h Y_{t+k} = 0\\ 1,& \text{if } \Delta^h Y_{t+k} > 0\\ \end{cases} $$
 
-\begin{table}[]
-\centering
-\caption{Building subsector codes}
-\label{my-label}
-\begin{tabular}{lllllllll}
-\textbf{Sector} & \textbf{Code} \\
-Contractors: Residential & 5000 \\
-Contractors: Non-residential & 5010 \\
-Sub-contractors: Residential & 6000 \\
-Sub-contractors: Non-residential & 6010 \\
-\end{tabular}
-\end{table}
+An alternative would be to use a binary classification (e.g. Q1 in the BER survey): $$ f(\Delta^h Y_{t+k}) = \begin{cases} -1,& \text{if } \Delta^h Y_{t+k} < a\\ 1,& \text{if } \Delta^h Y_{t+k} \geq a\\ \end{cases} $$ where $a$ is determined by the preferences of the agent. 
 
-Figure 2 illustrates the results for Q1 (confidence) in the three new subsector classifications. Figure 3 illustrates the balances for total construction in the Western Cape, KwaZulu-Natal and Gauteng.
+In this chapter, a distinction is made between indicators of current conditions $C_t^k$ when $k=0$, and indicators of expected conditions $C_t^k$ when $k=1$. The confidence measure for current conditions $C^0_t$ is referred to as 'current', as it is reflects confidence about the current quarter (in the second month of the quarter). The confidence measure for expected conditions $C^1_t$ is referred to as 'expected', as it is reflects confidence about the following quarter.
+
+The BER business tendency surveys make this distinction possible by asking for separate responses relating to current and expected future conditions. The questions on current conditions (e.g. Q2A) all have the following format: "(Estimated development in current quarter) Compared with the same quarter of a year ago, are general business conditions: better, the same, or poorer?" In other words, these questions ask whether the factor under consideration in time $t$ is better, the same, or poorer, compared with $t-4$. 
+
+The forward-looking questions (e.g. Q2P) all have the following format: "(Expected development in next quarter) Compared with the same quarter of a year ago, will general business conditions be: better, the same, or poorer?" As with the questions on current conditions, these questions ask whether the factor under consideration in time $t+1$ is expected to be better, the same, or poorer, compared with $t-3$. Responses are relative to the same quarter of the previous year, which corresponds with year-on-year growth rates. 
+
+###New Indicators
+The indicators (balances) for a number of groupings were calculated, as is illustrated below, without any weighting (i.e. equal weights). A selection of the indicators are illustrated below, although balances have been calculated for all of the questions, and are included in the Excel files. Figure 2 illustrates the results for Q1 (confidence) in the three new subsector classifications. The indicators (balances) for a number of groupings were calculated, as is illustrated below, without any weighting (i.e. equal weights). A selection of the indicators are illustrated below, although balances have been calculated for all of the questions, and are included in the Excel files. Figure 2 illustrates the results for Q1 (confidence) in the three new subsector classifications. Figure 3 illustrates the balances for total construction in the Western Cape, KwaZulu-Natal and Gauteng.
 
 ```{r figure2, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Building results for Q1 (confidence) in the new categories"}
 indicator_plot <- cbind(Building[,c("Datum","Q1")],Residential[,"Q1"],Non_residential[,"Q1"]) 
@@ -243,9 +388,8 @@ g <- g + theme(legend.position="bottom")
 g
 ```
 
-
-```{r figure3, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Building results for Q1 (confidence) in the main provinces"}
-indicator_plot <- cbind(WC[,c("Datum","Q1")],KZN[,"Q1"],GP[,"Q1"])
+```{r figure3, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Building results for Q1 (confidence) for the main provinces"}
+indicator_plot <- cbind(WC.B[,c("Datum","Q1")],KZN.B[,"Q1"],GP.B[,"Q1"])
 colnames(indicator_plot) <- c("Date","WC","KZN","GP")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -259,26 +403,8 @@ g <- g + theme(legend.position="bottom")
 g
 ```
 
-###Alternative Weights
-The balances were calculated without applying any weights (i.e. equal weights). The results are similar when the firm size weights are applied, as illustrated in Figure 3 for the total building sector. Ons moet entlik die Building ook weight - ten minste net met die firm weights. Convert na 4 kategories.
-
-```{r figure4, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Building results for Q1 (confidence) - unweighted and partially weighted versions"}
-indicator_plot <- cbind(Building[,c("Datum","Q1")],Building_w[,c("Q1")])
-colnames(indicator_plot) <- c("Date","Unweighted","Weighted")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g <- g + geom_line()
-g <- g + ylab("Indicator") + xlab("")
-g <- g + ggtitle("Q1: Building")
-g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank()) 
-g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + theme(legend.position="bottom")
-g
-```
-
 ###Latecomers
-Start by calculating the results according to the old method - i.e. excluding outliers and without any firm or sector weights. 
+This section illustrates the impact of the inclusion of the latecomers on the indicators. The latecomers are not identified in the pre-2001 sample. We compare the post-2001 results, with and without late comers included. There is almost no difference in the series, which is consistent with [@Kershoff2015]. Figure 2 shows that the inclusion of a large number of latecomers (10% on average) had a small effect on the survey results. Although this is not entirely unexpected at the higher levels of aggregation, it is surprising that it also had almost no effect at high levels of disaggregation. This result supports the assumption that missing responses correspond with those that replied, i.e. the so-called missing at random (MAR) assumption holds [@Kershoff2015]. The results below illustrate that the inclusion of latecomers does not influence the results substantially, with only slight changes at the subsector level. We therefore decided to exclude them from all of the calculation going forward, which means that the series do not need to be revised when they are updated.
 
 ```{r late, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
 BER.B <- read.csv("Building_93Q2-17Q2.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
@@ -320,26 +446,72 @@ Building_l <- ongeweeg(all)
 BER.B <- BER.B[BER.B$Latecomer == FALSE | is.na(BER.B$Latecomer),]
 ```
 
-
-```{r figure5, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Building results for Q1 (confidence) - including and excluding latecomers"}
+```{r figure4, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Building results for Q1 (confidence) - including and excluding latecomers"}
 indicator_plot <- cbind(Building[,c("Datum","Q1")],Building_l[,c("Q1")])
 colnames(indicator_plot) <- c("Date","Total (excl. latecomers)","Total (incl. latecomers)")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g <- g + geom_line()
-g <- g + ylab("Indicator") + xlab("")
-g <- g + ggtitle("Q1: Building")
-g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank()) 
-g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + theme(legend.position="bottom")
-g
+g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g1 <- g1 + geom_line()
+g1 <- g1 + ylab("Indicator") + xlab("")
+g1 <- g1 + theme(legend.title=element_blank())
+g1 <- g1 + ggtitle("Building: Q1") 
+g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g1 <- g1 + theme(legend.title=element_blank()) 
+g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g1 <- g1 + theme(legend.position="none")
+
+indicator_plot <- cbind(Building[,c("Datum","Q2A")],Building_l[,c("Q2A")])
+colnames(indicator_plot) <- c("Date","Total (excl. latecomers)","Total (incl. latecomers)")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g2 <- g2 + geom_line()
+g2 <- g2 + ylab("") + xlab("")
+g2 <- g2 + theme(legend.title=element_blank())
+g2 <- g2 + ggtitle("Building: Q2A") 
+g2 <- g2 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g2 <- g2 + theme(legend.title=element_blank()) 
+g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g2 <- g2 + theme(legend.position="none")
+
+indicator_plot <- cbind(Building[,c("Datum","Q3A")],Building_l[,c("Q3A")])
+colnames(indicator_plot) <- c("Date","Total (excl. latecomers)","Total (incl. latecomers)")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g3 <- g3 + geom_line()
+g3 <- g3 + ylab("Indicator") + xlab("")
+g3 <- g3 + theme(legend.title=element_blank())
+g3 <- g3 + ggtitle("Building: Q3A") 
+g3 <- g3 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g3 <- g3 + theme(legend.title=element_blank()) 
+g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
+
+indicator_plot <- cbind(Building[,c("Datum","Q8")],Building_l[,c("Q8")])
+colnames(indicator_plot) <- c("Date","Total (excl. latecomers)","Total (incl. latecomers)")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g4 <- g4 + geom_line()
+g4 <- g4 + ylab("") + xlab("")
+g4 <- g4 + theme(legend.title=element_blank())
+g4 <- g4 + ggtitle("Building: Q8") 
+g4 <- g4 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g4 <- g4 + theme(legend.title=element_blank()) 
+g4 <- g4 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
+g4 <- g4 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+
+suppressMessages(library(gridExtra))
+grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 ```
 
+Since 2016Q2, we have included imputed values, in order to increase the number of responses and to decrease the volatility of the balances. An imputed value refers to a latecomer in period $t-1$, who had not responded in time in period $t$. For example, all the latecomers in 2017Q1, who had not responded in time in 2017Q2, were added to the 2017Q2 responses. If such a firm was also a latecomer in 2017Q2, the response may potentially be an imputed value in 2017Q3, if it is a latecomer again. The imputed values are reflected in the published results sine 2016Q2, and are therefore included in the comparisons below. The latecomers are still excluded, as we have decided to stick with this convention. We could also try to do this going backwards to 2001.
 
 ##Published Series
-```{r figure6, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Microdata results compared to the published results"}
-indicator_plot <- cbind(Contractor[,c("Datum","Q1")],pub[,"con_totalQ1"])
+In order to check that the microdata and the calculations are correct, we compare the estimated indicators using the microdata to the BER's published series, where available (the "BERdata_Build.xlsx" file on Dropbox).[^4] Figure 5 and Figure 6 compare the series calculated with the microdata to the BER's published series. The results are very similar, albeit with a few small discrepancies. In addition, the microdata provides longer series for the questions on the constraints than the published series. We therefore decided that the microdata could be used to calculate the new balance statistics for all the questions, as well as for the updates. 
+
+[^4]: The "published" series for the constraints (Q7-Q9) in the Excel file "BERdata_Build.xlsx" have a few strange values, but these are not published on Quantec. We decided to exclude these values.
+
+```{r figure5, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Microdata results compared to the published results"}
+indicator_plot <- cbind(Contractor[,c("Datum","Q1")],pub_b[,"con_totalQ1"])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -352,7 +524,7 @@ g1 <- g1 + theme(legend.title=element_blank())
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g1 <- g1 + theme(legend.position="none")
 
-indicator_plot <- cbind(Contractor[,c("Datum","Q2A")],pub[,c("con_totalQ2A")])
+indicator_plot <- cbind(Contractor[,c("Datum","Q2A")],pub_b[,c("con_totalQ2A")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -365,7 +537,7 @@ g2 <- g2 + theme(legend.title=element_blank())
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g2 <- g2 + theme(legend.position="none")
 
-indicator_plot <- cbind(Subcon[,c("Datum","Q1")],pub[,c("subcon_totalQ1")])
+indicator_plot <- cbind(Subcon[,c("Datum","Q1")],pub_b[,c("subcon_totalQ1")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -378,7 +550,7 @@ g3 <- g3 + theme(legend.title=element_blank())
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
 
-indicator_plot <- cbind(Subcon[,c("Datum","Q8")],pub[,c("subcon_totalQ8")])
+indicator_plot <- cbind(Subcon[,c("Datum","Q8")],pub_b[,c("subcon_totalQ8")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -396,9 +568,8 @@ grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 
 ```
 
-
-```{r figure7, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Microdata results compared to the published results"}
-indicator_plot <- cbind(Contractor_res[,c("Datum","Q3A")],pub[,"con_resQ3A"])
+```{r figure6, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Microdata results compared to the published results"}
+indicator_plot <- cbind(Contractor_res[,c("Datum","Q3A")],pub_b[,"con_resQ3A"])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -411,7 +582,7 @@ g1 <- g1 + theme(legend.title=element_blank())
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g1 <- g1 + theme(legend.position="none")
 
-indicator_plot <- cbind(Contractor_nonres[,c("Datum","Q4A")],pub[,c("con_nonresQ4A")])
+indicator_plot <- cbind(Contractor_nonres[,c("Datum","Q4A")],pub_b[,c("con_nonresQ4A")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -424,7 +595,7 @@ g2 <- g2 + theme(legend.title=element_blank())
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g2 <- g2 + theme(legend.position="none")
 
-indicator_plot <- cbind(Subcon_res[,c("Datum","Q5A")],pub[,c("subcon_resQ5A")])
+indicator_plot <- cbind(Subcon_res[,c("Datum","Q5A")],pub_b[,c("subcon_resQ5A")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -437,7 +608,7 @@ g3 <- g3 + theme(legend.title=element_blank())
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
 
-indicator_plot <- cbind(Subcon_nonres[,c("Datum","Q7")],pub[,c("subcon_nonresQ7")])
+indicator_plot <- cbind(Subcon_nonres[,c("Datum","Q7")],pub_b[,c("subcon_nonresQ7")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -454,14 +625,36 @@ library(gridExtra)
 grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 ```
 
+##Alternative Weights
+The balances were calculated without applying any weights (i.e. equal weights). The results are similar when the firm size weights are applied. We should create a weighted version of the Building indictors, using the two-step procedure, once we have subsector size weights. The firm size weights can also be converted to four categories, as we have done with the Manufacturing survey. Given that the BER does not have access to the National Business Register (which represents the universe) maintained by Stats SA, it cannot calculate sample weights.
+
 ##Reference Series
+In this section the series are assessed in terms of their tracking record, i.e. their correlations to the respective reference series. The question is which reference series should be used. This is an empirical question. We compared the series graphically and calculated simple correlations.
 
-## Residential Activity
-```{r figure8, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Residential results compared to the reference series"}
-build <- cbind(Residential[,c("Datum","Q2A","Q3A")],ref[,c("GFCF.Residential","Residential.building")])
-colnames(build) <- c("Date","Q2A","Q3A","GFCF: Residential (SARB)","Residential building (StatsSA)")
+###Residential Activity
+The SA Reserve Bank (SARB) produces quarterly data on residential and non-residential fixed investment, while Stats SA produces monthly data on building plans passed and completed. These data all have their respective advantages and disadvantages. Building plans passed are a good leading indicator, but postponements and the stock of plans makes this data problematic as reference series (or benchmark) for the BER's building survey. Building plans completed are useful, bearing in mind that Stats SA only records the activity upon completion, while the BER's survey records the progress from start to completion. The SARB's data is the best match for the BER's survey, as it provides for the spread of activity over time. However, its disadvantage is that the recent data is revised extensively when more information becomes available and no provincial data is available.
 
-build[,2:5] <- scale(build[,2:5])
+Building plans passed (StatsSA) does not necessarily have a stable relationship, because planes approved do not necessarily get completed. Buildings completed (StatsSA) does not make adjustments for completions at the end of the project. Fixed investment (SARB) uses an S-curve to adjust.
+
+A comparison of the SARB and Stats SA data shows that they are closely correlated even though Stats SA record activity only at the end of the period, while the SARB spreads it over the whole period of construction. The deviation in residential activity in 2013 may therefore disappear when the SARB eventually revises its data. The comparison also shows that the Stats SA data is more volatile, especially for non-residential activity. This is to be expected, given the lumpy nature of non-residential construction.
+
+Stats SA publishes data for residential buildings, non-residential buildings, additions and alterations, and the total. To make this data comparable to those of the SARB and the BER, additions and alterations were divided between residential and non-residential buildings. As a final step, other residential (e.g. hotels and casinos) and non-residential buildings (e.g. schools, sport clubs, churches and hospitals) were excluded to make the data even more comparable to the BER's, as such buildings may at specific time points have a big impact on the growth rate and the BER does not always cover them effectively. However, the "other" category has little impact on the series over longer time periods.
+
+An analysis of Stats SA's data shows that the share of residential buildings increased from about 60% of the total in 2001 to 80% in 2005 and 2006. Thereafter the share declined to close to 60% in 2009, but it edged up a bit since then. The change in the share of residential building activity reflects its course over this period. Residential building activity grew faster than non-residential building activity (resulting in a rising share) during the initial phase of the previous cyclical upturn (between 2001 and 2005). During the last phase of the previous cyclical upturn (2006 and 2007) and the recession (2008 and 2009), it contracted, which resulted in a declining share. In the current upswing, residential building activity underperformed relative to non-residential building activity until 2011.
+
+In this case we compare the series for general business conditions (Q2A) and total activity (Q3A) to the following reference series:
+
+- YoY% change in the SARB's real residential & non-residential gross fixed capital formation (SARB GFCF)
+- YoY% change in StatsSA's real building plans completed; 
+- YoY% change in StatsSA's real building plans completed, excluding big hotels, casinos and alterations ("additions and alterations" do not require building plans).
+
+Figure 7 illustrates the Residential series compared to the SARB and StatsSA references series. Table 3 reports that the correlations between the survey balances and the reference series are relatively high. This is confirmed by the cross-correlations illustrated in Figure 8. These show that the reference series with the highest correlations are StatsSA's building plans completed (excluding big hotels, casinos and alterations).
+
+```{r figure7, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Residential results compared to the reference series"}
+build <- cbind(Residential[,c("Datum","Q2A","Q3A")],ref_b[,c("GFCF.Residential","Residential.building","Res..excl..h.c.a.")])
+colnames(build) <- c("Date","Q2A","Q3A","GFCF.Residential","Residential.building","Res Building (excl.hca)")
+
+build[,2:6] <- scale(build[,2:6])
 plot <- melt(build, id="Date")  # convert to long format
 g <- ggplot(data=plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
@@ -474,34 +667,38 @@ g <- g + theme(legend.position="bottom")
 g
 ```
 
-## Residential Correlations
-```{r table2, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+```{r table3, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
 source("corstarsl.R")
-xt <- xtable(corstarsl(build[,-1])[3:4,1:2], caption="Residential series correlations")
+xt <- xtable(corstarsl(build[,-1])[3:5,1:2], caption="Residential series correlations")
 print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"),scalebox = 0.9)
 ```
 
-## Residential Cross-correlations
-```{r figure9, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Residential series cross-correlations"}
+```{r figure8, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Residential series cross-correlations"}
 Q2A <- build[,2]
 Q3A <- build[,3] 
 GFCF <- build[,4]
-Build <- build[,5]
-    
+Build.Plans <- build[,5]
+
 par(mfrow=c(2,2))
-ccf(Q2A, GFCF, na.action = na.pass, ylim=c(-0.2, 0.8))
-ccf(Q2A, Build, na.action = na.pass, ylim=c(-0.2, 0.8))
-ccf(Q3A, GFCF, na.action = na.pass, ylim=c(-0.2, 0.8))
-ccf(Q3A, Build, na.action = na.pass, ylim=c(-0.2, 0.8))
+ccf(Q2A, GFCF, na.action = na.pass, ylim=c(-0.2, 0.8), 
+    ylab = "Correlation", xlab = "Number of Lags")
+ccf(Q2A, Build.Plans, na.action = na.pass, ylim=c(-0.2, 0.8), 
+    ylab = "Correlation", xlab = "Number of Lags")
+ccf(Q3A, GFCF, na.action = na.pass, ylim=c(-0.2, 0.8), 
+    ylab = "Correlation", xlab = "Number of Lags")
+ccf(Q3A, Build.Plans, na.action = na.pass, ylim=c(-0.2, 0.8), 
+    ylab = "Correlation", xlab = "Number of Lags")
 ```
 
+###Non-Residential Activity
+Figure 9 illustrates the Non-Residential series compared to the SARB and StatsSA references series. Table 4 reports that the correlations between the survey balances and the reference series are relatively low, although the cross-correlations in Figure 10 show that the correlations are higher when the balances are lagged, i.e. the survey results have a leading relationship with the reference series. The highest correlations with the SARB series are when they lead by around 2 quarters and with the StatsSA series when they lead by around 4 quarters.
 
-## Non-Residential Activity
-```{r figure10, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Non-residential results compared to the reference series"}
-build <- cbind(Non_residential[,c("Datum","Q2A","Q3A")],ref[,c("GFCF.Non.residential","Non.residential.building")])
-colnames(build) <- c("Date","Q2A","Q3A","GFCF: Non-residential (SARB)", "Non-residential building (StatsSA)")
+```{r figure9, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Non-residential results compared to the reference series"}
+build <- cbind(Non_residential[,c("Datum","Q2A","Q3A")],ref_b[,c("GFCF.Non.residential","Non.residential.building",
+                                                               "Non.res..excl..h.c.a.")])
+colnames(build) <- c("Date","Q2A","Q3A","GFCF.Non-residential","Non.residential.building","Non-Res Building (excl.hca)")
 
-build[,2:5] <- scale(build[,2:5])
+build[,2:6] <- scale(build[,2:6])
 plot <- melt(build, id="Date")  # convert to long format
 g <- ggplot(data=plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
@@ -514,34 +711,32 @@ g <- g + theme(legend.position="bottom")
 g
 ```
 
-## Non-Residential Correlations
-```{r table3, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
-xt <- xtable(corstarsl(build[,-1])[3:4,1:2], caption="Non-residential series correlations")
+```{r table4, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+xt <- xtable(corstarsl(build[,-1])[3:5,1:2], caption="Non-residential series correlations")
 print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"),scalebox = 0.9)
 ```
 
-## Non-Residential Cross-correlations
-```{r figure11, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Non-residential series cross-correlations"}
+```{r figure10, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Non-residential series cross-correlations"}
 Q2A <- build[,2]
 Q3A <- build[,3] 
 GFCF <- build[,4]
-Build <- build[,5]
+Build.Plans <- build[,5]
 
 par(mfrow=c(2,2))
 ccf(Q2A, GFCF, na.action = na.pass, ylim=c(-0.2, 0.6))
-ccf(Q2A, Build, na.action = na.pass, ylim=c(-0.2, 0.6))
+ccf(Q2A, Build.Plans, na.action = na.pass, ylim=c(-0.2, 0.6))
 ccf(Q3A, GFCF, na.action = na.pass, ylim=c(-0.2, 0.6))
-ccf(Q3A, Build, na.action = na.pass, ylim=c(-0.2, 0.6))
+ccf(Q3A, Build.Plans, na.action = na.pass, ylim=c(-0.2, 0.6))
 ```
 
+###Total Building Activity
+Figure 11 illustrates the Total Building Activity series compared to the SARB and StatsSA references series. Table 5 reports that the contemporaneous correlations between the survey balances and the reference series are relatively high. This is confirmed by the cross-correlations illustrated in Figure 12, which show again that the survey balances lead the reference series by a few quarters. 
 
-## Total Building Activity
+```{r figure11, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Total results compared to the reference series"}
+build <- cbind(Building[,c("Datum","Q2A","Q3A")],ref_b[,c("GFCF.Res_Non.res","GFCF.Total","Total.building","Total..excl..h.c.a.")])
+colnames(build) <- c("Date","Q2A","Q3A","GFCF: Res & Non-res (SARB)", "GFCF: Total (SARB)", "Total building (StatsSA)","Total (excl.hca)")
 
-```{r figure12, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5,, fig.cap="Total results compared to the reference series"}
-build <- cbind(Building[,c("Datum","Q2A","Q3A")],ref[,c("GFCF.Res_Non.res","GFCF.Total","Total.building")])
-colnames(build) <- c("Date","Q2A","Q3A","GFCF: Res & Non-res (SARB)", "GFCF: Total (SARB)", "Total building (StatsSA)")
-
-build[,2:6] <- scale(build[,2:6])
+build[,2:7] <- scale(build[,2:7])
 plot <- melt(build, id="Date")  # convert to long format
 g <- ggplot(data=plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
@@ -554,30 +749,29 @@ g <- g + theme(legend.position="bottom")
 g
 ```
 
-## Total Building Correlations
-```{r table4, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
-xt <- xtable(corstarsl(build[,-1])[3:5,1:2], caption="Total series correlations")
+```{r table5, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+xt <- xtable(corstarsl(build[,-1])[3:6,1:2], caption="Total series correlations")
 print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"),scalebox = 0.9)
 ```
 
-## Total Building Cross-correlations
-
-```{r figure13, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Total series cross-correlations"}
+```{r figure12, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Total series cross-correlations"}
 Q2A <- build[,2]
 Q3A <- build[,3] 
 GFCF <- build[,4]
-Build <- build[,6]
+Build.Plans <- build[,6]
 
 par(mfrow=c(2,2))
 ccf(Q2A, GFCF, na.action = na.pass, ylim=c(-0.2, 0.8))
-ccf(Q2A, Build, na.action = na.pass, ylim=c(-0.2, 0.8))
+ccf(Q2A, Build.Plans, na.action = na.pass, ylim=c(-0.2, 0.8))
 ccf(Q3A, GFCF, na.action = na.pass, ylim=c(-0.2, 0.8))
-ccf(Q3A, Build, na.action = na.pass, ylim=c(-0.2, 0.8))
+ccf(Q3A, Build.Plans, na.action = na.pass, ylim=c(-0.2, 0.8))
 ```
 
-## Regional Activity
-```{r figure14, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Regional results compared to the reference series"}
-build <- cbind(WC[,c("Datum","Q2A","Q3A")],KZN[,c("Q2A","Q3A")],GP[,c("Q2A","Q3A")],ref[,c("Building_WC","Building_KN","Building_GP")])
+###Regional Activity
+Figure 13 illustrates the Regional series compared to the StatsSA references series (the only one that is available). The reference series are extremely volatile. Table 6 reports that the correlations between the survey balances and the reference series are relatively low due to this volatility, although they are marginally higher when the survey balance series are lagged, illustrated in Figure 14. 
+
+```{r figure13, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Regional results compared to the reference series"}
+build <- cbind(WC.B[,c("Datum","Q2A","Q3A")],KZN.B[,c("Q2A","Q3A")],GP.B[,c("Q2A","Q3A")],ref_b[,c("Building_WC","Building_KN","Building_GP")])
 colnames(build) <- c("Date","WC.Q2A","WC.Q3A","KZN.Q2A","KZN.Q3A","GP.Q2A","GP.Q3A","Building_WC","Building_KZN","Building_GP")
 
 #Published series
@@ -622,8 +816,7 @@ library(gridExtra)
 grid.arrange(g1, g2, g3, ncol=2, nrow =2)
 ```
 
-## Regional Correlations
-```{r table5, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+```{r table6, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
 tafel <- cbind(corstarsl(build[,-1])[7,1:2],corstarsl(build[,-1])[8,3:4],
                corstarsl(build[,-1])[9,5:6])
 row.names(tafel) <- "Building"
@@ -632,9 +825,7 @@ xt <- xtable(tafel, caption="Regional series correlations")
 print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"),scalebox = 0.9)
 ```
 
-## Regional Cross-correlations
-
-```{r figure15, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Regional series cross-correlations"}
+```{r figure14, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Regional series cross-correlations"}
 WC.Q3A <- build[,3] 
 WC.Build <- build[,8]
 KZN.Q3A <- build[,5] 
@@ -648,9 +839,13 @@ ccf(KZN.Q3A, KZN.Build, na.action = na.pass, ylim=c(-0.2, 0.4))
 ccf(GP.Q3A, GP.Build, na.action = na.pass, ylim=c(-0.2, 0.6))
 ```
 
-##Architects, QSs and CEs
+For simplicity, and because the disaggregated data are available by province, we decided to use the simple StatsSA data as reference series. This means that we do not make adjustments for big projects, such as hotels and casinos, or alterations. This makes the comparison easier. The StatsSA series is also the one that is published by province, which eases that comparison and makes it consistent for all our series. For the remainder of reference series comparisons we focus on the StatsSA series.
 
-###Architects
+This section has demonstrated that the Building survey microdata are consistent with the published series. The survey balances seem to track the reference series relatively well. For the Building series we should calculate weighted versions, in order to make all the series consistent.
+
+##Architects, Quantity Surveyors and Civil Construction
+The microdata for the surveys of architects, quantity surveyors and civil engineers is only available from 2001 (Argitekte_01Q2-17Q2.xlsx, Civils_01Q2-17Q2.xlsx and Quantity_01Q2-17Q2.xlsx). These series do not form part of the overall business confidence indicator anyway. As with the Building survey, the responses do not receive weights (equal weighting procedure), even though firm size weights are available. Figure 15 compares the results from the microdata to the published series. They are very similar and the microdata seem to be correct. In future we should consider incorporating (weighted versions) of these three surveys into the Building sector results.
+
 ```{r B.Arc, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
 #=========================================
 #Architects, Civils, QSs
@@ -713,9 +908,9 @@ qss[c(11,19),c(3,4,6,8,10,12)] <- pub[c(11,19),8:13]
 civils[c(19),c(3,4,6,8,10,12:15)] <- pub[c(19),14:22]
 ```
 
-```{r figure16, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Architect results compared to the published results"}
+```{r figure15, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Architect, QS and Civil Engineer results compared to the published results"}
 #Published series
-indicator_plot <- cbind(architects[,c("Datum","Q1")],pub[,"Arc_Q1"])
+indicator_plot <- cbind(architects[,c("Datum","Q1")],pub_a[,"Arc_Q1"])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -728,7 +923,7 @@ g1 <- g1 + theme(legend.title=element_blank())
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g1 <- g1 + theme(legend.position="none")
 
-indicator_plot <- cbind(architects[,c("Datum","Q2A")],pub[,c("Arc_Q2A")])
+indicator_plot <- cbind(architects[,c("Datum","Q2A")],pub_a[,c("Arc_Q2A")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -741,66 +936,7 @@ g2 <- g2 + theme(legend.title=element_blank())
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g2 <- g2 + theme(legend.position="none")
 
-indicator_plot <- cbind(architects[,c("Datum","Q4A")],pub[,c("Arc_Q4A")])
-colnames(indicator_plot) <- c("Date","Microdata","Published")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g3 <- g3 + geom_line()
-g3 <- g3 + ylab("Indicator") + xlab("")
-g3 <- g3 + theme(legend.title=element_blank())
-g3 <- g3 + ggtitle("Q4A: Architects") 
-g3 <- g3 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g3 <- g3 + theme(legend.title=element_blank()) 
-g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
-
-indicator_plot <- cbind(architects[,c("Datum","Q6A")],pub[,c("Arc_Q6A")])
-colnames(indicator_plot) <- c("Date","Microdata","Published")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g4 <- g4 + geom_line()
-g4 <- g4 + ylab("") + xlab("")
-g4 <- g4 + theme(legend.title=element_blank())
-g4 <- g4 + ggtitle("Q6A: Architects") 
-g4 <- g4 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g4 <- g4 + theme(legend.title=element_blank()) 
-g4 <- g4 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
-g4 <- g4 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-
-library(gridExtra)
-grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
-```
-
-###Quantity Surveyors
-```{r figure17, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Quantity Surveyor results compared to the published results"}
-#Published series
-indicator_plot <- cbind(qss[,c("Datum","Q1")],pub[,"QS_Q1"])
-colnames(indicator_plot) <- c("Date","Microdata","Published")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g1 <- g1 + geom_line()
-g1 <- g1 + ylab("Indicator") + xlab("")
-g1 <- g1 + theme(legend.title=element_blank())
-g1 <- g1 + ggtitle("Q1: QSs") 
-g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g1 <- g1 + theme(legend.title=element_blank()) 
-g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g1 <- g1 + theme(legend.position="none")
-
-indicator_plot <- cbind(qss[,c("Datum","Q2A")],pub[,c("QS_Q2A")])
-colnames(indicator_plot) <- c("Date","Microdata","Published")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g2 <- g2 + geom_line()
-g2 <- g2 + ylab("") + xlab("")
-g2 <- g2 + theme(legend.title=element_blank())
-g2 <- g2 + ggtitle("Q2A: QSs") 
-g2 <- g2 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g2 <- g2 + theme(legend.title=element_blank()) 
-g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g2 <- g2 + theme(legend.position="none")
-
-indicator_plot <- cbind(qss[,c("Datum","Q4A")],pub[,c("QS_Q4A")])
+indicator_plot <- cbind(qss[,c("Datum","Q4A")],pub_a[,c("QS_Q4A")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -813,67 +949,7 @@ g3 <- g3 + theme(legend.title=element_blank())
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
 
-indicator_plot <- cbind(qss[,c("Datum","Q6A")],pub[,c("QS_Q6A")])
-colnames(indicator_plot) <- c("Date","Microdata","Published")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g4 <- g4 + geom_line()
-g4 <- g4 + ylab("") + xlab("")
-g4 <- g4 + theme(legend.title=element_blank())
-g4 <- g4 + ggtitle("Q6A: QSs") 
-g4 <- g4 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g4 <- g4 + theme(legend.title=element_blank()) 
-g4 <- g4 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
-g4 <- g4 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-
-library(gridExtra)
-grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
-```
-
-###Civil Engineers
-
-```{r figure18, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Civil Engineer results compared to the published results"}
-#Published series
-indicator_plot <- cbind(civils[,c("Datum","Q1")],pub[,"CE_Q1"])
-colnames(indicator_plot) <- c("Date","Microdata","Published")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g1 <- g1 + geom_line()
-g1 <- g1 + ylab("Indicator") + xlab("")
-g1 <- g1 + theme(legend.title=element_blank())
-g1 <- g1 + ggtitle("Q1: CEs") 
-g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g1 <- g1 + theme(legend.title=element_blank()) 
-g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g1 <- g1 + theme(legend.position="none")
-
-indicator_plot <- cbind(civils[,c("Datum","Q2A")],pub[,c("CE_Q2A")])
-colnames(indicator_plot) <- c("Date","Microdata","Published")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g2 <- g2 + geom_line()
-g2 <- g2 + ylab("") + xlab("")
-g2 <- g2 + theme(legend.title=element_blank())
-g2 <- g2 + ggtitle("Q2A: CEs") 
-g2 <- g2 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g2 <- g2 + theme(legend.title=element_blank()) 
-g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g2 <- g2 + theme(legend.position="none")
-
-indicator_plot <- cbind(civils[,c("Datum","Q4A")],pub[,c("CE_Q4A")])
-colnames(indicator_plot) <- c("Date","Microdata","Published")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g3 <- g3 + geom_line()
-g3 <- g3 + ylab("Indicator") + xlab("")
-g3 <- g3 + theme(legend.title=element_blank())
-g3 <- g3 + ggtitle("Q4A: CEs") 
-g3 <- g3 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g3 <- g3 + theme(legend.title=element_blank()) 
-g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
-
-indicator_plot <- cbind(civils[,c("Datum","Q6")],pub[,c("CE_Q6")])
+indicator_plot <- cbind(civils[,c("Datum","Q6")],pub_a[,c("CE_Q6")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -890,84 +966,48 @@ library(gridExtra)
 grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 ```
 
+##Summary
+So we have calculated lots of series. After some corrections the microdata seems to provide series that correspond very closely to the published series. We have decided to exclude latecomers to make updating easier and avoid revisions, because they make a small difference anyway. We have calculated new series and compared them to the reference series. We chose the StatsSA series as reference series, as it is widely available for many of our series and has a relatively high correlation with the balances. We still have to try weighted versions of these indicators. The final series are written to an Excel file. The updates can and should be fully automated.
 
 \newpage
-#Manufacturing Survey
+#The Manufacturing Survey
+In this section we examine the Manufacturing sector surveys and results. We have used the Building survey microdata to update the results for the period 1992Q1-2017Q2. 
+
+##Collating and Cleaning the Microdata
+Similar to the Building Survey, in order to match the questions and responses in the different versions of the surveys, the surveys in the old records were compared to the current incarnations. We printed and marked the questions in the old (pre-2001) Manufacturing surveys. We then matched them to the new survey questions. The old questionnaires have been uploaded to the Dropbox folder.
+
+There were many clear mistakes in the sector and regions codes in the microdata, especially for the period 2000Q4-2001Q1. To correct these we used the codes with the highest frequencies for each id code (i.e. the mode for each individual respondent).
+
 ```{r M.man, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
-datums <- read.csv("dates3.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-datums$Datum <- as.Date(datums$Datum, format = "%Y/%m/%d")
-
-pub <- read.csv("Manufacturing_BER_Published.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-ref <- read.csv("Ref Series_2.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-
-#library(xlsx)
-#write.xlsx(BER.M, "check.xlsx")
+pub_m <- read.csv("Manufacturing_BER_Published.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+ref_m <- read.csv("Ref Series_Manufac.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
 
 ##=============================
-#Correcting the region kodes
-#BER.M <- read.csv("Manufacturing_full.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-
-#colnames(BER.M)[1:7] <- c("region","id","sector","weight","turnover","factor","surveyQ")
-#BER.M$surveyQ <- toupper(BER.M$surveyQ)
-#BER.M$sector <- factor(BER.M$sector) #could include labels
-#BER.M$id <- factor(BER.M$id)
-#BER.M$surveyQ <- factor(BER.M$surveyQ)
-
-##=============================
-#Clean regions
-#Mode <- function(x) {
-#    ux <- na.remove(unique(x))
-#    ux[which.max(tabulate(match(x, ux)))]
-#}
-
-#foute <- c("2000Q2","2000Q3","2000Q4","2001Q1")
-#korrek <- c("1999Q1","1999Q2","1999Q3","1999Q4","2001Q2","2001Q3","2001Q4",
-#            "2002Q1","2002Q2","2002Q3","2002Q4","2003Q1")
-
-#for(i in levels(BER.M$id)) {
-#    if(!is.na(Mode(BER.M$region[(BER.M$surveyQ %in% korrek) & (BER.M$id == i)]))) {
-#        BER.M$region[(BER.M$surveyQ %in% foute) & (BER.M$id == i)] <- Mode(BER.M$region[(BER.M$surveyQ %in% korrek) & (BER.M$id == i)]) 
-#    }
-#}
-#BER.M$region <- factor(BER.M$region)
-
-#write.csv(man, "check2.csv")
-
-
-##=============================
-#Correcting the faktor variable 
+#MANUFACTURING
+#Correcting the old faktor variable 
 BER.M <- read.csv("Manufacturing_current faktor.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-
 colnames(BER.M)[1:7] <- c("region","id","sector","weight","turnover","factor","surveyQ")
 BER.M$surveyQ <- toupper(BER.M$surveyQ)
 BER.M$sector <- factor(BER.M$sector) #could include labels
 BER.M$id <- factor(BER.M$id)
 BER.M$surveyQ <- factor(BER.M$surveyQ)
 
-##=============================
 #Clean faktor
 Mode <- function(x) {
     ux <- na.remove(unique(x))
     ux[which.max(tabulate(match(x, ux)))]
 }
-
 foute <- c("2000Q2","2000Q3","2000Q4","2001Q1")
 korrek <- c("1999Q1","1999Q2","1999Q3","1999Q4",
             "2001Q2","2001Q3","2001Q4","2002Q1","2002Q2","2002Q3","2002Q4",
             "2003Q1","2003Q2","2003Q3","2003Q4")#,"2004Q1","2004Q2","2004Q3","2004Q4",
-            #"2005Q1","2005Q2","2005Q3","2006Q1","2006Q2","2006Q3","2006Q4")
-
+#"2005Q1","2005Q2","2005Q3","2006Q1","2006Q2","2006Q3","2006Q4")
 for(i in levels(BER.M$id)) {
     if(!is.na(Mode(BER.M$factor[(BER.M$surveyQ %in% korrek) & (BER.M$id == i)]))) {
         BER.M$factor[(BER.M$surveyQ %in% foute) & (BER.M$id == i)] <- Mode(BER.M$factor[(BER.M$surveyQ %in% korrek) & (BER.M$id == i)]) 
     }
 }
-
-#write.csv(BER.M, "check2.csv")
-
-##=============================
 #BER.M <- read.csv("Manufacturing_corrected.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-
 #colnames(BER.M)[1:7] <- c("region","id","sector","weight","turnover","factor","surveyQ")
 #BER.M$surveyQ <- toupper(BER.M$surveyQ)
 #BER.M$sector <- factor(BER.M$sector) #could include labels
@@ -978,7 +1018,6 @@ for(i in levels(BER.M$id)) {
 BER.M <- BER.M[BER.M$Latecomer == FALSE | is.na(BER.M$Latecomer),]
 BER.M <- BER.M[,!grepl("X",colnames(BER.M))]    
 BER.M <- BER.M[,1:64]
-#==============================
 # replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
 for(i in 8:64) {
     BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==2, 0)
@@ -990,121 +1029,256 @@ for(i in 43:49) {
     BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==-1, 0)
 }
 
-##======================##
-## CALCULATE INDICATORS ##
-##======================##
+#-----------------------
+#New faktor variable 
+BER.Mn <- read.csv("Manufacturing_new faktor.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+colnames(BER.Mn)[1:7] <- c("region","id","sector","weight","turnover","factor","surveyQ")
+BER.Mn$surveyQ <- toupper(BER.Mn$surveyQ)
+BER.Mn$sector <- factor(BER.Mn$sector) #could include labels
+BER.Mn$id <- factor(BER.Mn$id)
+
+#Clean SurveyQ variable
+BER.Mn$temp <- NULL
+for(i in 1:nrow(BER.Mn)) {
+    ifelse(substr(BER.Mn$surveyQ[i], 1, 1)==9, 
+           BER.Mn$temp[i] <- paste0("19",BER.Mn$surveyQ[i],sep=""),
+           BER.Mn$temp[i] <- paste0("20",BER.Mn$surveyQ[i],sep=""))
+}
+BER.Mn$surveyQ <- BER.Mn$temp
+BER.Mn <- BER.Mn[,-ncol(BER.Mn)]
+BER.Mn$surveyQ <- factor(BER.Mn$surveyQ)
+
+#Exlcude Latecomers and old questions
+BER.Mn <- BER.Mn[BER.Mn$Latecomer == FALSE | is.na(BER.Mn$Latecomer),]
+BER.Mn <- BER.Mn[,!grepl("X",colnames(BER.Mn))]    
+BER.Mn <- BER.Mn[,1:64]
+
+# replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
+for(i in 8:64) {
+    BER.Mn[,i] <- replace(BER.Mn[,i], BER.Mn[,i]==2, 0)
+    BER.Mn[,i] <- replace(BER.Mn[,i], BER.Mn[,i]==3,-1)
+}
+for(i in 43:49) {
+    BER.Mn[,i] <- replace(BER.Mn[,i], BER.Mn[,i]==0, 0.5)
+    BER.Mn[,i] <- replace(BER.Mn[,i], BER.Mn[,i]==-1, 0)
+}
+
+#-----------------------
+#New 2-step weighting 
+BER.M2 <- read.csv("Manufacturing_new faktor_sep.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+colnames(BER.M2)[1:9] <- c("region","id","sector","weight","turnover","firmw","sectorw","factor","surveyQ")
+BER.M2$surveyQ <- toupper(BER.M2$surveyQ)
+BER.M2$sector <- factor(BER.M2$sector) #could include labels
+BER.M2$id <- factor(BER.M2$id)
+BER.M2$surveyQ <- factor(BER.M2$surveyQ)
+BER.M2$factor <- as.numeric(as.character(BER.M2$factor))
+#BER.M$factor <- BER.M$firmw * BER.M$sectorw
+
+BER.M2 <- BER.M2[BER.M2$Latecomer == FALSE | is.na(BER.M2$Latecomer),]
+BER.M2 <- BER.M2[,!grepl("X",colnames(BER.M2))]    
+BER.M2 <- BER.M2[,1:66]
+
+#Maak factor reg
+Ej <- aggregate(BER.M2$firmw, by=list(BER.M2$surveyQ,BER.M2$sector), FUN=sum)
+BER.M2 <-  merge(BER.M2, Ej, by.x=c("surveyQ","sector"), by.y=c("Group.1","Group.2"),all = TRUE)
+BER.M2$factor <- BER.M2$factor/BER.M2$x
+BER.M2 <- BER.M2[,c(3,4,2,5:9,1,10:66)]
+
+for(i in 10:66) {
+    BER.M2[,i] <- replace(BER.M2[,i], BER.M2[,i]==2, 0)
+    BER.M2[,i] <- replace(BER.M2[,i], BER.M2[,i]==3,-1)
+}
+for(i in 45:51) {
+    BER.M2[,i] <- replace(BER.M2[,i], BER.M2[,i]==0, 0.5)
+    BER.M2[,i] <- replace(BER.M2[,i], BER.M2[,i]==-1, 0)
+}
+
+
+#MANUFACTURING
 food <- c(1010, 1011,1013,1019,1020,1021)
 textiles <- c(1120,1040,1049,1042,1060,1070)
 wood <- c(1109,1110,1080,1081)
 chemicals <- c(1130,1140,1149,1219)
 glass <- c(1153,1159)
 metals <- c(1160,1161,1170,1179,1181,1182,1189)
-electrical <- c(1190,1191,1199)
-radio <- c(1192,1194)
-transport <- c(1200,1201,1209)
+electrical <- c(1190,1191,1199,1192,1194)
+transport.m <- c(1200,1201,1209)
 furniture <- c(1090,1099)
-all <- as.numeric(as.character(unique(BER.M$sector)))
+all_m <- as.numeric(as.character(unique(BER.M$sector)))
 
 consumer <- c(1010,1011,1019,1049,1060,1070,1090,1099,1110,1120,1149,1189,1192,1020,1021)
 intermediate <- c(1013,1040,1042,1080,1081,1109,1130,1140,1153,1159,1160,1161,
                   1179,1191,1199,1219)
 capital <- c(1170,1181,1182,1189,1190,1194,1200,1201,1209)
-             
-streke <- unique(BER.M$region)
+#streke <- unique(BER.M$region)
 
-
-ongeweeg <- function(sektor=all,streek=streke) {
-    man <- BER.M[BER.M$sector %in% sektor & BER.M$region %in% streek,]
-    sector <- aggregate(man[,(match("surveyQ",colnames(man))+1):ncol(man)], by=list(man$surveyQ), FUN=mean, na.rm=TRUE)
-    sector <- merge(datums,sector, by.x="Date", by.y="Group.1", all=TRUE)
-    sector[,-1:-2] <- na.approx(sector[,-1:-2]*100)
+ongeweeg <- function(data,sektor,streek,d) {
+    data <- data[data$sector %in% sektor & data$region %in% streek,]
+    sector <- aggregate(data[,(match("surveyQ",colnames(data))+1):ncol(data)], 
+                        by=list(data$surveyQ), FUN=mean, na.rm=TRUE)
+    sector$Obs <- aggregate(data$Q2A, by=list(data$surveyQ), FUN=length)[,2]
+    sector <- merge(datums[d,],sector, by.x="Date", by.y="Group.1", all=TRUE)
+    sector <- sector[,c(1:2,ncol(sector),3:(ncol(sector)-1))]
+    sector[,-1:-3] <- na.approx(sector[,-1:-3]*100)
     return(sector)
 }
 
-geweeg <- function(sektor=all,streek=streke) {
-    
+
+geweeg <- function(data,sektor,streek,d) {
     weeg <- function(temp) {  #calculate weighted mean for each quarter for all columns
         temp <- cbind(factor=temp$factor,temp$factor*temp[(match("surveyQ",colnames(temp))+1):ncol(temp)])
-        #temp <- colSums(temp, na.rm=TRUE, dims = 1)/sum(temp$factor, na.rm=TRUE)
-        #calculate the sum(wi*xi)/sum(wi)
-        temp <- colSums(temp, na.rm=TRUE, dims = 1)/    
+        temp <- colSums(temp, na.rm=TRUE, dims = 1)/    #calculate the sum(wi*xi)/sum(wi)
             sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])]))
-        #weight only by those that responded to a specific question
-        return(temp)
+        return(temp) #weight only by those that responded to a specific question
     }
     
-    man <- BER.M[BER.M$sector %in% sektor & BER.M$region %in% streek,]
+    data <- data[data$sector %in% sektor & data$region %in% streek,]
     sector <- data.frame()
-    for(kwartaal in levels(man$surveyQ)) {
-        sector <- rbind(sector,weeg(man[man$surveyQ==kwartaal,]))
+    for(kwartaal in levels(data$surveyQ)) {
+        sector <- rbind(sector,weeg(data[data$surveyQ==kwartaal,]))
     }
-    sector <- sector *100
-    sector[,1] <- levels(man$surveyQ)
-    colnames(sector) <- colnames(man)[-1:-6]
-    sector <- merge(datums,sector, by.x="Date", by.y="surveyQ", all=TRUE)
-    #sector <- as.data.frame(t(sapply(levels(man$surveyQ), function(kwartaal) weeg(man[man$surveyQ==kwartaal,]))))
-    sector[,-1:-2] <- na.approx(sector[,-1:-2])
+    sector[,1] <- levels(data$surveyQ)
+    colnames(sector) <- colnames(data)[(match("surveyQ",colnames(data))):ncol(data)]
+    sector$Obs <- aggregate(data$Q2A, by=list(data$surveyQ), FUN=length)[,2]
+    sector <- merge(datums[d,],sector, by.x="Date", by.y="surveyQ", all=TRUE)
+    sector <- sector[,c(1:2,ncol(sector),3:(ncol(sector)-1))]
+    sector[,-1:-3] <- na.approx(sector[,-1:-3]*100)
     return(sector)
 }
 
-Manufacturing <- geweeg(all)
-Manufacturing[24,c(seq(3,31,by=2),33:48)] <- pub[24,2:32]
-Manufacturing[33,c(seq(3,31,by=2),33:48)] <- pub[33,2:32]
-Manufacturing[56,c(seq(3,31,by=2),33:48)] <- pub[56,2:32]
+#==========================
+#MANUFACTURING
+Manufacturing <- geweeg(BER.M,all_m,streke,1:100)
 
-Food <- geweeg(food)
-Textiles <- geweeg(textiles)
-Wood <- geweeg(wood)
-Chemicals <- geweeg(chemicals)
-Glass <- geweeg(glass)
-Metals <- geweeg(metals)
-Electrical <- geweeg(electrical)
-Radio <- geweeg(radio)
-Elec_radio <- geweeg(c(electrical,radio))
-Transport <- geweeg(transport)
-Furniture <- geweeg(furniture)
+Food <- geweeg(BER.M,food,streke,1:100)
+Textiles <- geweeg(BER.M,textiles,streke,1:100)
+Wood <- geweeg(BER.M,wood,streke,1:100)
+Chemicals <- geweeg(BER.M,chemicals,streke,1:100)
+Glass <- geweeg(BER.M,glass,streke,1:100)
+Metals <- geweeg(BER.M,metals,streke,1:100)
+Electrical <- geweeg(BER.M,electrical,streke,1:100)
+Transport <- geweeg(BER.M,transport.m,streke,1:100)
+Furniture <- geweeg(BER.M,furniture,streke,1:100)
 
-Consumer <- geweeg(consumer)
-Intermediate <- geweeg(intermediate)
-Capital <- geweeg(capital)
+Consumer <- geweeg(BER.M,consumer,streke,1:100)
+Intermediate <- geweeg(BER.M,intermediate,streke,1:100)
+Capital <- geweeg(BER.M,capital,streke,1:100)
 
-WC <- geweeg(all,1)
-KZN <- geweeg(all,5)
-GP <- geweeg(all,6)
+WC.M <- geweeg(BER.M,all_m,1,1:100)
+KZN.M <- geweeg(BER.M,all_m,5,1:100)
+GP.M <- geweeg(BER.M,all_m,6,1:100)
 
-#----------------------------------
+#Interpolasie
+Manufacturing[24,c(seq(4,32,by=2),34:49)] <- pub_m[24,2:32]
+Manufacturing[33,c(seq(4,32,by=2),34:49)] <- pub_m[33,2:32]
+Manufacturing[56,c(seq(4,32,by=2),34:49)] <- pub_m[56,2:32]
+
+
+#-------------------
 #Unweighted
-Manufacturing_u <- ongeweeg(all)
-Manufacturing[24,c(seq(3,31,by=2),33:48)] <- pub[24,2:32]
-Manufacturing[33,c(seq(3,31,by=2),33:48)] <- pub[33,2:32]
-Manufacturing[56,c(seq(3,31,by=2),33:48)] <- pub[56,2:32]
+Manufacturing_u <- ongeweeg(BER.M,all_m,streke,1:100)
 
-Food_u <- ongeweeg(food)
-Textiles_u <- ongeweeg(textiles)
-Wood_u <- ongeweeg(wood)
-Chemicals_u <- ongeweeg(chemicals)
-Glass_u <- ongeweeg(glass)
-Metals_u <- ongeweeg(metals)
-Electrical_u <- ongeweeg(electrical)
-Radio_u <- ongeweeg(radio)
-Elec_radio_u <- ongeweeg(c(electrical,radio))
-Transport_u <- ongeweeg(transport)
-Furniture_u <- ongeweeg(furniture)
+Food_u <- ongeweeg(BER.M,food,streke,1:100)
+Textiles_u <- ongeweeg(BER.M,textiles,streke,1:100)
+Wood_u <- ongeweeg(BER.M,wood,streke,1:100)
+Chemicals_u <- ongeweeg(BER.M,chemicals,streke,1:100)
+Glass_u <- ongeweeg(BER.M,glass,streke,1:100)
+Metals_u <- ongeweeg(BER.M,metals,streke,1:100)
+Electrical_u <- ongeweeg(BER.M,electrical,streke,1:100)
+Transport_u <- ongeweeg(BER.M,transport.m,streke,1:100)
+Furniture_u <- ongeweeg(BER.M,furniture,streke,1:100)
 
-Consumer_u <- ongeweeg(consumer)
-Intermediate_u <- ongeweeg(intermediate)
-Capital_u <- ongeweeg(capital)
+Consumer_u <- ongeweeg(BER.M,consumer,streke,1:100)
+Intermediate_u <- ongeweeg(BER.M,intermediate,streke,1:100)
+Capital_u <- ongeweeg(BER.M,capital,streke,1:100)
 
-WC_u <- ongeweeg(all,1)
-KZN_u <- ongeweeg(all,5)
-GP_u <- ongeweeg(all,6)
+WC.M_u <- ongeweeg(BER.M,all_m,1,1:100)
+KZN.M_u <- ongeweeg(BER.M,all_m,5,1:100)
+GP.M_u <- ongeweeg(BER.M,all_m,6,1:100)
+
+Manufacturing_u[24,c(seq(4,32,by=2),34:49)] <- pub_m[24,2:32]
+Manufacturing_u[33,c(seq(4,32,by=2),34:49)] <- pub_m[33,2:32]
+Manufacturing_u[56,c(seq(4,32,by=2),34:49)] <- pub_m[56,2:32]
+
+#------------------
+#New faktor
+Manufacturing_n <- geweeg(BER.Mn,all_m,streke,1:100)
+
+Food_n <- geweeg(BER.Mn,food,streke,1:100)
+Textiles_n <- geweeg(BER.Mn,textiles,streke,1:100)
+Wood_n <- geweeg(BER.Mn,wood,streke,1:100)
+Chemicals_n <- geweeg(BER.Mn,chemicals,streke,1:100)
+Glass_n <- geweeg(BER.Mn,glass,streke,1:100)
+Metals_n <- geweeg(BER.Mn,metals,streke,1:100)
+Electrical_n <- geweeg(BER.Mn,electrical,streke,1:100)
+Transport_n <- geweeg(BER.Mn,transport.m,streke,1:100)
+Furniture_n <- geweeg(BER.Mn,furniture,streke,1:100)
+
+Consumer_n <- geweeg(BER.Mn,consumer,streke,1:100)
+Intermediate_n <- geweeg(BER.Mn,intermediate,streke,1:100)
+Capital_n <- geweeg(BER.Mn,capital,streke,1:100)
+
+WC.M_n <- geweeg(BER.Mn,all_m,1,1:100)
+KZN.M_n <- geweeg(BER.Mn,all_m,5,1:100)
+GP.M_n <- geweeg(BER.Mn,all_m,6,1:100)
+
+Manufacturing_n[24,c(seq(4,32,by=2),34:49)] <- pub_m[24,2:32]
+Manufacturing_n[33,c(seq(4,32,by=2),34:49)] <- pub_m[33,2:32]
+Manufacturing_n[56,c(seq(4,32,by=2),34:49)] <- pub_m[56,2:32]
+
+#-------------------
+#Two-step
+Manufacturing_n2 <- maak.index(all_m)[1:100,]
+
+BER.M2 <- BER.M2[,-6:-7]
+Manufacturing_2 <- geweeg(BER.M2,all_m,streke,1:100)
+
+Food_2 <- geweeg(BER.M2,food,streke,1:100)
+Textiles_2 <- geweeg(BER.M2,textiles,streke,1:100)
+Wood_2 <- geweeg(BER.M2,wood,streke,1:100)
+Chemicals_2 <- geweeg(BER.M2,chemicals,streke,1:100)
+Glass_2 <- geweeg(BER.M2,glass,streke,1:100)
+Metals_2 <- geweeg(BER.M2,metals,streke,1:100)
+Electrical_2 <- geweeg(BER.M2,electrical,streke,1:100)
+Transport_2 <- geweeg(BER.M2,transport.m,streke,1:100)
+Furniture_2 <- geweeg(BER.M2,furniture,streke,1:100)
+
+Consumer_2 <- geweeg(BER.M2,consumer,streke,1:100)
+Intermediate_2 <- geweeg(BER.M2,intermediate,streke,1:100)
+Capital_2 <- geweeg(BER.M2,capital,streke,1:100)
+
+WC.M_2 <- geweeg(BER.M2,all_m,1,1:100)
+KZN.M_2 <- geweeg(BER.M2,all_m,5,1:100)
+GP.M_2 <- geweeg(BER.M2,all_m,6,1:100)
+
+Manufacturing_2[24,c(seq(4,32,by=2),34:49)] <- pub_m[24,2:32]
+Manufacturing_2[33,c(seq(4,32,by=2),34:49)] <- pub_m[33,2:32]
+Manufacturing_2[56,c(seq(4,32,by=2),34:49)] <- pub_m[56,2:32]
+Manufacturing_n2[24,c(seq(3,31,by=2),33:48)] <- pub_m[24,2:32]
+Manufacturing_n2[33,c(seq(3,31,by=2),33:48)] <- pub_m[33,2:32]
+Manufacturing_n2[56,c(seq(3,31,by=2),33:48)] <- pub_m[56,2:32]
 ```
 
+Table 7 reports some characteristics of the Manufacturing survey microdata. The Manufacturing microdata are missing for the following quarters: 1997Q4, 2000Q1 and 2005Q4. Where published series were available, we used the published values for those missing values. Where they were unavailable, we used simple linear interpolation to create complete continuous series. There is very little difference between the substitution of the published values and simple linear interpolation.
+
+```{r table7, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+ave <- mean(aggregate(BER.M$id, by=list(BER.M$surveyQ), FUN = length)[,2])
+tafel <- cbind("1992Q1-2017Q2",length(BER.M$id),round(ave,2),round(ave/1000,2),
+               "1997Q4,2000Q1,2005Q4")
+colnames(tafel) <- c("Sample","Total Obs","Obs/Quarter", "Response Rate","Missing Quarters")     
+row.names(tafel) <- "Manufacturing Survey"
+xt <- xtable(tafel, caption="Sample characteristics")
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8,
+      include.rownames=TRUE)
+```
+
+Table 8 reports the new subsector codes that are used to calculate balances. The aggregation is increased by decreasing the number of subsectors from 21 (22 including petroleum) to 10. Figure 16 illustrates the number of respondents by subsector, according to the new sector classifications. In addition, three new overarching subsector series are calculated for consumer, intermediate and capital goods, reported in Table 9. Many of the original sector codes were not included in the new sector classifications and these were reclassified to fit into the new sector code classifications. 
 
 \begin{table}[]
 \centering
 \caption{Manufacturing subsector weights}
 \label{my-label}
+\scalebox{0.9}{
 \begin{tabular}{|l|l|l|}
 \hline
 \textbf{New BER classification}                                                                             & \textbf{Old BER classification}        & \textbf{Sectors}       \\ \hline
@@ -1129,16 +1303,40 @@ Electrical machinery                                                            
 \begin{tabular}[c]{@{}l@{}}Radio, TV and \\ professional equipment\end{tabular}                             &                                        & 1192, 1194             \\ \hline
 \begin{tabular}[c]{@{}l@{}}Motor vehicles, parts and \\ accessories \& transport \\ equipment\end{tabular}  & Transport equipment                    & 1200, 1201, 1209       \\ \hline
 \begin{tabular}[c]{@{}l@{}}Furniture and other, \\ incl. tobacco\end{tabular}                               & Furniture                              & 1090, 1099             \\ \hline
-\end{tabular}
+\end{tabular}}
 \end{table}
 
+```{r figure16, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="The number of respondents in the manufacturing sector by subsector (1992Q1-2017Q2)"}
+BERplot <- BER.M
+BERplot$Sector[BERplot$sector %in% food] <- "Food" 
+BERplot$Sector[BERplot$sector %in% textiles] <- "Textiles" 
+BERplot$Sector[BERplot$sector %in% wood] <- "Wood" 
+BERplot$Sector[BERplot$sector %in% chemicals] <- "Chemicals" 
+BERplot$Sector[BERplot$sector %in% glass] <- "Glass" 
+BERplot$Sector[BERplot$sector %in% metals] <- "Metals" 
+BERplot$Sector[BERplot$sector %in% electrical] <- "Eelectrical" 
+BERplot$Sector[BERplot$sector %in% transport.m] <- "Transport" 
+BERplot$Sector[BERplot$sector %in% furniture] <- "Furniture" 
+BERplot$sectorw <- BERplot$factor/BERplot$weight
 
-
+BERplot1 <- aggregate(BERplot$id, by=list(BERplot$surveyQ,BERplot$Sector), FUN = length)
+BERplot1$Group.1 <- as.Date(as.yearqtr(BERplot1$Group.1, format = "%YQ%q"))
+g <- ggplot(BERplot1, aes(x=Group.1, y=x,fill=Group.2))
+g <- g + geom_bar(stat="identity")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + scale_fill_discrete(name="Subsector")
+g <- g + scale_y_continuous(labels=comma)
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + ylab("Number of Respondents")
+g <- g + xlab("Date")
+g
+```
 
 \begin{table}[]
 \centering
 \caption{Main industrial groupings}
 \label{my-label}
+\scalebox{0.9}{
 \begin{tabular}{|l|l|l|}
 \hline
 \textbf{Main Industrial Group}       & \textbf{BER code} & \textbf{Description}                                \\ \hline
@@ -1181,47 +1379,36 @@ Electrical machinery                                                            
                                      & 1200              & Motor cars                                          \\ \cline{2-3} 
                                      & 1201              & Parts \& accessories for motor vehicles             \\ \cline{2-3} 
                                      & 1209              & Other transport equipment                           \\ \hline
-\end{tabular}
+\end{tabular}}
 \end{table}
 
+##The Manufacturing Sector Indicators
+As discussed above, one can define a $k$-period-ahead expectations measure of confidence $(C_t^k)$ at time $t$ as: $C _t^k = E_t f(\Delta^h Y_{t+k})$, where $Y_{t+k}$ is a measure of real activity (usually output) at time $t+k$ and $\Delta^h Y_{t+k} = Y_{t+k} - Y_{t+k-h}$. A common definition of $f(\Delta^h Y_{t+k})$ relies on an up, unchanged, or down classification (e.g. Q2A in the BER survey): 
+$$ f(\Delta^h Y_{t+k}) = \begin{cases} -1,& \text{if } \Delta^h Y_{t+k} < 0\\ 0,& \text{if } \Delta^h Y_{t+k} = 0\\ 1,& \text{if } \Delta^h Y_{t+k} > 0\\ \end{cases} $$
 
-## Weighted and Unweighted Results for Q20 (Confidence)
+An alternative would be to use a binary classification (e.g. Q1 in the BER survey): $$ f(\Delta^h Y_{t+k}) = \begin{cases} -1,& \text{if } \Delta^h Y_{t+k} < a\\ 1,& \text{if } \Delta^h Y_{t+k} \geq a\\ \end{cases} $$ where $a$ is determined by the preferences of the agent. 
 
-```{r figure19, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="results"}
-indicator_plot <- cbind(Manufacturing[,c("Datum","Q20")],Manufacturing_u[,c("Q20")])
-colnames(indicator_plot) <- c("Date","Weighted","Unweighted")    
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g <- g + geom_line()
-g <- g + ylab("Indicator") + xlab("")
-g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank()) 
-g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + theme(legend.position="bottom")
-g
+In this chapter, a distinction is made between indicators of current conditions $C_t^k$ when $k=0$, and indicators of expected conditions $C_t^k$ when $k=1$. The confidence measure for current conditions $C^0_t$ is referred to as 'current', as it is reflects confidence about the current quarter (in the second month of the quarter). The confidence measure for expected conditions $C^1_t$ is referred to as 'expected', as it is reflects confidence about the following quarter.
 
-```
+###Alternative Weighting Procedures
+For the Manufacturing survey we have created four versions of the indicators - i.e. the balance statistics for all of the questions. These balances only differ in their weighting procedure, as follows:
 
-# Published Results
+The baseline balance statistics for all of the questions in the Manufacturing sector are calculated in the same way as the normal BER procedure. This is the weighted average of the responses, using the cleaned version of the microdata and the weights used by the BER. More formally, the cross-sectional mean of survey responses if the standard quantification system is used: 'better' is quantified by +1, 'the same' by 0, and 'poorer' by -1. Confidence in period $t$ relating to current conditions $C_t^{0}$, and confidence in period $t$ relating to expected conditions $C_t^{1}$, may be defined as: 
+$$C^{0}_t = \frac{1}{W_t} \sum^N_{i=1} w_{it} E_t f(\Delta^4 Y_{i,t })$$ 
+$$C^{1}_t = \frac{1}{W_t} \sum^N_{i=1} w_{it} E_t f(\Delta^4 Y_{i,t+1}) ,$$ 
+where $Y_{i,t+k}$ is again a measure of real activity at time $t+k$ for firm $i = 1,...,N$; $\Delta^h Y_{i,t+k} = Y_{i,t+k} - Y_{i,t+k-h}$ for firm $i$; $w_{it}$ is the weight that each firm $i$ receives at time $t$; and $W_{t} = \sum^N_{i=1}w_i$ is the sum of the weights. 
 
-## Results for Q20 (Confidence)
-```{r figure20, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="results"}
-indicator_plot <- cbind(Manufacturing[,c("Datum","Q20")],pub[,c("Total_Q20")])
-colnames(indicator_plot) <- c("Date","Microdata","Published")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g <- g + geom_line()
-g <- g + ylab("Indicator") + xlab("")
-g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank()) 
-g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + theme(legend.position="bottom")
-g
-```
+The weights are calculated as: $w_{it} = f_{it} s_{jt} ,$ where $f_{it}$ the firm size weight (i.e. the inner weight reflecting turnover or number of employees) for firm $i$ at time $t$; and $s_{jt}$ is the subsector weight (i.e. the outer weight reflecting the share of total value added) for subsector $j$ at time $t$. The firm size weights are divided into nine categories, based on the size of the workforce, and each corresponds to an exponentially increasing weight (from 1 to 700). The subsector size weights are updated periodically by the BER, based on the composition of production or sales in each subsector, as calculated by StatsSA. These series are then compared to the BER's published series to ensure that the microdata is correct.
 
-## Microdata vs. Published Results
-```{r figure21, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="results"}
-indicator_plot <- cbind(Manufacturing[,c("Datum","Q1A")],pub[,c("Total_Q1A")])
+The second set of indicators are based on unweighted means, i.e. the responses are weighted equally. The third set of indicators is based on a new 4-part firm classification, which are less exponential than the previous weights. The four firm size weight categories are based on StatsSA's and the DTI's categories and thresholds of micro, small, medium and large enterprises and the classification is based on turnover rather than the size of the workforce. The idea is to see if the weighting procedure imparts unnecessary increased volatility into the series. 
+
+The final set of indicators is based on an explicit two-step weighting procedure, recommended by the OECD and the UN Handbooks [@OECD2003; @UN2015]. In this version the weights are calculated as: $w_{it} = f_{it} s_{jt} / F_{jt} ,$ where $f_{it}$ the firm size weight (i.e. the new 4-part classification) for firm $i$ at time $t$; $s_{jt}$ is the subsector weight for subsector $j$ at time $t$; and $F_{jt} = \sum^N_{i=1} f_{it}$ is the total firm weight for subsector $j$ at time $t$. These weights are equivalent to an explicit two-step weighting procedure, whereby weighted means are calculated for each subsector separately (using firm size weights), and then aggregated with the subsector weightings [@UN2015]. Given that the BER does not have access to the National Business Register (which represents the universe) maintained by Stats SA, it cannot calculate sample weights.
+
+###Published Series
+The first step is just to check that the series calculated with the microdata corresponds to the BER's published series. Figure 17 compares the microdata series to the published series for a number of questions. In some cases, the microdata provides longer series than the published series. Figure 18 compares the microdata series to the published series, specially relating to the questions on constraints. The microdata series are slightly higher than the published results (although the correlations are nearly unity), implying that some adjustment factors were added to the published results at some stage in the past. Although there are still a few small discrepancies, the microdata appears to broadly correspond to the published series, which implies that the microdata can be used in calculating the other sets of variables.
+
+```{r figure17, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Manufacturing microdata results compared to the published results"}
+indicator_plot <- cbind(Manufacturing[,c("Datum","Q1A")],pub_m[,c("Total_Q1A")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1234,7 +1421,7 @@ g1 <- g1 + theme(legend.title=element_blank())
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g1 <- g1 + theme(legend.position="none")
 
-indicator_plot <- cbind(Manufacturing[,c("Datum","Q2A")],pub[,c("Total_Q2A")])
+indicator_plot <- cbind(Manufacturing[,c("Datum","Q2A")],pub_m[,c("Total_Q2A")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1247,7 +1434,7 @@ g2 <- g2 + theme(legend.title=element_blank())
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g2 <- g2 + theme(legend.position="none")
 
-indicator_plot <- cbind(Manufacturing[,c("Datum","Q3A")],pub[,c("Total_Q3A")])
+indicator_plot <- cbind(Manufacturing[,c("Datum","Q3A")],pub_m[,c("Total_Q3A")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1260,7 +1447,7 @@ g3 <- g3 + theme(legend.title=element_blank())
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
 
-indicator_plot <- cbind(Manufacturing[,c("Datum","Q6A")],pub[,c("Total_Q6A")])
+indicator_plot <- cbind(Manufacturing[,c("Datum","Q6A")],pub_m[,c("Total_Q6A")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1278,10 +1465,8 @@ grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 
 ```
 
-
-## Microdata vs. Published Results (Constraints)
-```{r figure22, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="results"}
-indicator_plot <- cbind(Manufacturing[,c("Datum","Q21")],pub[,c("Total_Q21")])
+```{r figure18, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Manufacturing microdata results compared to the published results for contraints"}
+indicator_plot <- cbind(Manufacturing[,c("Datum","Q21")],pub_m[,c("Total_Q21")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1294,7 +1479,7 @@ g1 <- g1 + theme(legend.title=element_blank())
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g1 <- g1 + theme(legend.position="none")
 
-indicator_plot <- cbind(Manufacturing[,c("Datum","Q22")],pub[,c("Total_Q22")])
+indicator_plot <- cbind(Manufacturing[,c("Datum","Q22")],pub_m[,c("Total_Q22")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1307,7 +1492,7 @@ g2 <- g2 + theme(legend.title=element_blank())
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g2 <- g2 + theme(legend.position="none")
 
-indicator_plot <- cbind(Manufacturing[,c("Datum","Q25")],pub[,c("Total_Q25")])
+indicator_plot <- cbind(Manufacturing[,c("Datum","Q25")],pub_m[,c("Total_Q25")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1320,7 +1505,7 @@ g3 <- g3 + theme(legend.title=element_blank())
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
 
-indicator_plot <- cbind(Manufacturing[,c("Datum","Q27")],pub[,c("Total_Q27")])
+indicator_plot <- cbind(Manufacturing[,c("Datum","Q27")],pub_m[,c("Total_Q27")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1335,198 +1520,9 @@ g4 <- g4 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 
 library(gridExtra)
 grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
-
 ```
 
-
-# New weightings
-
-
-```{r M.man1, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
-##=============================
-#New faktor variable 
-BER.M <- read.csv("Manufacturing_new faktor.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-
-colnames(BER.M)[1:9] <- c("region","id","sector","weight","turnover","firmw","sectorw","factor","surveyQ")
-BER.M$surveyQ <- toupper(BER.M$surveyQ)
-BER.M$sector <- factor(BER.M$sector) #could include labels
-BER.M$id <- factor(BER.M$id)
-BER.M$surveyQ <- factor(BER.M$surveyQ)
-
-#Exlcude Latecomers and old questions
-BER.M <- BER.M[BER.M$Latecomer == FALSE | is.na(BER.M$Latecomer),]
-BER.M <- BER.M[,!grepl("X",colnames(BER.M))]    
-BER.M <- BER.M[,1:66]
-#==============================
-# replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
-for(i in 10:66) {
-    BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==2, 0)
-    BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==3,-1)
-}
-
-for(i in 45:51) {
-    BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==0, 0.5)
-    BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==-1, 0)
-}
-
-BER.M <- BER.M[,-6:-7]
-
-Manufacturing_n <- geweeg(all)
-Manufacturing_n[24,c(seq(3,31,by=2),33:48)] <- pub[24,2:32]
-Manufacturing_n[33,c(seq(3,31,by=2),33:48)] <- pub[33,2:32]
-Manufacturing_n[56,c(seq(3,31,by=2),33:48)] <- pub[56,2:32]
-
-Food_n <- geweeg(food)
-Textiles_n <- geweeg(textiles)
-Wood_n <- geweeg(wood)
-Chemicals_n <- geweeg(chemicals)
-Glass_n <- geweeg(glass)
-Metals_n <- geweeg(metals)
-Electrical_n <- geweeg(electrical)
-Radio_n <- geweeg(radio)
-Elec_radio_n <- geweeg(c(electrical,radio))
-Transport_n <- geweeg(transport)
-Furniture_n <- geweeg(furniture)
-
-Consumer_n <- geweeg(consumer)
-Intermediate_n <- geweeg(intermediate)
-Capital_n <- geweeg(capital)
-
-WC_n <- geweeg(all,1)
-KZN_n <- geweeg(all,5)
-GP_n <- geweeg(all,6)
-
-```
-
-```{r M.man2, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE, fig.cap="results"}
-#New 2-step weighting 
-BER.M <- read.csv("Manufacturing_new faktor.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-
-colnames(BER.M)[1:9] <- c("region","id","sector","weight","turnover","firmw","sectorw","factor","surveyQ")
-BER.M$surveyQ <- toupper(BER.M$surveyQ)
-BER.M$sector <- factor(BER.M$sector) #could include labels
-BER.M$id <- factor(BER.M$id)
-BER.M$surveyQ <- factor(BER.M$surveyQ)
-
-#Exlcude Latecomers and old questions
-BER.M <- BER.M[BER.M$Latecomer == FALSE | is.na(BER.M$Latecomer),]
-BER.M <- BER.M[,!grepl("X",colnames(BER.M))]    
-BER.M <- BER.M[,1:66]
-#==============================
-# replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
-for(i in 10:66) {
-    BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==2, 0)
-    BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==3,-1)
-}
-
-for(i in 45:51) {
-    BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==0, 0.5)
-    BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==-1, 0)
-}
-
-geweeg2 <- function(sektor=all,streek=streke) {
-    
-    weeg2 <- function(temp) {  #calculate weighted mean for each quarter for all columns
-        sectorw=temp$sectorw[1]
-        temp <- cbind(firmw=temp$firmw,temp$firmw*temp[(match("surveyQ",colnames(temp))+1):ncol(temp)])
-        #temp <- colSums(temp, na.rm=TRUE, dims = 1)/sum(temp$factor, na.rm=TRUE)
-        #calculate the sum(wi*xi)/sum(wi)
-        temp <- colSums(temp, na.rm=TRUE, dims = 1)/    
-            sapply(colnames(temp), function(x) sum(temp$firmw[!is.na(temp[colnames(temp) == x])]))
-        temp <- c(sectorw,temp)
-        #weight only by those that responded to a specific question
-        return(temp)
-    }
-    
-    man <- BER.M[BER.M$sector %in% sektor & BER.M$region %in% streek,]
-    sector <- data.frame()
-    for(kwartaal in levels(man$surveyQ)) {
-        sector <- rbind(sector,weeg2(man[man$surveyQ==kwartaal,]))
-    }
-    
-    sector <- sector *100
-    sector[,2] <- levels(man$surveyQ)
-    colnames(sector) <- colnames(man)[c(7,9:ncol(man))]
-    sector <- merge(datums,sector, by.x="Date", by.y="surveyQ", all=TRUE)
-    #sector <- as.data.frame(t(sapply(levels(man$surveyQ), function(kwartaal) weeg(man[man$surveyQ==kwartaal,]))))
-    sector[,3:58] <- na.approx(sector[,3:58],na.rm = FALSE)
-    return(sector)
-    
-}
-
-
-
-maak.index <- function(sektor=all,streek=streke) {
-    lys <- list()
-    t <- 0
-    for(k in sektor) {
-        t <- t+1
-        lys[[t]] <- geweeg2(k)
-    }
-    saam <- lys[[1]]
-    for(j in 4:60) {
-        for(i in 1:100) {
-            x <- NULL
-            w <- NULL
-            for(t in 1:length(sektor)) {
-                x <- c(x,lys[[t]][i,j])
-                w <- c(w,lys[[t]][i,3])
-            }
-            saam[i,j] <- weighted.mean(x,w,na.rm=TRUE) 
-        }
-    }
-    saam <- saam[,-3]
-    return(saam)
-}
-
-
-Manufacturing_2 <- maak.index(all)
-Manufacturing_2[24,c(seq(3,31,by=2),33:48)] <- pub[24,2:32]
-Manufacturing_2[33,c(seq(3,31,by=2),33:48)] <- pub[33,2:32]
-Manufacturing_2[56,c(seq(3,31,by=2),33:48)] <- pub[56,2:32]
-
-Food_2 <- maak.index(food)
-Textiles_2 <- maak.index(textiles)
-Wood_2 <- maak.index(wood)
-Chemicals_2 <- maak.index(chemicals)
-Glass_2 <- maak.index(glass)
-Metals_2 <- maak.index(metals)
-Electrical_2 <- maak.index(electrical)
-Radio_2 <- maak.index(radio)
-Elec_radio_2 <- maak.index(c(electrical,radio))
-Transport_2 <- maak.index(transport)
-Furniture_2 <- maak.index(furniture)
-
-Consumer_2 <- maak.index(consumer)
-Intermediate_2 <- maak.index(intermediate)
-Capital_2 <- maak.index(capital)
-
-WC_2 <- maak.index(all,1)
-KZN_2 <- maak.index(all,5)
-GP_2 <- maak.index(all,6)
-
-```
-
-## New factors weightings
-
-```{r figure23, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="results"}
-indicator_plot <- cbind(Manufacturing[,c("Datum","Q20")],
-                        Manufacturing_n[,c("Q20")],Manufacturing_2[,c("Q20")])
-colnames(indicator_plot) <- c("Date","Q20:Microdata","Q20:New","Q20:2-step")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g <- g + geom_line()
-g <- g + ylab("Indicator") + xlab("")
-g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank()) 
-g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + theme(legend.position="bottom")
-g
-```
-
-
-##Other questions
-
+###New Indicators
 
 ```{r figure24, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="results"}
 indicator_plot <- cbind(Manufacturing[,c("Datum","Q1A")],
@@ -1589,73 +1585,7 @@ library(gridExtra)
 grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 ```
 
-##Constraints
-
-```{r figure25, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="results"}
-indicator_plot <- cbind(Manufacturing[,c("Datum","Q21")],
-                        Manufacturing_n[,c("Q21")],Manufacturing_2[,c("Q21")])
-colnames(indicator_plot) <- c("Date","Microdata","New","2-step")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g1 <- g1 + geom_line()
-g1 <- g1 + ylab("Indicator") + xlab("")
-g1 <- g1 + theme(legend.title=element_blank())
-g1 <- g1 + ggtitle("Q21") 
-g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g1 <- g1 + theme(legend.title=element_blank()) 
-g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g1 <- g1 + theme(legend.position="none")
-
-indicator_plot <- cbind(Manufacturing[,c("Datum","Q22")],
-                        Manufacturing_n[,c("Q22")],Manufacturing_2[,c("Q22")])
-colnames(indicator_plot) <- c("Date","Microdata","New","2-step")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g2 <- g2 + geom_line()
-g2 <- g2 + ylab("") + xlab("")
-g2 <- g2 + theme(legend.title=element_blank())
-g2 <- g2 + ggtitle("Q22") 
-g2 <- g2 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g2 <- g2 + theme(legend.title=element_blank()) 
-g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g2 <- g2 + theme(legend.position="none")
-
-indicator_plot <- cbind(Manufacturing[,c("Datum","Q25")],
-                        Manufacturing_n[,c("Q25")],Manufacturing_2[,c("Q25")])
-colnames(indicator_plot) <- c("Date","Microdata","New","2-step")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g3 <- g3 + geom_line()
-g3 <- g3 + ylab("Indicator") + xlab("")
-g3 <- g3 + theme(legend.title=element_blank())
-g3 <- g3 + ggtitle("Q25") 
-g3 <- g3 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g3 <- g3 + theme(legend.title=element_blank()) 
-g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
-
-indicator_plot <- cbind(Manufacturing[,c("Datum","Q27")],
-                        Manufacturing_n[,c("Q27")],Manufacturing_2[,c("Q27")])
-colnames(indicator_plot) <- c("Date","Microdata","New","2-step")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g4 <- g4 + geom_line()
-g4 <- g4 + ylab("") + xlab("")
-g4 <- g4 + theme(legend.title=element_blank())
-g4 <- g4 + ggtitle("Q27") 
-g4 <- g4 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g4 <- g4 + theme(legend.title=element_blank()) 
-g4 <- g4 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
-g4 <- g4 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-
-library(gridExtra)
-grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
-```
-
-
-# Sectors
-
-## New BER classification: Q20 (Confidence)
+###Sectors
 ```{r figure26, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="results"}
 indicator_plot <- cbind(Food[,c("Datum","Q20")],
                         Food_n[,c("Q20")],Food_2[,c("Q20")])
@@ -1719,71 +1649,6 @@ grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 ```
 
 
-##Sectors2
-
-```{r figure27, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="results"}
-indicator_plot <- cbind(Glass[,c("Datum","Q20")],
-                        Glass_n[,c("Q20")],Glass_2[,c("Q20")])
-colnames(indicator_plot) <- c("Date","Microdata","New","2-step")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g1 <- g1 + geom_line()
-g1 <- g1 + ylab("Indicator") + xlab("")
-g1 <- g1 + theme(legend.title=element_blank())
-g1 <- g1 + ggtitle("Glass") 
-g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g1 <- g1 + theme(legend.title=element_blank()) 
-g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g1 <- g1 + theme(legend.position="none")
-
-indicator_plot <- cbind(Metals[,c("Datum","Q20")],
-                        Metals_n[,c("Q20")],Metals_2[,c("Q20")])
-colnames(indicator_plot) <- c("Date","Microdata","New","2-step")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g2 <- g2 + geom_line()
-g2 <- g2 + ylab("") + xlab("")
-g2 <- g2 + theme(legend.title=element_blank())
-g2 <- g2 + ggtitle("Metals") 
-g2 <- g2 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g2 <- g2 + theme(legend.title=element_blank()) 
-g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g2 <- g2 + theme(legend.position="none")
-
-indicator_plot <- cbind(Elec_radio[,c("Datum","Q20")],
-                        Elec_radio_n[,c("Q20")],Elec_radio_2[,c("Q20")])
-colnames(indicator_plot) <- c("Date","Microdata","New","2-step")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g3 <- g3 + geom_line()
-g3 <- g3 + ylab("Indicator") + xlab("")
-g3 <- g3 + theme(legend.title=element_blank())
-g3 <- g3 + ggtitle("Elec_radio") 
-g3 <- g3 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g3 <- g3 + theme(legend.title=element_blank()) 
-g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
-
-indicator_plot <- cbind(Transport[,c("Datum","Q20")],
-                        Transport_n[,c("Q20")],Transport_2[,c("Q20")])
-colnames(indicator_plot) <- c("Date","Microdata","New","2-step")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g4 <- g4 + geom_line()
-g4 <- g4 + ylab("") + xlab("")
-g4 <- g4 + theme(legend.title=element_blank())
-g4 <- g4 + ggtitle("Transport") 
-g4 <- g4 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g4 <- g4 + theme(legend.title=element_blank()) 
-g4 <- g4 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
-g4 <- g4 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-
-library(gridExtra)
-grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
-```
-
-
-## Main industrial groups: Q20 (Confidence) 
 ```{r figure28, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="results"}
 #New Sector Classifications
 indicator_plot <- cbind(Furniture[,c("Datum","Q20")],
@@ -1846,27 +1711,7 @@ library(gridExtra)
 grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 ```
 
-#Regions
-
-## Regional Observations
-
-```{r figure29, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="results"}
-BERplot <- aggregate(BER.M$id, by=list(BER.M$surveyQ,BER.M$region), FUN = length)
-BERplot$Group.1 <- as.Date(as.yearqtr(BERplot$Group.1, format = "%YQ%q"))
-BERplot$Group.2 <- factor(BERplot$Group.2)
-g <- ggplot(BERplot, aes(x=Group.1, y=x,fill=Group.2))
-g <- g + geom_bar(stat="identity")
-g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + scale_fill_discrete(name="Region")
-g <- g + scale_y_continuous(labels=comma)
-g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + ylab("Number of Respondents")
-g <- g + xlab("Date")
-g
-```
-
-
-## Regional Results for Q20 (Confidence)
+### Regional Results 
 ```{r figure30, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="results"}
 indicator_plot <- cbind(WC[,c("Datum","Q20")],
                         WC_n[,c("Q20")],WC_2[,c("Q20")])
@@ -1929,13 +1774,13 @@ grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 ```
 
 
-#Reference Series
+##Reference Series
 
-## Total Manufacturing Activity
+### Total Manufacturing Activity
 ```{r figure31, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="results"}
 #Reference series
 indicator_plot <- cbind(Manufacturing[,c("Datum","Q3A")],Manufacturing_n[,c("Q3A")],
-                        ref[,c("RTotal_Sales.sa","Total_Vol.sa","Total.sa")])
+                        ref_m[,c("RTotal_Sales.sa","Total_Vol.sa","Total.sa")])
 colnames(indicator_plot) <- c("Date","Q3A:Micro","Q3A:New","SARB:Sales","SARB:Volume","StatsSA:Volume")
 indicator_plot[,-1] <- scale(indicator_plot[,-1])
 plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -1950,12 +1795,11 @@ g
 ```
 
 
-## Correlations with reference series
-```{r table7, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+```{r table7.1, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
 source("corstarsl.R")
 Manu <- cbind(Manufacturing[,c("Q1A","Q3A")],Manufacturing_u[,c("Q1A","Q3A")],
               Manufacturing_n[,c("Q1A","Q3A")],Manufacturing_2[,c("Q1A","Q3A")],
-              ref[,c("RTotal_Sales.sa","Total_Vol.sa","Total.sa")])
+              ref_m[,c("RTotal_Sales.sa","Total_Vol.sa","Total.sa")])
 colnames(Manu) <- c("Q1A","Q3A","Q1A_u","Q3A_u","Q1A_new","Q3A_new","Q1A_2s","Q3A_2s","SARB:Sales","SARB:Volume","StatsSA:Volume")
 
 xt <- xtable(corstarsl(Manu)[9:11,1:8])
@@ -1969,9 +1813,9 @@ print(xt, "latex",comment=FALSE,scalebox = 0.6)
 ```
 
 
-## Sectoral Manufacturing Activity
+### Sectoral Manufacturing Activity
 ```{r figure32, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="results"}
-indicator_plot <- cbind(Food[,c("Datum","Q3A")],Food_n[,c("Q3A")],ref[,c("Food.sa")])
+indicator_plot <- cbind(Food[,c("Datum","Q3A")],Food_n[,c("Q3A")],ref_m[,c("Food.sa")])
 indicator_plot[,-1] <- scale(indicator_plot[,-1])
 colnames(indicator_plot) <- c("Date","Microdata","New","StatsSA")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -1985,7 +1829,7 @@ g1 <- g1 + theme(legend.title=element_blank())
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g1 <- g1 + theme(legend.position="none")
 
-indicator_plot <- cbind(Textiles[,c("Datum","Q3A")],Textiles_n[,c("Q3A")],ref[,c("Textiles.sa")])
+indicator_plot <- cbind(Textiles[,c("Datum","Q3A")],Textiles_n[,c("Q3A")],ref_m[,c("Textiles.sa")])
 indicator_plot[,-1] <- scale(indicator_plot[,-1])
 colnames(indicator_plot) <- c("Date","Microdata","New","StatsSA")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -1999,7 +1843,7 @@ g2 <- g2 + theme(legend.title=element_blank())
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g2 <- g2 + theme(legend.position="none")
 
-indicator_plot <- cbind(Wood[,c("Datum","Q3A")],Wood_n[,c("Q3A")],ref[,c("Wood.sa")])
+indicator_plot <- cbind(Wood[,c("Datum","Q3A")],Wood_n[,c("Q3A")],ref_m[,c("Wood.sa")])
 indicator_plot[,-1] <- scale(indicator_plot[,-1])
 colnames(indicator_plot) <- c("Date","Microdata","New","StatsSA")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -2013,7 +1857,7 @@ g3 <- g3 + theme(legend.title=element_blank())
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
 
-indicator_plot <- cbind(Chemicals[,c("Datum","Q3A")],Chemicals_n[,c("Q3A")],ref[,c("Chemical")])
+indicator_plot <- cbind(Chemicals[,c("Datum","Q3A")],Chemicals_n[,c("Q3A")],ref_m[,c("Chemical")])
 indicator_plot[,-1] <- scale(indicator_plot[,-1])
 colnames(indicator_plot) <- c("Date","Microdata","New","StatsSA")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -2031,9 +1875,8 @@ library(gridExtra)
 grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 ```
 
-## Sectoral Manufacturing Activity
 ```{r figure33, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="results"}
-indicator_plot <- cbind(Glass[,c("Datum","Q3A")],Glass_n[,c("Q3A")],ref[,c("Glass.sa")])
+indicator_plot <- cbind(Glass[,c("Datum","Q3A")],Glass_n[,c("Q3A")],ref_m[,c("Glass.sa")])
 indicator_plot[,-1] <- scale(indicator_plot[,-1])
 colnames(indicator_plot) <- c("Date","Microdata","New","StatsSA")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -2047,7 +1890,7 @@ g1 <- g1 + theme(legend.title=element_blank())
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g1 <- g1 + theme(legend.position="none")
 
-indicator_plot <- cbind(Metals[,c("Datum","Q3A")],Metals_n[,c("Q3A")],ref[,c("Metals.sa")])
+indicator_plot <- cbind(Metals[,c("Datum","Q3A")],Metals_n[,c("Q3A")],ref_m[,c("Metals.sa")])
 indicator_plot[,-1] <- scale(indicator_plot[,-1])
 colnames(indicator_plot) <- c("Date","Microdata","New","StatsSA")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -2062,8 +1905,8 @@ g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g2 <- g2 + theme(legend.position="none")
 
 
-ref$Elec_Radio <- rowMeans(ref[,c("Electrical.sa","Radio.sa")])
-indicator_plot <- cbind(Elec_radio[,c("Datum","Q3A")],Elec_radio_n[,c("Q3A")],ref[,c("Elec_Radio")])
+ref_m$Elec_Radio <- rowMeans(ref_m[,c("Electrical.sa","Radio.sa")])
+indicator_plot <- cbind(Electrical[,c("Datum","Q3A")],Electrical_n[,c("Q3A")],ref_m[,c("Elec_Radio")])
 indicator_plot[,-1] <- scale(indicator_plot[,-1])
 colnames(indicator_plot) <- c("Date","Microdata","New","StatsSA")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -2071,13 +1914,13 @@ g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=var
 g3 <- g3 + geom_line()
 g3 <- g3 + ylab("Indicator") + xlab("")
 g3 <- g3 + theme(legend.title=element_blank())
-g3 <- g3 + ggtitle("Elec_Radio") 
+g3 <- g3 + ggtitle("Electrical") 
 g3 <- g3 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g3 <- g3 + theme(legend.title=element_blank()) 
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
 
-indicator_plot <- cbind(Transport[,c("Datum","Q3A")],Transport_n[,c("Q3A")],ref[,c("Transport.sa")])
+indicator_plot <- cbind(Transport[,c("Datum","Q3A")],Transport_n[,c("Q3A")],ref_m[,c("Transport.sa")])
 indicator_plot[,-1] <- scale(indicator_plot[,-1])
 colnames(indicator_plot) <- c("Date","Microdata","New","StatsSA")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -2096,10 +1939,9 @@ grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 ```
 
 
-## Sectoral Manufacturing Activity
 ```{r figure34, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="results"}
 indicator_plot <- cbind(Furniture[,c("Datum","Q3A")],Furniture_n[,c("Q3A")],
-                        ref[,c("Furniture.sa","Furniture_all.sa")])
+                        ref_m[,c("Furniture.sa","Furniture_all.sa")])
 colnames(indicator_plot) <- c("Date","Microdata","New","StatsSA","StatsSA (all)")
 indicator_plot[,-1] <- scale(indicator_plot[,-1])
 plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -2114,59 +1956,58 @@ g <- g + theme(legend.position="bottom")
 g
 ```
 
-## Correlations with reference series
 ```{r table8, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
 source("corstarsl.R")
 
-x1 <- corstarsl(cbind(Food[,c("Datum","Q1A","Q3A")],ref[,c("Food.sa")])[,-1])
-x2 <- corstarsl(cbind(Textiles[,c("Datum","Q1A","Q3A")],ref[,c("Textiles")])[,-1])
-x3 <- corstarsl(cbind(Wood[,c("Datum","Q1A","Q3A")],ref[,c("Wood.sa")])[,-1])
-x4 <- corstarsl(cbind(Chemicals[,c("Datum","Q1A","Q3A")],ref[,c("Chemical")])[,-1])
-x5 <- corstarsl(cbind(Glass[,c("Datum","Q1A","Q3A")],ref[,c("Glass.sa")])[,-1])
-x6 <- corstarsl(cbind(Metals[,c("Datum","Q1A","Q3A")],ref[,c("Metals.sa")])[,-1])
-x7 <- corstarsl(cbind(Elec_radio[,c("Datum","Q1A","Q3A")],ref[,c("Elec_Radio")])[,-1])
-x8 <- corstarsl(cbind(Transport[,c("Datum","Q1A","Q3A")],ref[,c("Transport.sa")])[,-1])
-x9 <- corstarsl(cbind(Furniture[,c("Datum","Q1A","Q3A")],ref[,c("Furniture_all.sa")])[,-1])
+x1 <- corstarsl(cbind(Food[,c("Datum","Q1A","Q3A")],ref_m[,c("Food.sa")])[,-1])
+x2 <- corstarsl(cbind(Textiles[,c("Datum","Q1A","Q3A")],ref_m[,c("Textiles")])[,-1])
+x3 <- corstarsl(cbind(Wood[,c("Datum","Q1A","Q3A")],ref_m[,c("Wood.sa")])[,-1])
+x4 <- corstarsl(cbind(Chemicals[,c("Datum","Q1A","Q3A")],ref_m[,c("Chemical")])[,-1])
+x5 <- corstarsl(cbind(Glass[,c("Datum","Q1A","Q3A")],ref_m[,c("Glass.sa")])[,-1])
+x6 <- corstarsl(cbind(Metals[,c("Datum","Q1A","Q3A")],ref_m[,c("Metals.sa")])[,-1])
+x7 <- corstarsl(cbind(Electrical[,c("Datum","Q1A","Q3A")],ref_m[,c("Elec_Radio")])[,-1])
+x8 <- corstarsl(cbind(Transport[,c("Datum","Q1A","Q3A")],ref_m[,c("Transport.sa")])[,-1])
+x9 <- corstarsl(cbind(Furniture[,c("Datum","Q1A","Q3A")],ref_m[,c("Furniture_all.sa")])[,-1])
 
 x_1 <- rbind(x1[3,],x2[3,],x3[3,],x4[3,],x5[3,],x6[3,],x7[3,],x8[3,],x9[3,])
 row.names(x_1) <- c("Food","Textiles","Wood","Chemicals","Glass","Metals",
                   "Elec_radio","Transport","Furniture")
 
 
-x1 <- corstarsl(cbind(Food_n[,c("Datum","Q1A","Q3A")],ref[,c("Food.sa")])[,-1])
-x2 <- corstarsl(cbind(Textiles_n[,c("Datum","Q1A","Q3A")],ref[,c("Textiles")])[,-1])
-x3 <- corstarsl(cbind(Wood_n[,c("Datum","Q1A","Q3A")],ref[,c("Wood.sa")])[,-1])
-x4 <- corstarsl(cbind(Chemicals_n[,c("Datum","Q1A","Q3A")],ref[,c("Chemical")])[,-1])
-x5 <- corstarsl(cbind(Glass_n[,c("Datum","Q1A","Q3A")],ref[,c("Glass.sa")])[,-1])
-x6 <- corstarsl(cbind(Metals_n[,c("Datum","Q1A","Q3A")],ref[,c("Metals.sa")])[,-1])
-x7 <- corstarsl(cbind(Elec_radio_n[,c("Datum","Q1A","Q3A")],ref[,c("Elec_Radio")])[,-1])
-x8 <- corstarsl(cbind(Transport_n[,c("Datum","Q1A","Q3A")],ref[,c("Transport.sa")])[,-1])
-x9 <- corstarsl(cbind(Furniture_n[,c("Datum","Q1A","Q3A")],ref[,c("Furniture_all.sa")])[,-1])
+x1 <- corstarsl(cbind(Food_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Food.sa")])[,-1])
+x2 <- corstarsl(cbind(Textiles_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Textiles")])[,-1])
+x3 <- corstarsl(cbind(Wood_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Wood.sa")])[,-1])
+x4 <- corstarsl(cbind(Chemicals_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Chemical")])[,-1])
+x5 <- corstarsl(cbind(Glass_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Glass.sa")])[,-1])
+x6 <- corstarsl(cbind(Metals_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Metals.sa")])[,-1])
+x7 <- corstarsl(cbind(Electrical_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Elec_Radio")])[,-1])
+x8 <- corstarsl(cbind(Transport_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Transport.sa")])[,-1])
+x9 <- corstarsl(cbind(Furniture_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Furniture_all.sa")])[,-1])
 
 x_2 <- rbind(x1[3,],x2[3,],x3[3,],x4[3,],x5[3,],x6[3,],x7[3,],x8[3,],x9[3,])
 
 
-x1 <- corstarsl(cbind(Food_u[,c("Datum","Q1A","Q3A")],ref[,c("Food.sa")])[,-1])
-x2 <- corstarsl(cbind(Textiles_u[,c("Datum","Q1A","Q3A")],ref[,c("Textiles")])[,-1])
-x3 <- corstarsl(cbind(Wood_u[,c("Datum","Q1A","Q3A")],ref[,c("Wood.sa")])[,-1])
-x4 <- corstarsl(cbind(Chemicals_u[,c("Datum","Q1A","Q3A")],ref[,c("Chemical")])[,-1])
-x5 <- corstarsl(cbind(Glass_u[,c("Datum","Q1A","Q3A")],ref[,c("Glass.sa")])[,-1])
-x6 <- corstarsl(cbind(Metals_u[,c("Datum","Q1A","Q3A")],ref[,c("Metals.sa")])[,-1])
-x7 <- corstarsl(cbind(Elec_radio_u[,c("Datum","Q1A","Q3A")],ref[,c("Elec_Radio")])[,-1])
-x8 <- corstarsl(cbind(Transport_u[,c("Datum","Q1A","Q3A")],ref[,c("Transport.sa")])[,-1])
-x9 <- corstarsl(cbind(Furniture_u[,c("Datum","Q1A","Q3A")],ref[,c("Furniture_all.sa")])[,-1])
+x1 <- corstarsl(cbind(Food_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Food.sa")])[,-1])
+x2 <- corstarsl(cbind(Textiles_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Textiles")])[,-1])
+x3 <- corstarsl(cbind(Wood_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Wood.sa")])[,-1])
+x4 <- corstarsl(cbind(Chemicals_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Chemical")])[,-1])
+x5 <- corstarsl(cbind(Glass_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Glass.sa")])[,-1])
+x6 <- corstarsl(cbind(Metals_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Metals.sa")])[,-1])
+x7 <- corstarsl(cbind(Electrical_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Elec_Radio")])[,-1])
+x8 <- corstarsl(cbind(Transport_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Transport.sa")])[,-1])
+x9 <- corstarsl(cbind(Furniture_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Furniture_all.sa")])[,-1])
 
 x_3 <- rbind(x1[3,],x2[3,],x3[3,],x4[3,],x5[3,],x6[3,],x7[3,],x8[3,],x9[3,])
 
-x1 <- corstarsl(cbind(Food_2[,c("Datum","Q1A","Q3A")],ref[,c("Food.sa")])[,-1])
-x2 <- corstarsl(cbind(Textiles_2[,c("Datum","Q1A","Q3A")],ref[,c("Textiles")])[,-1])
-x3 <- corstarsl(cbind(Wood_2[,c("Datum","Q1A","Q3A")],ref[,c("Wood.sa")])[,-1])
-x4 <- corstarsl(cbind(Chemicals_2[,c("Datum","Q1A","Q3A")],ref[,c("Chemical")])[,-1])
-x5 <- corstarsl(cbind(Glass_2[,c("Datum","Q1A","Q3A")],ref[,c("Glass.sa")])[,-1])
-x6 <- corstarsl(cbind(Metals_2[,c("Datum","Q1A","Q3A")],ref[,c("Metals.sa")])[,-1])
-x7 <- corstarsl(cbind(Elec_radio_2[,c("Datum","Q1A","Q3A")],ref[,c("Elec_Radio")])[,-1])
-x8 <- corstarsl(cbind(Transport_2[,c("Datum","Q1A","Q3A")],ref[,c("Transport.sa")])[,-1])
-x9 <- corstarsl(cbind(Furniture_2[,c("Datum","Q1A","Q3A")],ref[,c("Furniture_all.sa")])[,-1])
+x1 <- corstarsl(cbind(Food_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Food.sa")])[,-1])
+x2 <- corstarsl(cbind(Textiles_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Textiles")])[,-1])
+x3 <- corstarsl(cbind(Wood_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Wood.sa")])[,-1])
+x4 <- corstarsl(cbind(Chemicals_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Chemical")])[,-1])
+x5 <- corstarsl(cbind(Glass_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Glass.sa")])[,-1])
+x6 <- corstarsl(cbind(Metals_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Metals.sa")])[,-1])
+x7 <- corstarsl(cbind(Electrical_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Elec_Radio")])[,-1])
+x8 <- corstarsl(cbind(Transport_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Transport.sa")])[,-1])
+x9 <- corstarsl(cbind(Furniture_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Furniture_all.sa")])[,-1])
 
 x_4 <- rbind(x1[3,],x2[3,],x3[3,],x4[3,],x5[3,],x6[3,],x7[3,],x8[3,],x9[3,])
 
@@ -2175,10 +2016,9 @@ x <- cbind(x_1,x_3,x_2,x_4)
 colnames(x) <- c("Q1A","Q3A","Q1A_U","Q3A_U","Q1A_New","Q3A_New","Q1A_2s","Q3A_2s")
 
 xt <- xtable(x)
-print(xt, "latex",comment=FALSE,scalebox = 0.6)
+print(xt, "latex",comment=FALSE,scalebox = 0.9)
 ```
 
-## Volatility
 ```{r table9, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
 data <- cbind(Food[,c("Q1A","Q3A")],Food_u[,c("Q1A","Q3A")],
               Food_n[,c("Q1A","Q3A")],Food_2[,c("Q1A","Q3A")])
@@ -2204,8 +2044,8 @@ data <- cbind(Metals[,c("Q1A","Q3A")],Metals_u[,c("Q1A","Q3A")],
               Metals_n[,c("Q1A","Q3A")],Metals_2[,c("Q1A","Q3A")])
 V <- rbind(V,sapply(1:8,function(x) sd(data[,x], na.rm = TRUE))[1:8])
 
-data <- cbind(Elec_radio[,c("Q1A","Q3A")],Elec_radio_u[,c("Q1A","Q3A")],
-              Elec_radio_n[,c("Q1A","Q3A")],Elec_radio_2[,c("Q1A","Q3A")])
+data <- cbind(Electrical[,c("Q1A","Q3A")],Electrical_u[,c("Q1A","Q3A")],
+              Electrical_n[,c("Q1A","Q3A")],Electrical_2[,c("Q1A","Q3A")])
 V <- rbind(V,sapply(1:8,function(x) sd(data[,x], na.rm = TRUE))[1:8])
 
 data <- cbind(Transport[,c("Q1A","Q3A")],Transport_u[,c("Q1A","Q3A")],
@@ -2217,9 +2057,622 @@ data <- cbind(Furniture[,c("Q1A","Q3A")],Furniture_u[,c("Q1A","Q3A")],
 V <- rbind(V,sapply(1:8,function(x) sd(data[,x], na.rm = TRUE))[1:8])
 
 colnames(V) <- c("Q1A","Q3A","Q1A_U","Q3A_U","Q1A_New","Q3A_New","Q1A_2s","Q3A_2s")
-row.names(V) <- c("Food","Textiles","Wood","Chemicals","Glass","Metals","Elec_radio","Transport","Furniture")
+row.names(V) <- c("Food","Textiles","Wood","Chemicals","Glass","Metals","Electrical","Transport","Furniture")
 
 xt <- xtable(V)
-print(xt, "latex",comment=FALSE,scalebox = 0.6)
+print(xt, "latex",comment=FALSE,scalebox = 0.9)
+```
+
+#The Trade Surveys 
+
+##The Retail Survey 
+```{r R.retail, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+pub_r <- read.csv("Retail_BER_Published.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+ref_r <- read.csv("Ref Series_Retail.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+ad_r <- read.csv("Retail_Adjustment.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+ad_r[,-1] <- ad_r[,-1]+pub_r[,-1]
+
+
+#RETAIL
+BER.R <- read.csv("Retail_92Q2-17Q2.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+colnames(BER.R)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
+BER.R$surveyQ <- toupper(BER.R$surveyQ)
+BER.R$sector <- factor(BER.R$sector) #could include labels
+BER.R$id <- factor(BER.R$id)
+
+#Clean SurveyQ variable
+BER.R$temp <- NULL
+for(i in 1:nrow(BER.R)) {
+    ifelse(substr(BER.R$surveyQ[i], 1, 1)==9, 
+           BER.R$temp[i] <- paste0("19",BER.R$surveyQ[i],sep=""),
+           BER.R$temp[i] <- paste0("20",BER.R$surveyQ[i],sep=""))
+}
+BER.R$surveyQ <- BER.R$temp
+BER.R <- BER.R[,-ncol(BER.R)]
+BER.R$surveyQ <- factor(BER.R$surveyQ)
+
+#Clean regions
+Mode <- function(x) {
+    ux <- na.remove(unique(x))
+    ux[which.max(tabulate(match(x, ux)))]
+}
+foute <- c("1997Q2")#,"2000Q3","2000Q4","2001Q1")
+korrek <- c("1996Q1","1996Q2","1996Q3","1996Q4","1997Q1",
+            "1997Q3","1997Q4","1998Q1","1998Q2","1998Q3",
+            "1998Q4")#,"2004Q1","2004Q2","2004Q3","2004Q4",
+#"2005Q1","2005Q2","2005Q3","2006Q1","2006Q2","2006Q3","2006Q4")
+for(i in levels(BER.R$id)) {
+    if(!is.na(Mode(BER.R$region[(BER.R$surveyQ %in% korrek) & (BER.R$id == i)]))) {
+        BER.R$region[(BER.R$surveyQ %in% foute) & (BER.R$id == i)] <- Mode(BER.R$region[(BER.R$surveyQ %in% korrek) & (BER.R$id == i)]) 
+    }
+}
+BER.R$region <- factor(BER.R$region)
+
+BER.R <- BER.R[BER.R$Latecomer == FALSE | is.na(BER.R$Latecomer),]
+#Exclude new recruits for 2010Q4
+#BER.R$New2010Q4 <- FALSE
+#BER.R$New2010Q4 <- replace(BER.R$New2010Q4, (BER.R$surveyQ=="2010Q4" & BER.R$NewRecruit==TRUE), TRUE)
+#BER.R <- BER.R[BER.R$New2010Q4 == FALSE | is.na(BER.R$New2010Q4),]
+
+BER.R <- BER.R[,1:21]
+BER.R <- BER.R[,!grepl("X",colnames(BER.R))]    
+
+for(i in 7:21) {
+    BER.R[,i] <- replace(BER.R[,i], BER.R[,i]==2, 0)
+    BER.R[,i] <- replace(BER.R[,i], BER.R[,i]==3,-1)
+}
+
+#---------------------
+#New faktor variable 
+#RETAIL
+BER.Rn <- read.csv("Retail_new faktor.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+colnames(BER.Rn)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
+BER.Rn$surveyQ <- toupper(BER.Rn$surveyQ)
+BER.Rn$sector <- factor(BER.Rn$sector) #could include labels
+BER.Rn$id <- factor(BER.Rn$id)
+
+#Clean SurveyQ variable
+BER.Rn$temp <- NULL
+for(i in 1:nrow(BER.Rn)) {
+    ifelse(substr(BER.Rn$surveyQ[i], 1, 1)==9, 
+           BER.Rn$temp[i] <- paste0("19",BER.Rn$surveyQ[i],sep=""),
+           BER.Rn$temp[i] <- paste0("20",BER.Rn$surveyQ[i],sep=""))
+}
+BER.Rn$surveyQ <- BER.Rn$temp
+BER.Rn <- BER.Rn[,-ncol(BER.Rn)]
+BER.Rn$surveyQ <- factor(BER.Rn$surveyQ)
+
+#Clean regions
+Mode <- function(x) {
+    ux <- na.remove(unique(x))
+    ux[which.max(tabulate(match(x, ux)))]
+}
+foute <- c("1997Q2")#,"2000Q3","2000Q4","2001Q1")
+korrek <- c("1996Q1","1996Q2","1996Q3","1996Q4","1997Q1",
+            "1997Q3","1997Q4","1998Q1","1998Q2","1998Q3",
+            "1998Q4")#,"2004Q1","2004Q2","2004Q3","2004Q4",
+#"2005Q1","2005Q2","2005Q3","2006Q1","2006Q2","2006Q3","2006Q4")
+for(i in levels(BER.Rn$id)) {
+    if(!is.na(Mode(BER.Rn$region[(BER.Rn$surveyQ %in% korrek) & (BER.Rn$id == i)]))) {
+        BER.Rn$region[(BER.Rn$surveyQ %in% foute) & (BER.Rn$id == i)] <- Mode(BER.Rn$region[(BER.Rn$surveyQ %in% korrek) & (BER.Rn$id == i)]) 
+    }
+}
+BER.Rn$region <- factor(BER.Rn$region)
+
+BER.Rn <- BER.Rn[BER.Rn$Latecomer == FALSE | is.na(BER.Rn$Latecomer),]
+#Exclude new recruits for 2010Q4
+#BER.Rn$New2010Q4 <- FALSE
+#BER.Rn$New2010Q4 <- replace(BER.Rn$New2010Q4, (BER.Rn$surveyQ=="2010Q4" & BER.Rn$NewRecruit==TRUE), TRUE)
+#BER.Rn <- BER.Rn[BER.Rn$New2010Q4 == FALSE | is.na(BER.Rn$New2010Q4),]
+
+BER.Rn <- BER.Rn[,1:21]
+BER.Rn <- BER.Rn[,!grepl("X",colnames(BER.Rn))]    
+
+for(i in 7:21) {
+    BER.Rn[,i] <- replace(BER.Rn[,i], BER.Rn[,i]==2, 0)
+    BER.Rn[,i] <- replace(BER.Rn[,i], BER.Rn[,i]==3,-1)
+}
+
+
+#-----------------------
+#New 2-step weighting 
+BER.R2 <- read.csv("Retail_new faktor_sep.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+colnames(BER.R2)[1:8] <- c("region","id","sector","weight","firmw","sectorw","factor","surveyQ")
+BER.R2$surveyQ <- toupper(BER.R2$surveyQ)
+BER.R2$sector <- factor(BER.R2$sector) #could include labels
+BER.R2$id <- factor(BER.R2$id)
+
+#Clean SurveyQ variable
+BER.R2$temp <- NULL
+for(i in 1:nrow(BER.R2)) {
+    ifelse(substr(BER.R2$surveyQ[i], 1, 1)==9, 
+           BER.R2$temp[i] <- paste0("19",BER.R2$surveyQ[i],sep=""),
+           BER.R2$temp[i] <- paste0("20",BER.R2$surveyQ[i],sep=""))
+}
+BER.R2$surveyQ <- BER.R2$temp
+BER.R2 <- BER.R2[,-ncol(BER.R2)]
+BER.R2$surveyQ <- factor(BER.R2$surveyQ)
+
+#Clean regions
+foute <- c("1997Q2")#,"2000Q3","2000Q4","2001Q1")
+korrek <- c("1996Q1","1996Q2","1996Q3","1996Q4","1997Q1",
+            "1997Q3","1997Q4","1998Q1","1998Q2","1998Q3",
+            "1998Q4")#,"2004Q1","2004Q2","2004Q3","2004Q4",
+#"2005Q1","2005Q2","2005Q3","2006Q1","2006Q2","2006Q3","2006Q4")
+for(i in levels(BER.R2$id)) {
+    if(!is.na(Mode(BER.R2$region[(BER.R2$surveyQ %in% korrek) & (BER.R2$id == i)]))) {
+        BER.R2$region[(BER.R2$surveyQ %in% foute) & (BER.R2$id == i)] <- Mode(BER.R2$region[(BER.R2$surveyQ %in% korrek) & (BER.R2$id == i)]) 
+    }
+}
+BER.R2$region <- factor(BER.R2$region)
+
+BER.R2 <- BER.R2[BER.R2$Latecomer == FALSE | is.na(BER.R2$Latecomer),]
+BER.R2 <- BER.R2[,1:23]
+BER.R2 <- BER.R2[,!grepl("X",colnames(BER.R2))]    
+
+for(i in 9:23) {
+    BER.R2[,i] <- replace(BER.R2[,i], BER.R2[,i]==2, 0)
+    BER.R2[,i] <- replace(BER.R2[,i], BER.R2[,i]==3,-1)
+}
+
+#Maak factor reg
+Ej <- aggregate(BER.R2$firmw, by=list(BER.R2$surveyQ,BER.R2$sector), FUN=sum)
+BER.R2 <-  merge(BER.R2, Ej, by.x=c("surveyQ","sector"), by.y=c("Group.1","Group.2"),all = TRUE)
+BER.R2$factor <- BER.R2$factor/BER.R2$x
+BER.R2 <- BER.R2[,c(3,4,2,5:8,1,9:23)]
+
+#RETAIL
+retailsd <- c(3110,3120,3160,3140,3130,3170,3150)
+retailnd <- c(3230,3210,3240,3220)
+retaild <- c(3330,3370,3310,3340,3350,3320,3380,3360)
+retailo <- c(3410,3420)
+hardware <- 3330 
+other_duarbles <- c(3370,3310,3340,3350,3320,3380,3360)
+all_r <- as.numeric(as.character(unique(BER.R$sector)))
+#streke <- unique(BER.R$region)
+
+#RETAIL
+Retail <- geweeg(BER.R,all_r,streke,2:102)
+Retail_u <- ongeweeg(BER.R,all_r,streke,2:102)
+
+Retailsd <- geweeg(BER.R,retailsd,streke,2:102)
+Retailnd <- geweeg(BER.R,retailnd,streke,2:102)
+Retaild <- geweeg(BER.R,retaild,streke,2:102)
+#retailo <- geweeg(BER.R,retailo,streke,2:102)
+
+Hardware <- geweeg(BER.R,hardware,streke,2:102)
+Other_duarbles <- geweeg(BER.R,other_duarbles,streke,2:102)
+
+WC.R <- geweeg(BER.R,all_r,1,2:102)
+KZN.R <- geweeg(BER.R,all_r,5,2:102)
+GP.R <- geweeg(BER.R,all_r,6,2:102)
+
+#Interpolasie
+Retail[3,c(4,seq(5,17,by=2),18)] <- ad_r[3,2:10]
+Retail[6,c(4,seq(5,17,by=2),18)] <- ad_r[6,2:10]
+Retail[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,2:10]
+Retailsd[3,c(4,seq(5,17,by=2),18)] <- ad_r[55,2:10]
+Retailsd[6,c(4,seq(5,17,by=2),18)] <- ad_r[6,11:19]
+Retailsd[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,11:19]
+Retailnd[3,c(4,seq(5,17,by=2),18)] <- ad_r[3,20:28]
+Retailnd[6,c(4,seq(5,17,by=2),18)] <- ad_r[6,20:28]
+Retailnd[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,20:28]
+Retaild[3,c(4,seq(5,17,by=2),18)] <- ad_r[3,29:37]
+Retaild[6,c(4,seq(5,17,by=2),18)] <- ad_r[6,29:37]
+Retaild[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,29:37]
+
+WC.R[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,38:46]
+GP.R[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,47:55]
+KZN.R[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,56:64]
+
+
+#------------------
+#New faktor
+Retail_n <- geweeg(BER.Rn,all_r,streke,2:102)
+
+Retailsd_n <- geweeg(BER.Rn,retailsd,streke,2:102)
+Retailnd_n <- geweeg(BER.Rn,retailnd,streke,2:102)
+Retaild_n <- geweeg(BER.Rn,retaild,streke,2:102)
+#Retailo_n <- geweeg(BER.Rn,retailo,streke,2:102)
+
+Hardware_n <- geweeg(BER.Rn,hardware,streke,2:102)
+Other_duarbles_n <- geweeg(BER.Rn,other_duarbles,streke,2:102)
+
+WC.R_n <- geweeg(BER.Rn,all_r,1,2:102)
+KZN.R_n <- geweeg(BER.Rn,all_r,5,2:102)
+GP.R_n <- geweeg(BER.Rn,all_r,6,2:102)
+
+#Interpolasie
+Retail_n[3,c(4,seq(5,17,by=2),18)] <- ad_r[3,2:10]
+Retail_n[6,c(4,seq(5,17,by=2),18)] <- ad_r[6,2:10]
+Retail_n[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,2:10]
+Retailsd_n[3,c(4,seq(5,17,by=2),18)] <- ad_r[55,2:10]
+Retailsd_n[6,c(4,seq(5,17,by=2),18)] <- ad_r[6,11:19]
+Retailsd_n[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,11:19]
+Retailnd_n[3,c(4,seq(5,17,by=2),18)] <- ad_r[3,20:28]
+Retailnd_n[6,c(4,seq(5,17,by=2),18)] <- ad_r[6,20:28]
+Retailnd_n[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,20:28]
+Retaild_n[3,c(4,seq(5,17,by=2),18)] <- ad_r[3,29:37]
+Retaild_n[6,c(4,seq(5,17,by=2),18)] <- ad_r[6,29:37]
+Retaild_n[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,29:37]
+
+WC.R_n[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,38:46]
+GP.R_n[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,47:55]
+KZN.R_n[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,56:64]
+
+#------------------
+#2-step
+#Retail_n2 <- maak.index(all_r)[1:100,]
+#BER.R2 <- BER.R2[,-5:-6]
+
+Retail_2 <- geweeg(BER.R2,all_r,streke,2:102)
+
+Retailsd_2 <- geweeg(BER.R2,retailsd,streke,2:102)
+Retailnd_2 <- geweeg(BER.R2,retailnd,streke,2:102)
+Retaild_2 <- geweeg(BER.R2,retaild,streke,2:102)
+#Retailo_2 <- geweeg(BER.R2,retailo,streke,2:102)
+
+Hardware_2 <- geweeg(BER.R2,hardware,streke,2:102)
+Other_duarbles_2 <- geweeg(BER.R2,other_duarbles,streke,2:102)
+
+WC.R_2 <- geweeg(BER.R2,all_r,1,2:102)
+KZN.R_2 <- geweeg(BER.R2,all_r,5,2:102)
+GP.R_2 <- geweeg(BER.R2,all_r,6,2:102)
+
+#Interpolasie
+Retail_2[3,c(4,seq(5,17,by=2),18)] <- ad_r[3,2:10]
+Retail_2[6,c(4,seq(5,17,by=2),18)] <- ad_r[6,2:10]
+Retail_2[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,2:10]
+Retailsd_2[3,c(4,seq(5,17,by=2),18)] <- ad_r[55,2:10]
+Retailsd_2[6,c(4,seq(5,17,by=2),18)] <- ad_r[6,11:19]
+Retailsd_2[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,11:19]
+Retailnd_2[3,c(4,seq(5,17,by=2),18)] <- ad_r[3,20:28]
+Retailnd_2[6,c(4,seq(5,17,by=2),18)] <- ad_r[6,20:28]
+Retailnd_2[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,20:28]
+Retaild_2[3,c(4,seq(5,17,by=2),18)] <- ad_r[3,29:37]
+Retaild_2[6,c(4,seq(5,17,by=2),18)] <- ad_r[6,29:37]
+Retaild_2[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,29:37]
+
+WC.R_2[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,38:46]
+GP.R_2[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,47:55]
+KZN.R_2[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,56:64]
 
 ```
+
+
+
+What sector weights would provide the highest correlations with the reference series 
+PCA analysis?
+Try Regression Analysis?
+Reference series adjust (los gap)
+Import new weights/factors for retail.
+
+\begin{table}[]
+\centering
+\caption{Retail Sector Codes}
+\label{my-label}
+\scalebox{0.9}{
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Sector}           & \textbf{Subsector} & \textbf{Code}                                                                       \\ \hline
+Semi-Durables             &                    & \begin{tabular}[c]{@{}l@{}}3110, 3120, 3160, 3140,\\ 3130, 3170, 3150\end{tabular}  \\ \hline
+Noni-Durables             &                    & 3230, 3210, 3240, 3220                                                              \\ \hline
+\multirow{2}{*}{Durables} & Hardware           & 3330                                                                                \\ \cline{2-3} 
+                          & Other              & \begin{tabular}[c]{@{}l@{}}3370, 3310, 3340, 3350, \\ 3320, 3380, 3360\end{tabular} \\ \hline
+Other                     &                    & 3410, 3420                                                                          \\ \hline
+\end{tabular}}
+\end{table}
+
+Ek het nou die mikrodata van 92Q2 tot 01Q1 wat jy uit die individuele files saamgestel het, by die historiese files (Retail_92Q2-17Q2.xlsx en Wholesale_19Q2-17Q2.xlsx) bygesit. Soos wat jy vir bou en vervaardiging gedoen het, moet jy eers toets of die resultate op grond van hierdie mikrodata en met die huidge faktore ooreenstem met die gepubliseerde data (op Quantec of sien BERdata_Retail.xlsx en BERdata_Wholesale.xlsx). Dit sal aantoon of daar êrens inkonsekwente sektor en faktor kodes ingesluip het. 
+
+In hierdie geval word die vergelyking egter deur die 1997Q1 en 2008Q3 hersienings van die opname data bemoeilik. In daardie kwartale het ons die sektor gewigte hersien. Om die ou en nuwe reekse aan mekaar te koppel, het ons ?? "adjustment" faktor by alle die kwartale voor die hersiening bygetel. (Die "adjustment" faktor is bereken as die absolute verskil tussen die resultate met die bestaande en nuwe faktors vir daardie kwartaal waarin die hersiening gedoen is en dieselfde waarde is net by die historiese reeks bygetel / afgetrek.) Hierdie faktors en die waardes van die reekse voor die hersiening is in worksheets gemerk met "revised" in BERdata_Retail.xlsx en BERdata_Wholesale.xlsx. Ek sou verwag dat jou berekenings vanaf die mikrodata gaan ooreenstem met die datareekse voor die hersiening.
+
+Net die volgende sektore hoef bereken te word:
+.	Wholesale: total, non-consumer goods (sektore 21xx) en consumer goods (22xx)
+.	Retail: total, semi-durables (31xx), non-durables (32xx) en durables (33xx). 
+.	?? Nuwe indeling moet bykom. Durables moet verdeel word tussen Hardware (3330) en Furniture, electronics & other (33xx excl. 3330). 
+.	Vanaf 1992 tot 2004 was daar ook ?? sektor 34xx. Hierdie sektor moet tot 2004 by die totaal bygetel word, maar hoef nie apart gespesifiseer te word nie.
+ 
+Sodra ek later kans kry, sal ek nuwe firma en sektor gewigte vir retail en wholesale bereken. Wanneer jy ook klaar daarmee is om enige sektor en faktor kode inkonsekwente reg te stel en kan aantoon dat die mikrodata met die gepubliseerde data ooreenstem, dan sal ek die sub-sektor kodes wat ons geskrap het (bv. 2140 en 2270 in die geval van die wholesale en 3170, 3340, 3350, 3360, 3410 en 3420 in die geval van die retail) te "convert" na hul ooreenstemmende nuwe sub-sektor kodes. Daarna kan jy die resultate herbereken met die nuwe faktore.
+
+My berekening van die sektor gewigte sal ons help om lang verwysingsreekse (benchmarks) vir die sub-sektore te spesifiseer. Stats SA / SARB het lang tydreekse vir die totale, maar die ou retail sektor data is in 2003 gestaak en die nuwe data begin eers in 2005 in heersende pryse en vanaf 2008 in konstante pryse. Die wholesale sektor data is net in heersende prys vanaf 2005 beskikbaar. Stats SA se sektor indeling het ?? groot "other" komponent en die toedeling (al dan nie) daarvan tussen wholesale consumer and non-consumer goods aan die een kant en retail semi-durables, durables en non-durables aan die ander kant het ?? potensiële groot impak op die sub-sektorale groeikoerse.
+
+Die pad vorentoe:
+ 
+1.    Jy moet bevestig dat die mikrodata met die gepubliseerde data ooreenstem. Waar daar verskille is, moet die sektor en provinsiale kodes in die file "Retail_92Q2-17Q2" op Dropbox reggestel word.
+2.    Ek sal dan hierdie file gebruik om
+a.    ou sektor kodes na die nuwes te verander (bv. 3150 en 3170 moet na 3160 verander word)
+b.    en die gewigte van 9 na 4 te verander ("ou" 1 tot 4 word mikro, 5 en 6 word small, 7 en 8 word medium en 9 word large)
+c.     die faktore vir die verskillende tydperke byvoeg.
+3.    Jy moet dan hierdie file met die nuwe gewigte gebruik om die reekse met mekaar en die verwysingsreekse te vergelyk.
+ 
+Wat die verwysingsreekse (sien file: Retail) betref, daar is ?? breek in die reeks vir die komponente van 2004 tot 2007. Verder is dit nie nodig om "other" tussen die 3 hoofkomponente toe te deel nie, want dit het omtrent geen impak op die groei koers nie.
+ 
+T1 Non-durables: Old 85-03: Food, groceries, beverages, pharmac & cosmetics & books. New 08+: gen dealers, spec food, pharmac & toiletries
+T2 Semi-durables: Old 85-03: Footw, men & women's clothing, textiles, dom furnish, glass & sport. New 08+: clothing
+T3 Durables: Old 85-03: Furniture, appliances, audio, TV, jewellery & hardware. New 08+: Furniture & hardware
+ 
+T3 Durables moet dan ook gedeel word tussen Hardware en Furniture & Other
+
+
+
+
+##The Wholesale Survey
+```{r W.whole, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+pub_w <- read.csv("Wholesale_BER_Published.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+#ref_w <- read.csv("Ref Series_Wholesale.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+ad_w <- read.csv("Wholesale_Adjustment.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+ad_w[,-1] <- ad_w[,-1]+pub_w[,-1]
+
+
+#WHOLESALE
+
+BER.W <- read.csv("Wholesale_92Q2-17Q2.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+colnames(BER.W)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
+BER.W$surveyQ <- toupper(BER.W$surveyQ)
+BER.W$sector <- factor(BER.W$sector) #could include labels
+BER.W$id <- factor(BER.W$id)
+BER.W$region <- factor(BER.W$region)
+
+#Clean SurveyQ variable
+BER.W$temp <- NULL
+for(i in 1:nrow(BER.W)) {
+    ifelse(substr(BER.W$surveyQ[i], 1, 1)==9, 
+           BER.W$temp[i] <- paste0("19",BER.W$surveyQ[i],sep=""),
+           BER.W$temp[i] <- paste0("20",BER.W$surveyQ[i],sep=""))
+}
+BER.W$surveyQ <- BER.W$temp
+BER.W <- BER.W[,-ncol(BER.W)]
+BER.W$surveyQ <- factor(BER.W$surveyQ)
+
+BER.W <- BER.W[BER.W$Latecomer == FALSE | is.na(BER.W$Latecomer),]
+BER.W <- BER.W[,1:21]
+BER.W <- BER.W[,!grepl("X",colnames(BER.W))]    
+
+for(i in 7:21) {
+    BER.W[,i] <- replace(BER.W[,i], BER.W[,i]==2, 0)
+    BER.W[,i] <- replace(BER.W[,i], BER.W[,i]==3,-1)
+}
+
+#WHOLESALE
+wholenc <- c(2120,2110,2130,2140)
+wholec <- c(2250,2220,2230,2240,2210,2270,2260)
+all_w <- as.numeric(as.character(unique(BER.W$sector)))
+#streke <- unique(BER.W$region)
+
+#WHOLESALE
+Wholesale <- geweeg(BER.W,all_w,streke,2:102)
+Wholesale_u <- ongeweeg(BER.W,all_w,streke,2:102)
+
+Wholec <- geweeg(BER.W,wholec,streke,2:102)
+Wholenc <- geweeg(BER.W,wholenc,streke,2:102)
+
+WC.W <- geweeg(BER.W,all_w,1,2:102)
+GP.W <- geweeg(BER.W,all_w,6,2:102)
+KZN.W <- geweeg(BER.W,all_w,5,2:102)
+
+
+#Interpolasie
+Wholesale[3,c(4,seq(5,17,by=2),18)] <- ad_w[3,2:10]
+Wholesale[6,c(4,seq(5,17,by=2),18)] <- ad_w[6,2:10]
+Wholesale[55,c(4,seq(5,17,by=2),18)] <- ad_w[55,2:10]
+Wholec[3,c(4,seq(5,17,by=2),18)] <- ad_w[3,11:19]
+Wholec[6,c(4,seq(5,17,by=2),18)] <- ad_w[6,11:19]
+Wholec[55,c(4,seq(5,17,by=2),18)] <- ad_w[55,11:19]
+Wholenc[3,c(4,seq(5,17,by=2),18)] <- ad_w[3,20:28]
+Wholenc[6,c(4,seq(5,17,by=2),18)] <- ad_w[6,20:28]
+Wholenc[55,c(4,seq(5,17,by=2),18)] <- ad_w[55,20:28]
+
+WC.W[55,c(4,seq(5,17,by=2),18)] <- ad_w[55,29:37]
+GP.W[55,c(4,seq(5,17,by=2),18)] <- ad_w[55,38:46]
+KZN.W[55,c(4,seq(5,17,by=2),18)] <- ad_w[55,47:55]
+
+```
+
+
+
+\begin{table}[]
+\centering
+\caption{Wholesale Sector Codes}
+\label{my-label}
+\scalebox{0.9}{
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Sector}    & \textbf{Code}                                                                      \\ \hline
+Non-Consumer Goods & 2120, 2110, 2130, 2140                                                             \\ \hline
+Consumer Goods     & \begin{tabular}[c]{@{}l@{}}2250, 2220, 2230, 2240,\\ 2210, 2270, 2260 \\ \hline
+\end{tabular}}
+\end{table}
+
+##The Motor Vehicle Survey
+```{r V.motor, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+pub_v <- read.csv("Motor_BER_Published.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+ref_v <- read.csv("Ref Series_Vehicles.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+
+#MOTOR VEHICLES
+
+BER.V <- read.csv("Motor_92Q2-17Q2.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+colnames(BER.V)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
+BER.V$surveyQ <- toupper(BER.V$surveyQ)
+BER.V$sector <- factor(BER.V$sector) #could include labels
+BER.V$id <- factor(BER.V$id)
+BER.V$region <- factor(BER.V$region)
+
+#Clean SurveyQ variable
+BER.V$temp <- NULL
+for(i in 1:nrow(BER.V)) {
+    ifelse(substr(BER.V$surveyQ[i], 1, 1)==9, 
+           BER.V$temp[i] <- paste0("19",BER.V$surveyQ[i],sep=""),
+           BER.V$temp[i] <- paste0("20",BER.V$surveyQ[i],sep=""))
+}
+BER.V$surveyQ <- BER.V$temp
+BER.V <- BER.V[,-ncol(BER.V)]
+BER.V$surveyQ <- factor(BER.V$surveyQ)
+
+#Latecomers and old questions excluded
+BER.V <- BER.V[BER.V$Latecomer == FALSE | is.na(BER.V$Latecomer),]
+BER.V <- BER.V[,1:28]
+BER.V <- BER.V[,!grepl("X",colnames(BER.V))]    
+
+#Replace Values
+for(i in 7:28) {
+    BER.V[,i] <- replace(BER.V[,i], BER.V[,i]==2, 0)
+    BER.V[,i] <- replace(BER.V[,i], BER.V[,i]==3,-1)
+}
+
+#MOTOR
+all_v <- as.numeric(as.character(unique(BER.V$sector)))
+
+#MOTOR
+Motor <- geweeg(BER.V,all_v,streke,2:102)
+Motor_u <- ongeweeg(BER.V,all_v,streke,2:102)
+
+WC.V <- geweeg(BER.V,all_v,1,2:102)
+GP.V <- geweeg(BER.V,all_v,6,2:102)
+KZN.V <- geweeg(BER.V,all_v,5,2:102)
+
+
+#Interpolasie
+p.inter <- c(4,5,7,9,11,12,13,15,17,18,19,21,23,25)
+Motor[3,p.inter] <- pub_v[3,2:15]
+Motor[6,p.inter] <- pub_v[6,2:15]
+Motor[55,p.inter] <- pub_v[55,2:15]
+
+p.inter <- c(4,5,7,9,11)
+WC.V[55,p.inter] <- pub_v[55,16:20]
+GP.V[55,p.inter] <- pub_v[55,21:25]
+KZN.V[55,p.inter] <- pub_v[55,26:30]
+
+```
+
+
+Ek het die mikrodata voor 2001 in een historiese file Motor_92Q2-17Q2.xlsx bygesit. Sal jy asb. toets of die resultate op grond van hierdie mikrodata en met die huidge faktore ooreenstem met die gepubliseerde data (op Quantec of sien BERdata_Motor.xlsx)? As dit ooreenstem, kan jy die impak van nuwe firma gewigte (wat ek nog moet bepaal) op die resultate bereken.
+
+.	Use NAAMSA total and passenger car sales as reference series 
+
+Ek het gekontroleer en die motor handel opname resultate is soos dié van die klein en groothandel in 96Q4 terug hersien. Jou berekenings vir 96Q4 - 98Q3 sal ook verskil van die gepubliseerde data. Sien die worksheet "Motor 86-96 revised" in die workbook "BERdata_Motor" op Dropbox. Soos in die geval van die ander twee sektore, is die onderliggende mikro data dus korrek.
+
+
+#The Services Survey
+```{r S.services, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+pub_s <- read.csv("Services_BER_Published.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+#ref_s <- read.csv("Ref Series_Services.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+
+#SERVICES
+
+BER.S <- read.csv("Services_05Q2-17Q2.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+colnames(BER.S)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
+BER.S$surveyQ <- toupper(BER.S$surveyQ)
+BER.S$sector <- factor(BER.S$sector) #could include labels
+BER.S$id <- factor(BER.S$id)
+BER.S$region <- factor(BER.S$region)
+
+#Clean SurveyQ variable
+BER.S$temp <- NULL
+for(i in 1:nrow(BER.S)) {
+    ifelse(substr(BER.S$surveyQ[i], 1, 1)==9, 
+           BER.S$temp[i] <- paste0("19",BER.S$surveyQ[i],sep=""),
+           BER.S$temp[i] <- paste0("20",BER.S$surveyQ[i],sep=""))
+}
+BER.S$surveyQ <- BER.S$temp
+BER.S <- BER.S[,-ncol(BER.S)]
+BER.S$surveyQ <- factor(BER.S$surveyQ)
+
+#Eclude Latecomers and old quesions
+BER.S <- BER.S[BER.S$Latecomer == FALSE | is.na(BER.S$Latecomer),]
+BER.S <- BER.S[,1:21]
+BER.S <- BER.S[,!grepl("X",colnames(BER.S))]    
+
+#Replace Values
+for(i in 7:21) {
+    BER.S[,i] <- replace(BER.S[,i], BER.S[,i]==2, 0)
+    BER.S[,i] <- replace(BER.S[,i], BER.S[,i]==3,-1)
+}
+
+for(i in 18:21) {
+    BER.S[,i] <- replace(BER.S[,i], BER.S[,i]==0, 0.5)
+    BER.S[,i] <- replace(BER.S[,i], BER.S[,i]==-1, 0)
+}
+
+#SERVICES
+catering <- c(6000,6001,6020,6030,6011)
+transport.s <- c(7020,7010,7070,7090,7080,7060,7000,7040,7100,7120,7110,7050)
+realestate <- c(8000,8010,8020)
+business <- c(8040,8080,8070,8090,8060,8050,8030,
+              8150,8120,8210,8180,8140,8160,8190,8100,8200,8230,8130,8110,8170,8240,8220)
+#community <- c(9000,9010,9030,9050,9060,9020,9040)
+all_s <- as.numeric(as.character(unique(BER.S$sector)))
+#streke <- unique(BER.S$region)
+
+#SERVICES
+Services_w <- geweeg(BER.S,all_s,streke,54:102)
+Services <- ongeweeg(BER.S,all_s,streke,54:102)
+
+ServicesC <- ongeweeg(BER.S,catering,streke,54:102)
+ServicesT <- ongeweeg(BER.S,transport.s,streke,54:102)
+ServicesR <- ongeweeg(BER.S,realestate,streke,54:102)
+ServicesB <- ongeweeg(BER.S,business,streke,54:102)
+
+WC.S <- ongeweeg(BER.S,all_s,1,54:102)
+GP.S <- ongeweeg(BER.S,all_s,6,54:102)
+KZN.S <- ongeweeg(BER.S,all_s,5,54:102)
+
+#Interpolasie
+p.inter <- c(4,5,7,9,11,13)
+Services[3,p.inter] <- pub_s[3,2:7]
+ServicesC[3,p.inter] <- pub_s[3,13:18]
+ServicesT[3,p.inter] <- pub_s[3,24:29]
+ServicesR[3,p.inter] <- pub_s[3,35:40]
+ServicesB[3,p.inter] <- pub_s[3,46:51]
+
+p.inter <- c(4,5,7,9,11,13)
+WC.S[3,p.inter] <- pub_s[3,79:84]
+GP.S[3,p.inter] <- pub_s[3,68:73]
+KZN.S[3,p.inter] <- pub_s[3,90:95]
+
+```
+
+
+Die mikrodata vir die dienste opname is beskikbaar vanaf die begin van die opname in 2005. Sal jy asb. toets of die resultate op grond van hierdie mikrodata ooreenstem met die berekende data (sien BERdata_Services.xls; dit is nie op Quantec beskikbaar nie). Alhoewel ons ?? gewig vir elke medewerker het, het ons tot nou dieselfde (geen) gewig gebruik om die resultate van die sub-sektore te bereken.
+Die vraelyste en vraag kodes is in ServQues with codes.pdf
+As jy bevestig het dat die mikrodata stem ooreen met die berekende data, dan sal ek die sub-sektor kodes wat ons geskrap het (bv. 6020, 6030, 8020, 8050, 8060, 8220, 8230, 8240 en 9060 ) "convert" na hul ooreenstemmende nuwe sub-sektor kodes.
+Ek moet nog die firma en sektor gewigte bereken. Ons kan daarna die impak daarvan en ?? totaal vir "ander dienste" bereken. Die werk oor die sektor gewigte sal my ook in staat stel om die verwysingsreeks te spesifiseer.
+Net die volgende sektore hoef (op die ou end) bereken te word:
+.	Totaal (word tans weens ?? gebrek aan sektor gewigte nie bereken nie)
+.	Hotels and restaurants (sektore 6xxx)
+.	Transport and storage (7xxx)
+.	Real estate (8000, 8010, 8020)
+.	Business services (8xxx excl. dié van real estate)
+
+Daar is te min respondente vir personal services (9xxx) om as ?? aparte sub-sektor te bereken. Ons sal dit waarskynlik ook nie in die totaal kan insluit nie.
+
+Vir die periode 05Q2-08Q2 is "published sevices constraints" data nie deur 0.67 gedeel nie, d.w.s. die gepubliseerde data is uit 67 en nie uit 100 nie. Lyk my daar was een of ander berekeningsfout vir die periode 08Q3 - 09Q2 (?). Ek kan nie presies agterkom wat daar verkeerde is nie. Dit lyk amper of die berekening van net "transport en storage" en "business service" sektor na 100 verander is. Soos in bogenoemde geval, lyk dit of die mikro-data korrek is, al stem dit in hierdie geval nie met die "gepubliseerde" data ooreen nie. ?? Ander ding wat ek raakgeloop het en waarvan jy ?? aantekening in die meta dokument moet maak, is dat die woord "skilled" vanaf 15Q2 by die "shortage of labour constraint" vraag bygevoeg is. Die vraag was dus voor en na 15Q2 nie dieselfde nie en mens moet dit in ag neem as jy die tydreeks gebruik.
+
+\begin{table}[]
+\centering
+\caption{Services Sector Codes}
+\label{my-label}
+\scalebox{0.9}{
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Sector}                                                              & \textbf{Code}                                                                                                                                                                          \\ \hline
+\begin{tabular}[c]{@{}l@{}}Hotels and Restaurants \\ (Catering)\end{tabular} & 6000, 6001, 6020, 6030, 6011                                                                                                                                                           \\ \hline
+Transport and Storage                                                        & \begin{tabular}[c]{@{}l@{}}7020, 7010, 7070, 7090, 7080, \\ 7060, 7000, 7040, 7100, 7120, \\ 7110, 7050\end{tabular}                                                                   \\ \hline
+Real Estate                                                                  & 8000, 8010, 8020                                                                                                                                                                       \\ \hline
+Business Services                                                            & \begin{tabular}[c]{@{}l@{}}8040, 8080, 8070, 8090, 8060, \\ 8050, 8030, 8150, 8120, 8210, \\ 8180, 8140, 8160, 8190, 8100, \\ 8200, 8230, 8130, 8110, 8170, \\ 8240, 8220\end{tabular} \\ \hline
+Community Services                                                           & \begin{tabular}[c]{@{}l@{}}9000, 9010, 9030, 9050, 9060, \\ 9020, 9040\end{tabular}                                                                                                    \\ \hline
+\end{tabular}}
+\end{table}
+
+
+
+#Conclusion
+
+
+#References
+
+
+
+
+
+

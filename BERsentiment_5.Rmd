@@ -2369,7 +2369,7 @@ plot.varfevd(fevd(varm, n.ahead = 10 ),plot.type = "single")
 ####Uncertainty
 Figure 3.25 illustrates the IRFs of a bivariate VAR with the dispersion indicator and real GDP growth. The left panel plots the responses of real GDP growth to an orthogonal shock in dispersion, with 95% bootstrap confidence intervals. A shock to dispersion is followed by a significant decrease in real GDP growth in the following quarter. The right panel plots the response of dispersion to an orthogonal shock in real GDP growth. Following a shock to real GDP growth, there is an insignificant response in the dispersion indicator. The IRFs for the aggregate error, EPU, and SAVI indicators of uncertainty are very similar. Shocks to these indicators are associated with a moderately significant decreases in real GDP growth, while shocks to real GDP growth do not lead to a significant changes in the uncertainty indicators. The IRFs for the idiosyncratic error uncertainty indicator are not significant. The results are similar for alternative orderings.
 
-```{r figure3.25, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="IRFs of uncertainty (combined) and real GDP growth"}
+```{r figure3.25, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="IRFs of uncertainty (dispersion) and real GDP growth"}
 vardat <- cbind(uncert_indices[,2],conf_indices[,6])[-99,]
 colnames(vardat) <- c("Dispersion","RGDP_Growth")
 infocrit <- VARselect(vardat, lag.max = 12, type = "const")

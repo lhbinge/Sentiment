@@ -1,6 +1,6 @@
-##========================================================================================##
-## -------------------------------- BUILDING ---------------------------------------------##
-##========================================================================================##
+##==================================================================##
+## ----------------------- BER SURVEYS -----------------------------##
+##==================================================================##
 setwd("C:\\Users\\Laurie\\OneDrive\\Documents\\BING\\BER Confidence Surveys\\Sentiment")
 #change the working directory
 
@@ -15,6 +15,7 @@ suppressMessages(library(quantmod))
 suppressMessages(library(vars))
 suppressMessages(library(tseries))
 suppressMessages(library(urca))
+suppressMessages(library(zoo))
 
 ##=====================##
 ## READING IN THE DATA ##
@@ -42,7 +43,7 @@ ad_w <- read.csv("Wholesale_Adjustment.csv", header=TRUE, sep=",",na.strings = "
 ad_w[,-1] <- ad_w[,-1]+pub_w[,-1]
 
 pub_v <- read.csv("Motor_BER_Published.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-#ref_v <- read.csv("Ref Series_Motor.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+ref_v <- read.csv("Ref Series_Vehicles.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
 
 pub_s <- read.csv("Services_BER_Published.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
 #ref_s <- read.csv("Ref Series_Services.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
@@ -290,6 +291,11 @@ for(i in levels(BER.R$id)) {
 BER.R$region <- factor(BER.R$region)
 
 BER.R <- BER.R[BER.R$Latecomer == FALSE | is.na(BER.R$Latecomer),]
+#Exclude new recruits for 2010Q4
+#BER.R$New2010Q4 <- FALSE
+#BER.R$New2010Q4 <- replace(BER.R$New2010Q4, (BER.R$surveyQ=="2010Q4" & BER.R$NewRecruit==TRUE), TRUE)
+#BER.R <- BER.R[BER.R$New2010Q4 == FALSE | is.na(BER.R$New2010Q4),]
+
 BER.R <- BER.R[,1:21]
 BER.R <- BER.R[,!grepl("X",colnames(BER.R))]    
 
@@ -297,6 +303,106 @@ for(i in 7:21) {
     BER.R[,i] <- replace(BER.R[,i], BER.R[,i]==2, 0)
     BER.R[,i] <- replace(BER.R[,i], BER.R[,i]==3,-1)
 }
+
+#---------------------
+#New faktor variable 
+#RETAIL
+BER.Rn <- read.csv("Retail_new faktor.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+colnames(BER.Rn)[1:6] <- c("region","id","sector","weight","factor","surveyQ")
+BER.Rn$surveyQ <- toupper(BER.Rn$surveyQ)
+BER.Rn$sector <- factor(BER.Rn$sector) #could include labels
+BER.Rn$id <- factor(BER.Rn$id)
+
+#Clean SurveyQ variable
+BER.Rn$temp <- NULL
+for(i in 1:nrow(BER.Rn)) {
+    ifelse(substr(BER.Rn$surveyQ[i], 1, 1)==9, 
+           BER.Rn$temp[i] <- paste0("19",BER.Rn$surveyQ[i],sep=""),
+           BER.Rn$temp[i] <- paste0("20",BER.Rn$surveyQ[i],sep=""))
+}
+BER.Rn$surveyQ <- BER.Rn$temp
+BER.Rn <- BER.Rn[,-ncol(BER.Rn)]
+BER.Rn$surveyQ <- factor(BER.Rn$surveyQ)
+
+#Clean regions
+Mode <- function(x) {
+    ux <- na.remove(unique(x))
+    ux[which.max(tabulate(match(x, ux)))]
+}
+foute <- c("1997Q2")#,"2000Q3","2000Q4","2001Q1")
+korrek <- c("1996Q1","1996Q2","1996Q3","1996Q4","1997Q1",
+            "1997Q3","1997Q4","1998Q1","1998Q2","1998Q3",
+            "1998Q4")#,"2004Q1","2004Q2","2004Q3","2004Q4",
+#"2005Q1","2005Q2","2005Q3","2006Q1","2006Q2","2006Q3","2006Q4")
+for(i in levels(BER.Rn$id)) {
+    if(!is.na(Mode(BER.Rn$region[(BER.Rn$surveyQ %in% korrek) & (BER.Rn$id == i)]))) {
+        BER.Rn$region[(BER.Rn$surveyQ %in% foute) & (BER.Rn$id == i)] <- Mode(BER.Rn$region[(BER.Rn$surveyQ %in% korrek) & (BER.Rn$id == i)]) 
+    }
+}
+BER.Rn$region <- factor(BER.Rn$region)
+
+BER.Rn <- BER.Rn[BER.Rn$Latecomer == FALSE | is.na(BER.Rn$Latecomer),]
+#Exclude new recruits for 2010Q4
+#BER.Rn$New2010Q4 <- FALSE
+#BER.Rn$New2010Q4 <- replace(BER.Rn$New2010Q4, (BER.Rn$surveyQ=="2010Q4" & BER.Rn$NewRecruit==TRUE), TRUE)
+#BER.Rn <- BER.Rn[BER.Rn$New2010Q4 == FALSE | is.na(BER.Rn$New2010Q4),]
+
+BER.Rn <- BER.Rn[,1:21]
+BER.Rn <- BER.Rn[,!grepl("X",colnames(BER.Rn))]    
+
+for(i in 7:21) {
+    BER.Rn[,i] <- replace(BER.Rn[,i], BER.Rn[,i]==2, 0)
+    BER.Rn[,i] <- replace(BER.Rn[,i], BER.Rn[,i]==3,-1)
+}
+
+
+#-----------------------
+#New 2-step weighting 
+BER.R2 <- read.csv("Retail_new faktor_sep.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+colnames(BER.R2)[1:8] <- c("region","id","sector","weight","firmw","sectorw","factor","surveyQ")
+BER.R2$surveyQ <- toupper(BER.R2$surveyQ)
+BER.R2$sector <- factor(BER.R2$sector) #could include labels
+BER.R2$id <- factor(BER.R2$id)
+
+#Clean SurveyQ variable
+BER.R2$temp <- NULL
+for(i in 1:nrow(BER.R2)) {
+    ifelse(substr(BER.R2$surveyQ[i], 1, 1)==9, 
+           BER.R2$temp[i] <- paste0("19",BER.R2$surveyQ[i],sep=""),
+           BER.R2$temp[i] <- paste0("20",BER.R2$surveyQ[i],sep=""))
+}
+BER.R2$surveyQ <- BER.R2$temp
+BER.R2 <- BER.R2[,-ncol(BER.R2)]
+BER.R2$surveyQ <- factor(BER.R2$surveyQ)
+
+#Clean regions
+foute <- c("1997Q2")#,"2000Q3","2000Q4","2001Q1")
+korrek <- c("1996Q1","1996Q2","1996Q3","1996Q4","1997Q1",
+            "1997Q3","1997Q4","1998Q1","1998Q2","1998Q3",
+            "1998Q4")#,"2004Q1","2004Q2","2004Q3","2004Q4",
+#"2005Q1","2005Q2","2005Q3","2006Q1","2006Q2","2006Q3","2006Q4")
+for(i in levels(BER.R2$id)) {
+    if(!is.na(Mode(BER.R2$region[(BER.R2$surveyQ %in% korrek) & (BER.R2$id == i)]))) {
+        BER.R2$region[(BER.R2$surveyQ %in% foute) & (BER.R2$id == i)] <- Mode(BER.R2$region[(BER.R2$surveyQ %in% korrek) & (BER.R2$id == i)]) 
+    }
+}
+BER.R2$region <- factor(BER.R2$region)
+
+BER.R2 <- BER.R2[BER.R2$Latecomer == FALSE | is.na(BER.R2$Latecomer),]
+BER.R2 <- BER.R2[,1:23]
+BER.R2 <- BER.R2[,!grepl("X",colnames(BER.R2))]    
+
+for(i in 9:23) {
+    BER.R2[,i] <- replace(BER.R2[,i], BER.R2[,i]==2, 0)
+    BER.R2[,i] <- replace(BER.R2[,i], BER.R2[,i]==3,-1)
+}
+
+#Maak factor reg
+Ej <- aggregate(BER.R2$firmw, by=list(BER.R2$surveyQ,BER.R2$sector), FUN=sum)
+BER.R2 <-  merge(BER.R2, Ej, by.x=c("surveyQ","sector"), by.y=c("Group.1","Group.2"),all = TRUE)
+BER.R2$factor <- BER.R2$factor/BER.R2$x
+BER.R2 <- BER.R2[,c(3,4,2,5:8,1,9:23)]
+
 
 
 #-------------------
@@ -393,6 +499,11 @@ for(i in 7:21) {
     BER.S[,i] <- replace(BER.S[,i], BER.S[,i]==3,-1)
 }
 
+for(i in 18:21) {
+    BER.S[,i] <- replace(BER.S[,i], BER.S[,i]==0, 0.5)
+    BER.S[,i] <- replace(BER.S[,i], BER.S[,i]==-1, 0)
+}
+
 ##=====================##
 ## DEFINE SECTOR CODES ##
 ##=====================##
@@ -439,7 +550,7 @@ capital <- c(1170,1181,1182,1189,1190,1194,1200,1201,1209)
 retailsd <- c(3110,3120,3160,3140,3130,3170,3150)
 retailnd <- c(3230,3210,3240,3220)
 retaild <- c(3330,3370,3310,3340,3350,3320,3380,3360)
-#retailo <- c(3410,3420)
+retailo <- c(3410,3420)
 hardware <- 3330 
 other_duarbles <- c(3370,3310,3340,3350,3320,3380,3360)
 all_r <- as.numeric(as.character(unique(BER.R$sector)))
@@ -556,7 +667,6 @@ maak.index <- function(sektor=all,streek=streke) {
 ##======================##
 ## CALCULATE INDICATORS ##
 ##======================##
-
 #BUILDING
 Building <- ongeweeg(BER.B,all_b,streke,6:102)
 BER.B$factor <- BER.B$weight
@@ -596,7 +706,6 @@ Civils[c(19),c(3,4,6,8,10,12:15)] <- pub_a[c(19),14:22]
 #==========================
 #MANUFACTURING
 Manufacturing <- geweeg(BER.M,all_m,streke,1:100)
-Manufacturing_u <- ongeweeg(BER.M,all_m,streke,1:100)
 
 Food <- geweeg(BER.M,food,streke,1:100)
 Textiles <- geweeg(BER.M,textiles,streke,1:100)
@@ -620,6 +729,31 @@ GP.M <- geweeg(BER.M,all_m,6,1:100)
 Manufacturing[24,c(seq(4,32,by=2),34:49)] <- pub_m[24,2:32]
 Manufacturing[33,c(seq(4,32,by=2),34:49)] <- pub_m[33,2:32]
 Manufacturing[56,c(seq(4,32,by=2),34:49)] <- pub_m[56,2:32]
+
+
+
+#-------------------
+#Unweighted
+Manufacturing_u <- ongeweeg(BER.M,all_m,streke,1:100)
+
+Food_u <- ongeweeg(BER.M,food,streke,1:100)
+Textiles_u <- ongeweeg(BER.M,textiles,streke,1:100)
+Wood_u <- ongeweeg(BER.M,wood,streke,1:100)
+Chemicals_u <- ongeweeg(BER.M,chemicals,streke,1:100)
+Glass_u <- ongeweeg(BER.M,glass,streke,1:100)
+Metals_u <- ongeweeg(BER.M,metals,streke,1:100)
+Electrical_u <- ongeweeg(BER.M,electrical,streke,1:100)
+Transport_u <- ongeweeg(BER.M,transport.m,streke,1:100)
+Furniture_u <- ongeweeg(BER.M,furniture,streke,1:100)
+
+Consumer_u <- ongeweeg(BER.M,consumer,streke,1:100)
+Intermediate_u <- ongeweeg(BER.M,intermediate,streke,1:100)
+Capital_u <- ongeweeg(BER.M,capital,streke,1:100)
+
+WC.M_u <- ongeweeg(BER.M,all_m,1,1:100)
+KZN.M_u <- ongeweeg(BER.M,all_m,5,1:100)
+GP.M_u <- ongeweeg(BER.M,all_m,6,1:100)
+
 Manufacturing_u[24,c(seq(4,32,by=2),34:49)] <- pub_m[24,2:32]
 Manufacturing_u[33,c(seq(4,32,by=2),34:49)] <- pub_m[33,2:32]
 Manufacturing_u[56,c(seq(4,32,by=2),34:49)] <- pub_m[56,2:32]
@@ -719,6 +853,79 @@ WC.R[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,38:46]
 GP.R[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,47:55]
 KZN.R[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,56:64]
 
+
+#------------------
+#New faktor
+Retail_n <- geweeg(BER.Rn,all_r,streke,2:102)
+
+Retailsd_n <- geweeg(BER.Rn,retailsd,streke,2:102)
+Retailnd_n <- geweeg(BER.Rn,retailnd,streke,2:102)
+Retaild_n <- geweeg(BER.Rn,retaild,streke,2:102)
+#Retailo_n <- geweeg(BER.Rn,retailo,streke,2:102)
+
+Hardware_n <- geweeg(BER.Rn,hardware,streke,2:102)
+Other_duarbles_n <- geweeg(BER.Rn,other_duarbles,streke,2:102)
+
+WC.R_n <- geweeg(BER.Rn,all_r,1,2:102)
+KZN.R_n <- geweeg(BER.Rn,all_r,5,2:102)
+GP.R_n <- geweeg(BER.Rn,all_r,6,2:102)
+
+#Interpolasie
+Retail_n[3,c(4,seq(5,17,by=2),18)] <- ad_r[3,2:10]
+Retail_n[6,c(4,seq(5,17,by=2),18)] <- ad_r[6,2:10]
+Retail_n[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,2:10]
+Retailsd_n[3,c(4,seq(5,17,by=2),18)] <- ad_r[55,2:10]
+Retailsd_n[6,c(4,seq(5,17,by=2),18)] <- ad_r[6,11:19]
+Retailsd_n[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,11:19]
+Retailnd_n[3,c(4,seq(5,17,by=2),18)] <- ad_r[3,20:28]
+Retailnd_n[6,c(4,seq(5,17,by=2),18)] <- ad_r[6,20:28]
+Retailnd_n[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,20:28]
+Retaild_n[3,c(4,seq(5,17,by=2),18)] <- ad_r[3,29:37]
+Retaild_n[6,c(4,seq(5,17,by=2),18)] <- ad_r[6,29:37]
+Retaild_n[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,29:37]
+
+WC.R_n[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,38:46]
+GP.R_n[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,47:55]
+KZN.R_n[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,56:64]
+
+#------------------
+#2-step
+#Retail_n2 <- maak.index(all_r)[1:100,]
+#BER.R2 <- BER.R2[,-5:-6]
+
+Retail_2 <- geweeg(BER.R2,all_r,streke,2:102)
+
+Retailsd_2 <- geweeg(BER.R2,retailsd,streke,2:102)
+Retailnd_2 <- geweeg(BER.R2,retailnd,streke,2:102)
+Retaild_2 <- geweeg(BER.R2,retaild,streke,2:102)
+#Retailo_2 <- geweeg(BER.R2,retailo,streke,2:102)
+
+Hardware_2 <- geweeg(BER.R2,hardware,streke,2:102)
+Other_duarbles_2 <- geweeg(BER.R2,other_duarbles,streke,2:102)
+
+WC.R_2 <- geweeg(BER.R2,all_r,1,2:102)
+KZN.R_2 <- geweeg(BER.R2,all_r,5,2:102)
+GP.R_2 <- geweeg(BER.R2,all_r,6,2:102)
+
+#Interpolasie
+Retail_2[3,c(4,seq(5,17,by=2),18)] <- ad_r[3,2:10]
+Retail_2[6,c(4,seq(5,17,by=2),18)] <- ad_r[6,2:10]
+Retail_2[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,2:10]
+Retailsd_2[3,c(4,seq(5,17,by=2),18)] <- ad_r[55,2:10]
+Retailsd_2[6,c(4,seq(5,17,by=2),18)] <- ad_r[6,11:19]
+Retailsd_2[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,11:19]
+Retailnd_2[3,c(4,seq(5,17,by=2),18)] <- ad_r[3,20:28]
+Retailnd_2[6,c(4,seq(5,17,by=2),18)] <- ad_r[6,20:28]
+Retailnd_2[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,20:28]
+Retaild_2[3,c(4,seq(5,17,by=2),18)] <- ad_r[3,29:37]
+Retaild_2[6,c(4,seq(5,17,by=2),18)] <- ad_r[6,29:37]
+Retaild_2[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,29:37]
+
+WC.R_2[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,38:46]
+GP.R_2[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,47:55]
+KZN.R_2[55,c(4,seq(5,17,by=2),18)] <- ad_r[55,56:64]
+
+
 #-------------------------
 #WHOLESALE
 Wholesale <- geweeg(BER.W,all_w,streke,2:102)
@@ -785,20 +992,54 @@ GP.S <- ongeweeg(BER.S,all_s,6,54:102)
 KZN.S <- ongeweeg(BER.S,all_s,5,54:102)
 
 #Interpolasie
-p.inter <- c(4,5,7,9,11,13,15:18)
-Services[3,p.inter] <- pub_s[3,2:11]
-ServicesC[3,p.inter] <- pub_s[3,13:22]
-ServicesT[3,p.inter] <- pub_s[3,24:33]
-ServicesR[3,p.inter] <- pub_s[3,35:44]
-ServicesB[3,p.inter] <- pub_s[3,46:55]
+p.inter <- c(4,5,7,9,11,13)
+Services[3,p.inter] <- pub_s[3,2:7]
+ServicesC[3,p.inter] <- pub_s[3,13:18]
+ServicesT[3,p.inter] <- pub_s[3,24:29]
+ServicesR[3,p.inter] <- pub_s[3,35:40]
+ServicesB[3,p.inter] <- pub_s[3,46:51]
 
-p.inter <- c(4,5,7,9,11,13,15:18)
-WC.S[3,p.inter] <- pub_s[3,79:88]
-GP.S[3,p.inter] <- pub_s[3,68:77]
-KZN.S[3,p.inter] <- pub_s[3,90:99]
+p.inter <- c(4,5,7,9,11,13)
+WC.S[3,p.inter] <- pub_s[3,79:84]
+GP.S[3,p.inter] <- pub_s[3,68:73]
+KZN.S[3,p.inter] <- pub_s[3,90:95]
 
 
 ##=============================
+##ILLUSTRATING THE INDICATORS
+##=============================
+#BUILDING
+BERplot <- BER.B
+BERplot$Sector[BERplot$sector %in% contractor_res] <- "Contractor (Residential)" 
+BERplot$Sector[BERplot$sector %in% contractor_nonres] <- "Contractor (Non-Residential)" 
+BERplot$Sector[BERplot$sector %in% subcon_res] <- "Sub-contractor (Residential)" 
+BERplot$Sector[BERplot$sector %in% subcon_nonres] <- "Sub-contractor (Non-Residential)" 
+BERplot$sectorw <- BERplot$factor/BERplot$weight
+
+BERplot1 <- aggregate(BERplot$id, by=list(BERplot$surveyQ,BERplot$Sector), FUN = length)
+BERplot1$Group.1 <- as.Date(as.yearqtr(BERplot1$Group.1, format = "%YQ%q"))
+g <- ggplot(BERplot1, aes(x=Group.1, y=x,fill=Group.2))
+g <- g + geom_bar(stat="identity")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + scale_fill_discrete(name="Subsector")
+g <- g + scale_y_continuous(labels=comma)
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + ylab("Number of Respondents")
+g <- g + xlab("Date")
+g
+
+ave <- mean(aggregate(BER.B$id, by=list(BER.B$surveyQ), FUN = length)[,2])
+tafel <- cbind("1993Q2-2017Q2",length(BER.B$id),round(ave,2),round(ave/1400,2),
+               "1993Q4,1998Q3,2000Q2,2005Q4")
+colnames(tafel) <- c("Sample","Total Obs","Obs/Quarter", "Response Rate","Missing Quarters")     
+row.names(tafel) <- "Building Survey"
+xt <- xtable(tafel, caption="Sample characteristics")
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8,
+      include.rownames=TRUE)
+
+
+
+
 indicator_plot <- cbind(Building[,c("Datum","Q1")],Residential[,"Q1"],Non_residential[,"Q1"]) 
 colnames(indicator_plot) <- c("Date","Building","Residential","Non-residential")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -813,6 +1054,21 @@ g <- g + theme(legend.position="bottom")
 g
 
 
+#Regions
+indicator_plot <- cbind(WC.B[,c("Datum","Q1")],KZN.B[,"Q1"],GP.B[,"Q1"])
+colnames(indicator_plot) <- c("Date","WC","KZN","GP")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Indicator") + xlab("")
+g <- g + ggtitle("Q1: Provinces")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) 
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+
+#Alternative Weightings
 indicator_plot <- cbind(Building[,c("Datum","Q1")],Building_w[,c("Q1")])
 colnames(indicator_plot) <- c("Date","Unweighted","Weighted")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -826,38 +1082,9 @@ g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
 
-#Regions
-
-BERplot <- aggregate(BER.B$id, by=list(BER.B$surveyQ,BER.B$region), FUN = length)
-BERplot$Group.1 <- as.Date(as.yearqtr(BERplot$Group.1, format = "%YQ%q"))
-g <- ggplot(BERplot, aes(x=Group.1, y=x,fill=Group.2))
-g <- g + geom_bar(stat="identity")
-g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + scale_fill_discrete(name="Region")
-g <- g + scale_y_continuous(labels=comma)
-g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + ylab("Number of Respondents")
-g <- g + xlab("Date")
-g
-
-
-#Published series
-indicator_plot <- cbind(WC[,c("Datum","Q1")],KZN[,"Q1"],GP[,"Q1"])
-colnames(indicator_plot) <- c("Date","WC","KZN","GP")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g <- g + geom_line()
-g <- g + ylab("Indicator") + xlab("")
-g <- g + ggtitle("Q1: Provinces")
-g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank()) 
-g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + theme(legend.position="bottom")
-g
-
 ##=============================
 #Published series
-indicator_plot <- cbind(Contractor[,c("Datum","Q1")],pub[,"con_totalQ1"])
+indicator_plot <- cbind(Contractor[,c("Datum","Q1")],pub_b[,"con_totalQ1"])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -870,7 +1097,7 @@ g1 <- g1 + theme(legend.title=element_blank())
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g1 <- g1 + theme(legend.position="none")
 
-indicator_plot <- cbind(Contractor[,c("Datum","Q2A")],pub[,c("con_totalQ2A")])
+indicator_plot <- cbind(Contractor[,c("Datum","Q2A")],pub_b[,c("con_totalQ2A")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -883,7 +1110,7 @@ g2 <- g2 + theme(legend.title=element_blank())
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g2 <- g2 + theme(legend.position="none")
 
-indicator_plot <- cbind(Subcon[,c("Datum","Q1")],pub[,c("subcon_totalQ1")])
+indicator_plot <- cbind(Subcon[,c("Datum","Q1")],pub_b[,c("subcon_totalQ1")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -896,7 +1123,7 @@ g3 <- g3 + theme(legend.title=element_blank())
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
 
-indicator_plot <- cbind(Subcon[,c("Datum","Q8")],pub[,c("subcon_totalQ8")])
+indicator_plot <- cbind(Subcon[,c("Datum","Q8")],pub_b[,c("subcon_totalQ8")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -914,7 +1141,7 @@ grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 
 
 #Published series
-indicator_plot <- cbind(Contractor_res[,c("Datum","Q3A")],pub[,"con_resQ3A"])
+indicator_plot <- cbind(Contractor_res[,c("Datum","Q3A")],pub_b[,"con_resQ3A"])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -927,7 +1154,7 @@ g1 <- g1 + theme(legend.title=element_blank())
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g1 <- g1 + theme(legend.position="none")
 
-indicator_plot <- cbind(Contractor_nonres[,c("Datum","Q4A")],pub[,c("con_nonresQ4A")])
+indicator_plot <- cbind(Contractor_nonres[,c("Datum","Q4A")],pub_b[,c("con_nonresQ4A")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -940,7 +1167,7 @@ g2 <- g2 + theme(legend.title=element_blank())
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g2 <- g2 + theme(legend.position="none")
 
-indicator_plot <- cbind(Subcon_res[,c("Datum","Q5A")],pub[,c("subcon_resQ5A")])
+indicator_plot <- cbind(Subcon_res[,c("Datum","Q5A")],pub_b[,c("subcon_resQ5A")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -953,7 +1180,7 @@ g3 <- g3 + theme(legend.title=element_blank())
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
 
-indicator_plot <- cbind(Subcon_nonres[,c("Datum","Q7")],pub[,c("subcon_nonresQ7")])
+indicator_plot <- cbind(Subcon_nonres[,c("Datum","Q7")],pub_b[,c("subcon_nonresQ7")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -973,10 +1200,10 @@ grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 ##=============================
 #Compare to reference series
 
-build <- cbind(Residential[,c("Datum","Q2A","Q3A")],ref[,c("GFCF.Residential","Residential.building")])
-colnames(build) <- c("Date","Q2A","Q3A","GFCF.Residential","Residential.building")
+build <- cbind(Residential[,c("Datum","Q2A","Q3A")],ref_b[,c("GFCF.Residential","Residential.building","Res..excl..h.c.a.")])
+colnames(build) <- c("Date","Q2A","Q3A","GFCF.Residential","Residential.building","Res Building (excl.hca)")
 
-build[,2:5] <- scale(build[,2:5])
+build[,2:6] <- scale(build[,2:6])
 plot <- melt(build, id="Date")  # convert to long format
 g <- ggplot(data=plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
@@ -989,27 +1216,32 @@ g <- g + theme(legend.position="bottom")
 g
 
 source("corstarsl.R")
-xt <- xtable(corstarsl(build[,-1])[3:4,1:2])
+xt <- xtable(corstarsl(build[,-1])[3:5,1:2])
 print(xt, "latex",comment=FALSE,scalebox = 0.8)
 
 
 Q2A <- build[,2]
 Q3A <- build[,3] 
 GFCF <- build[,4]
-Build <- build[,5]
+Build.Plans <- build[,5]
 
 par(mfrow=c(2,2))
-ccf(Q2A, GFCF, na.action = na.pass, ylim=c(-0.2, 0.8))
-ccf(Q2A, Build, na.action = na.pass, ylim=c(-0.2, 0.8))
-ccf(Q3A, GFCF, na.action = na.pass, ylim=c(-0.2, 0.8))
-ccf(Q3A, Build, na.action = na.pass, ylim=c(-0.2, 0.8))
+ccf(Q2A, GFCF, na.action = na.pass, ylim=c(-0.2, 0.8), 
+    ylab = "Correlation", xlab = "Number of Lags")
+ccf(Q2A, Build.Plans, na.action = na.pass, ylim=c(-0.2, 0.8), 
+    ylab = "Correlation", xlab = "Number of Lags")
+ccf(Q3A, GFCF, na.action = na.pass, ylim=c(-0.2, 0.8), 
+    ylab = "Correlation", xlab = "Number of Lags")
+ccf(Q3A, Build.Plans, na.action = na.pass, ylim=c(-0.2, 0.8), 
+    ylab = "Correlation", xlab = "Number of Lags")
 
 
 
-build <- cbind(Non_residential[,c("Datum","Q2A","Q3A")],ref[,c("GFCF.Non.residential","Non.residential.building")])
-colnames(build) <- c("Date","Q2A","Q3A","GFCF.Non-residential","Non.residential.building")
+build <- cbind(Non_residential[,c("Datum","Q2A","Q3A")],ref_b[,c("GFCF.Non.residential","Non.residential.building",
+                                                               "Non.res..excl..h.c.a.")])
+colnames(build) <- c("Date","Q2A","Q3A","GFCF.Non-residential","Non.residential.building","Non-Res Building (excl.hca)")
 
-build[,2:5] <- scale(build[,2:5])
+build[,2:6] <- scale(build[,2:6])
 plot <- melt(build, id="Date")  # convert to long format
 g <- ggplot(data=plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
@@ -1021,8 +1253,8 @@ g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
 
-xt <- xtable(corstarsl(build[,-1])[3:4,1:2])
-print(xt, "latex",comment=FALSE,scalebox = 0.9)
+xt <- xtable(corstarsl(build[,-1])[3:5,1:2])
+print(xt, "latex",comment=FALSE,scalebox = 0.8)
 
 Q2A <- build[,2]
 Q3A <- build[,3] 
@@ -1038,7 +1270,7 @@ ccf(Q3A, Build, na.action = na.pass, ylim=c(-0.2, 0.6))
 
 
 
-build <- cbind(Building[,c("Datum","Q2A","Q3A")],ref[,c("GFCF.Res_Non.res","GFCF.Total","Total.building")])
+build <- cbind(Building[,c("Datum","Q2A","Q3A")],ref_b[,c("GFCF.Res_Non.res","GFCF.Total","Total.building")])
 colnames(build) <- c("Date","Q2A","Q3A","GFCF.Res & Non.res","GFCF.Total","Total.building")
 
 build[,2:6] <- scale(build[,2:6])
@@ -1069,7 +1301,7 @@ ccf(Q3A, Build, na.action = na.pass, ylim=c(-0.2, 0.8))
 
 
 
-build <- cbind(WC[,c("Datum","Q2A","Q3A")],KZN[,c("Q2A","Q3A")],GP[,c("Q2A","Q3A")],ref[,c("Building_WC","Building_KZN","Building_GP")])
+build <- cbind(WC.B[,c("Datum","Q2A","Q3A")],KZN.B[,c("Q2A","Q3A")],GP.B[,c("Q2A","Q3A")],ref_b[,c("Building_WC","Building_KZN","Building_GP")])
 colnames(build) <- c("Date","WC.Q2A","WC.Q3A","KZN.Q2A","KZN.Q3A","GP.Q2A","GP.Q3A","Building_WC","Building_KZN","Building_GP")
 
 #Published series
@@ -1138,10 +1370,8 @@ ccf(GP.Q3A, GP.Build, na.action = na.pass, ylim=c(-0.2, 0.6))
 #=========================================
 #Architects, Civils, QSs
 #=========================================
-
-
 #Published series
-indicator_plot <- cbind(architects[,c("Datum","Q1")],pub[,"Arc_Q1"])
+indicator_plot <- cbind(architects[,c("Datum","Q1")],pub_a[,"Arc_Q1"])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1154,7 +1384,7 @@ g1 <- g1 + theme(legend.title=element_blank())
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g1 <- g1 + theme(legend.position="none")
 
-indicator_plot <- cbind(architects[,c("Datum","Q2A")],pub[,c("Arc_Q2A")])
+indicator_plot <- cbind(architects[,c("Datum","Q2A")],pub_a[,c("Arc_Q2A")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1167,7 +1397,7 @@ g2 <- g2 + theme(legend.title=element_blank())
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g2 <- g2 + theme(legend.position="none")
 
-indicator_plot <- cbind(architects[,c("Datum","Q4A")],pub[,c("Arc_Q4A")])
+indicator_plot <- cbind(architects[,c("Datum","Q4A")],pub_a[,c("Arc_Q4A")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1180,7 +1410,7 @@ g3 <- g3 + theme(legend.title=element_blank())
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
 
-indicator_plot <- cbind(architects[,c("Datum","Q6A")],pub[,c("Arc_Q6A")])
+indicator_plot <- cbind(architects[,c("Datum","Q6A")],pub_a[,c("Arc_Q6A")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1199,7 +1429,7 @@ grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 
 
 #Published series
-indicator_plot <- cbind(qss[,c("Datum","Q1")],pub[,"QS_Q1"])
+indicator_plot <- cbind(qss[,c("Datum","Q1")],pub_a[,"QS_Q1"])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1212,7 +1442,7 @@ g1 <- g1 + theme(legend.title=element_blank())
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g1 <- g1 + theme(legend.position="none")
 
-indicator_plot <- cbind(qss[,c("Datum","Q2A")],pub[,c("QS_Q2A")])
+indicator_plot <- cbind(qss[,c("Datum","Q2A")],pub_a[,c("QS_Q2A")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1225,7 +1455,7 @@ g2 <- g2 + theme(legend.title=element_blank())
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g2 <- g2 + theme(legend.position="none")
 
-indicator_plot <- cbind(qss[,c("Datum","Q4A")],pub[,c("QS_Q4A")])
+indicator_plot <- cbind(qss[,c("Datum","Q4A")],pub_a[,c("QS_Q4A")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1238,7 +1468,7 @@ g3 <- g3 + theme(legend.title=element_blank())
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
 
-indicator_plot <- cbind(qss[,c("Datum","Q6A")],pub[,c("QS_Q6A")])
+indicator_plot <- cbind(qss[,c("Datum","Q6A")],pub_a[,c("QS_Q6A")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1256,7 +1486,7 @@ grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 
 
 #Published series
-indicator_plot <- cbind(civils[,c("Datum","Q1")],pub[,"CE_Q1"])
+indicator_plot <- cbind(civils[,c("Datum","Q1")],pub_a[,"CE_Q1"])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1269,7 +1499,7 @@ g1 <- g1 + theme(legend.title=element_blank())
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g1 <- g1 + theme(legend.position="none")
 
-indicator_plot <- cbind(civils[,c("Datum","Q2A")],pub[,c("CE_Q2A")])
+indicator_plot <- cbind(civils[,c("Datum","Q2A")],pub_a[,c("CE_Q2A")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1282,7 +1512,7 @@ g2 <- g2 + theme(legend.title=element_blank())
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g2 <- g2 + theme(legend.position="none")
 
-indicator_plot <- cbind(civils[,c("Datum","Q4A")],pub[,c("CE_Q4A")])
+indicator_plot <- cbind(civils[,c("Datum","Q4A")],pub_a[,c("CE_Q4A")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1295,7 +1525,7 @@ g3 <- g3 + theme(legend.title=element_blank())
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
 
-indicator_plot <- cbind(civils[,c("Datum","Q6")],pub[,c("CE_Q6")])
+indicator_plot <- cbind(civils[,c("Datum","Q6")],pub_a[,c("CE_Q6")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1417,6 +1647,43 @@ skryf(GP,"GP")
 
 
 ##=============================
+## ---- MANUFACTURING
+##=============================
+
+BERplot <- BER.M
+BERplot$Sector[BERplot$sector %in% food] <- "Food" 
+BERplot$Sector[BERplot$sector %in% textiles] <- "Textiles" 
+BERplot$Sector[BERplot$sector %in% wood] <- "Wood" 
+BERplot$Sector[BERplot$sector %in% chemicals] <- "Chemicals" 
+BERplot$Sector[BERplot$sector %in% glass] <- "Glass" 
+BERplot$Sector[BERplot$sector %in% metals] <- "Metals" 
+BERplot$Sector[BERplot$sector %in% electrical] <- "Eelectrical" 
+BERplot$Sector[BERplot$sector %in% transport.m] <- "Transport" 
+BERplot$Sector[BERplot$sector %in% furniture] <- "Furniture" 
+BERplot$sectorw <- BERplot$factor/BERplot$weight
+
+BERplot1 <- aggregate(BERplot$id, by=list(BERplot$surveyQ,BERplot$Sector), FUN = length)
+BERplot1$Group.1 <- as.Date(as.yearqtr(BERplot1$Group.1, format = "%YQ%q"))
+g <- ggplot(BERplot1, aes(x=Group.1, y=x,fill=Group.2))
+g <- g + geom_bar(stat="identity")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + scale_fill_discrete(name="Subsector")
+g <- g + scale_y_continuous(labels=comma)
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + ylab("Number of Respondents")
+g <- g + xlab("Date")
+g
+
+ave <- mean(aggregate(BER.M$id, by=list(BER.M$surveyQ), FUN = length)[,2])
+tafel <- cbind("1992Q1-2017Q2",length(BER.M$id),round(ave,2),round(ave/1000,2),
+               "1997Q4,2000Q1,2005Q4")
+colnames(tafel) <- c("Sample","Total Obs","Obs/Quarter", "Response Rate","Missing Quarters")     
+row.names(tafel) <- "Manufacturing Survey"
+xt <- xtable(tafel, caption="Sample characteristics")
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8,
+      include.rownames=TRUE)
+
+
 indicator_plot <- cbind(Manufacturing[,c("Datum","Q20")],Manufacturing_u[,c("Q20")],
                         Manufacturing_n[,c("Q20")])
 colnames(indicator_plot) <- c("Date","Weighted","Unweighted","Weighted_new")    
@@ -1445,7 +1712,7 @@ g
 
 
 
-indicator_plot <- cbind(Manufacturing[,c("Datum","Q20")],pub[,c("Total_Q20")])
+indicator_plot <- cbind(Manufacturing[,c("Datum","Q20")],pub_m[,c("Total_Q20")])
 colnames(indicator_plot) <- c("Date","Q4:Microdata","Q4:Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1459,7 +1726,7 @@ g
 
 
 #Published series
-indicator_plot <- cbind(Manufacturing[,c("Datum","Q1A")],pub[,c("Total_Q1A")])
+indicator_plot <- cbind(Manufacturing[,c("Datum","Q1A")],pub_m[,c("Total_Q1A")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1472,7 +1739,7 @@ g1 <- g1 + theme(legend.title=element_blank())
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g1 <- g1 + theme(legend.position="none")
 
-indicator_plot <- cbind(Manufacturing[,c("Datum","Q2A")],pub[,c("Total_Q2A")])
+indicator_plot <- cbind(Manufacturing[,c("Datum","Q2A")],pub_m[,c("Total_Q2A")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1485,7 +1752,7 @@ g2 <- g2 + theme(legend.title=element_blank())
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g2 <- g2 + theme(legend.position="none")
 
-indicator_plot <- cbind(Manufacturing[,c("Datum","Q3A")],pub[,c("Total_Q3A")])
+indicator_plot <- cbind(Manufacturing[,c("Datum","Q3A")],pub_m[,c("Total_Q3A")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1498,7 +1765,7 @@ g3 <- g3 + theme(legend.title=element_blank())
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
 
-indicator_plot <- cbind(Manufacturing[,c("Datum","Q6A")],pub[,c("Total_Q6A")])
+indicator_plot <- cbind(Manufacturing[,c("Datum","Q6A")],pub_m[,c("Total_Q6A")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1516,7 +1783,7 @@ grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 
 
 #Published series (constraints)
-indicator_plot <- cbind(Manufacturing[,c("Datum","Q21")],pub[,c("Total_Q21")])
+indicator_plot <- cbind(Manufacturing[,c("Datum","Q21")],pub_m[,c("Total_Q21")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1529,7 +1796,7 @@ g1 <- g1 + theme(legend.title=element_blank())
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g1 <- g1 + theme(legend.position="none")
 
-indicator_plot <- cbind(Manufacturing[,c("Datum","Q22")],pub[,c("Total_Q22")])
+indicator_plot <- cbind(Manufacturing[,c("Datum","Q22")],pub_m[,c("Total_Q22")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1542,7 +1809,7 @@ g2 <- g2 + theme(legend.title=element_blank())
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g2 <- g2 + theme(legend.position="none")
 
-indicator_plot <- cbind(Manufacturing[,c("Datum","Q25")],pub[,c("Total_Q25")])
+indicator_plot <- cbind(Manufacturing[,c("Datum","Q25")],pub_m[,c("Total_Q25")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1555,7 +1822,7 @@ g3 <- g3 + theme(legend.title=element_blank())
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
 
-indicator_plot <- cbind(Manufacturing[,c("Datum","Q27")],pub[,c("Total_Q27")])
+indicator_plot <- cbind(Manufacturing[,c("Datum","Q27")],pub_m[,c("Total_Q27")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1882,8 +2149,8 @@ g2 <- g2 + theme(legend.title=element_blank())
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g2 <- g2 + theme(legend.position="none")
 
-indicator_plot <- cbind(Elec_radio[,c("Datum","Q20")],
-                        Elec_radio_n[,c("Q20")],Elec_radio_2[,c("Q20")])
+indicator_plot <- cbind(Electrical[,c("Datum","Q20")],
+                        Electrical_n[,c("Q20")],Electrical_2[,c("Q20")])
 colnames(indicator_plot) <- c("Date","Microdata","New","2-step")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -1992,8 +2259,8 @@ g
 
 
 
-indicator_plot <- cbind(WC[,c("Datum","Q20")],
-                        WC_n[,c("Q20")],WC_2[,c("Q20")])
+indicator_plot <- cbind(WC.M[,c("Datum","Q20")],
+                        WC.M_n[,c("Q20")],WC.M_2[,c("Q20")])
 colnames(indicator_plot) <- c("Date","Microdata","New","2-step")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -2006,8 +2273,8 @@ g1 <- g1 + theme(legend.title=element_blank())
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g1 <- g1 + theme(legend.position="none")
 
-indicator_plot <- cbind(KZN[,c("Datum","Q20")],
-                        KZN_n[,c("Q20")],KZN_2[,c("Q20")])
+indicator_plot <- cbind(KZN.M[,c("Datum","Q20")],
+                        KZN.M_n[,c("Q20")],KZN.M_2[,c("Q20")])
 colnames(indicator_plot) <- c("Date","Microdata","New","2-step")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -2020,8 +2287,8 @@ g2 <- g2 + theme(legend.title=element_blank())
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g2 <- g2 + theme(legend.position="none")
 
-indicator_plot <- cbind(GP[,c("Datum","Q20")],
-                        GP_n[,c("Q20")],GP_2[,c("Q20")])
+indicator_plot <- cbind(GP.M[,c("Datum","Q20")],
+                        GP.M_n[,c("Q20")],GP.M_2[,c("Q20")])
 colnames(indicator_plot) <- c("Date","Microdata","New","2-step")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -2034,7 +2301,7 @@ g3 <- g3 + theme(legend.title=element_blank())
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
 
-indicator_plot <- cbind(WC[,c("Datum","Q20")],KZN[,c("Q20")],GP[,c("Q20")])
+indicator_plot <- cbind(WC.M[,c("Datum","Q20")],KZN.M[,c("Q20")],GP.M[,c("Q20")])
 colnames(indicator_plot) <- c("Date","WC","KZN","GP") 
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -2054,7 +2321,7 @@ grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 #-------------------------------------
 #Reference series
 indicator_plot <- cbind(Manufacturing[,c("Datum","Q3A")],Manufacturing_n[,c("Q3A")],
-                        ref[,c("RTotal_Sales.sa","Total_Vol.sa","Total.sa")])
+                        ref_m[,c("RTotal_Sales.sa","Total_Vol.sa","Total.sa")])
 colnames(indicator_plot) <- c("Date","Q3A:Micro","Q3A:New","SARB:Sales","SARB:Volume","StatsSA:Volume")
 indicator_plot[,-1] <- scale(indicator_plot[,-1])
 plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -2072,7 +2339,7 @@ g
 source("corstarsl.R")
 Manu <- cbind(Manufacturing[,c("Q1A","Q3A")],Manufacturing_u[,c("Q1A","Q3A")],
               Manufacturing_n[,c("Q1A","Q3A")],Manufacturing_2[,c("Q1A","Q3A")],
-              ref[,c("RTotal_Sales.sa","Total_Vol.sa","Total.sa")])
+              ref_m[,c("RTotal_Sales.sa","Total_Vol.sa","Total.sa")])
 colnames(Manu) <- c("Q1A","Q3A","Q1A_u","Q3A_u","Q1A_new","Q3A_new","Q1A_2s","Q3A_2s","SARB:Sales","SARB:Volume","StatsSA:Volume")
 
 xt <- xtable(corstarsl(Manu)[9:11,1:8])
@@ -2089,7 +2356,7 @@ print(xt, "latex",comment=FALSE,scalebox = 0.6)
 
 #---------------------------------------------
 #Sectors
-indicator_plot <- cbind(Food[,c("Datum","Q3A")],Food_n[,c("Q3A")],ref[,c("Food.sa")])
+indicator_plot <- cbind(Food[,c("Datum","Q3A")],Food_n[,c("Q3A")],ref_m[,c("Food.sa")])
 indicator_plot[,-1] <- scale(indicator_plot[,-1])
 colnames(indicator_plot) <- c("Date","Microdata","New","StatsSA")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -2103,7 +2370,7 @@ g1 <- g1 + theme(legend.title=element_blank())
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g1 <- g1 + theme(legend.position="none")
 
-indicator_plot <- cbind(Textiles[,c("Datum","Q3A")],Textiles_n[,c("Q3A")],ref[,c("Textiles.sa")])
+indicator_plot <- cbind(Textiles[,c("Datum","Q3A")],Textiles_n[,c("Q3A")],ref_m[,c("Textiles.sa")])
 indicator_plot[,-1] <- scale(indicator_plot[,-1])
 colnames(indicator_plot) <- c("Date","Microdata","New","StatsSA")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -2117,7 +2384,7 @@ g2 <- g2 + theme(legend.title=element_blank())
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g2 <- g2 + theme(legend.position="none")
 
-indicator_plot <- cbind(Wood[,c("Datum","Q3A")],Wood_n[,c("Q3A")],ref[,c("Wood.sa")])
+indicator_plot <- cbind(Wood[,c("Datum","Q3A")],Wood_n[,c("Q3A")],ref_m[,c("Wood.sa")])
 indicator_plot[,-1] <- scale(indicator_plot[,-1])
 colnames(indicator_plot) <- c("Date","Microdata","New","StatsSA")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -2131,7 +2398,7 @@ g3 <- g3 + theme(legend.title=element_blank())
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
 
-indicator_plot <- cbind(Chemicals[,c("Datum","Q3A")],Chemicals_n[,c("Q3A")],ref[,c("Chemical")])
+indicator_plot <- cbind(Chemicals[,c("Datum","Q3A")],Chemicals_n[,c("Q3A")],ref_m[,c("Chemical")])
 indicator_plot[,-1] <- scale(indicator_plot[,-1])
 colnames(indicator_plot) <- c("Date","Microdata","New","StatsSA")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -2150,7 +2417,7 @@ grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 
 
 
-indicator_plot <- cbind(Glass[,c("Datum","Q3A")],Glass_n[,c("Q3A")],ref[,c("Glass.sa")])
+indicator_plot <- cbind(Glass[,c("Datum","Q3A")],Glass_n[,c("Q3A")],ref_m[,c("Glass.sa")])
 indicator_plot[,-1] <- scale(indicator_plot[,-1])
 colnames(indicator_plot) <- c("Date","Microdata","New","StatsSA")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -2164,7 +2431,7 @@ g1 <- g1 + theme(legend.title=element_blank())
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g1 <- g1 + theme(legend.position="none")
 
-indicator_plot <- cbind(Metals[,c("Datum","Q3A")],Metals_n[,c("Q3A")],ref[,c("Metals.sa")])
+indicator_plot <- cbind(Metals[,c("Datum","Q3A")],Metals_n[,c("Q3A")],ref_m[,c("Metals.sa")])
 indicator_plot[,-1] <- scale(indicator_plot[,-1])
 colnames(indicator_plot) <- c("Date","Microdata","New","StatsSA")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -2179,8 +2446,8 @@ g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g2 <- g2 + theme(legend.position="none")
 
 
-ref$Elec_Radio <- rowMeans(ref[,c("Electrical.sa","Radio.sa")])
-indicator_plot <- cbind(Elec_radio[,c("Datum","Q3A")],Elec_radio_n[,c("Q3A")],ref[,c("Elec_Radio")])
+ref_m$Elec_Radio <- rowMeans(ref_m[,c("Electrical.sa","Radio.sa")])
+indicator_plot <- cbind(Electrical[,c("Datum","Q3A")],Electrical_n[,c("Q3A")],ref_m[,c("Elec_Radio")])
 indicator_plot[,-1] <- scale(indicator_plot[,-1])
 colnames(indicator_plot) <- c("Date","Microdata","New","StatsSA")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -2194,7 +2461,7 @@ g3 <- g3 + theme(legend.title=element_blank())
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
 
-indicator_plot <- cbind(Transport[,c("Datum","Q3A")],Transport_n[,c("Q3A")],ref[,c("Transport.sa")])
+indicator_plot <- cbind(Transport[,c("Datum","Q3A")],Transport_n[,c("Q3A")],ref_m[,c("Transport.sa")])
 indicator_plot[,-1] <- scale(indicator_plot[,-1])
 colnames(indicator_plot) <- c("Date","Microdata","New","StatsSA")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -2213,7 +2480,7 @@ grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 
 
 indicator_plot <- cbind(Furniture[,c("Datum","Q3A")],Furniture_n[,c("Q3A")],
-                        ref[,c("Furniture.sa","Furniture_all.sa")])
+                        ref_m[,c("Furniture.sa","Furniture_all.sa")])
 colnames(indicator_plot) <- c("Date","Microdata","New","StatsSA","StatsSA (all)")
 indicator_plot[,-1] <- scale(indicator_plot[,-1])
 plot <- melt(indicator_plot, id="Date")  # convert to long format
@@ -2231,55 +2498,55 @@ g
 
 source("corstarsl.R")
 
-x1 <- corstarsl(cbind(Food[,c("Datum","Q1A","Q3A")],ref[,c("Food.sa")])[,-1])
-x2 <- corstarsl(cbind(Textiles[,c("Datum","Q1A","Q3A")],ref[,c("Textiles")])[,-1])
-x3 <- corstarsl(cbind(Wood[,c("Datum","Q1A","Q3A")],ref[,c("Wood.sa")])[,-1])
-x4 <- corstarsl(cbind(Chemicals[,c("Datum","Q1A","Q3A")],ref[,c("Chemical")])[,-1])
-x5 <- corstarsl(cbind(Glass[,c("Datum","Q1A","Q3A")],ref[,c("Glass.sa")])[,-1])
-x6 <- corstarsl(cbind(Metals[,c("Datum","Q1A","Q3A")],ref[,c("Metals.sa")])[,-1])
-x7 <- corstarsl(cbind(Elec_radio[,c("Datum","Q1A","Q3A")],ref[,c("Elec_Radio")])[,-1])
-x8 <- corstarsl(cbind(Transport[,c("Datum","Q1A","Q3A")],ref[,c("Transport.sa")])[,-1])
-x9 <- corstarsl(cbind(Furniture[,c("Datum","Q1A","Q3A")],ref[,c("Furniture_all.sa")])[,-1])
+x1 <- corstarsl(cbind(Food[,c("Datum","Q1A","Q3A")],ref_m[,c("Food.sa")])[,-1])
+x2 <- corstarsl(cbind(Textiles[,c("Datum","Q1A","Q3A")],ref_m[,c("Textiles")])[,-1])
+x3 <- corstarsl(cbind(Wood[,c("Datum","Q1A","Q3A")],ref_m[,c("Wood.sa")])[,-1])
+x4 <- corstarsl(cbind(Chemicals[,c("Datum","Q1A","Q3A")],ref_m[,c("Chemical")])[,-1])
+x5 <- corstarsl(cbind(Glass[,c("Datum","Q1A","Q3A")],ref_m[,c("Glass.sa")])[,-1])
+x6 <- corstarsl(cbind(Metals[,c("Datum","Q1A","Q3A")],ref_m[,c("Metals.sa")])[,-1])
+x7 <- corstarsl(cbind(Electrical[,c("Datum","Q1A","Q3A")],ref_m[,c("Elec_Radio")])[,-1])
+x8 <- corstarsl(cbind(Transport[,c("Datum","Q1A","Q3A")],ref_m[,c("Transport.sa")])[,-1])
+x9 <- corstarsl(cbind(Furniture[,c("Datum","Q1A","Q3A")],ref_m[,c("Furniture_all.sa")])[,-1])
 
 x_1 <- rbind(x1[3,],x2[3,],x3[3,],x4[3,],x5[3,],x6[3,],x7[3,],x8[3,],x9[3,])
 row.names(x_1) <- c("Food","Textiles","Wood","Chemicals","Glass","Metals",
                     "Elec_radio","Transport","Furniture")
 
 
-x1 <- corstarsl(cbind(Food_n[,c("Datum","Q1A","Q3A")],ref[,c("Food.sa")])[,-1])
-x2 <- corstarsl(cbind(Textiles_n[,c("Datum","Q1A","Q3A")],ref[,c("Textiles")])[,-1])
-x3 <- corstarsl(cbind(Wood_n[,c("Datum","Q1A","Q3A")],ref[,c("Wood.sa")])[,-1])
-x4 <- corstarsl(cbind(Chemicals_n[,c("Datum","Q1A","Q3A")],ref[,c("Chemical")])[,-1])
-x5 <- corstarsl(cbind(Glass_n[,c("Datum","Q1A","Q3A")],ref[,c("Glass.sa")])[,-1])
-x6 <- corstarsl(cbind(Metals_n[,c("Datum","Q1A","Q3A")],ref[,c("Metals.sa")])[,-1])
-x7 <- corstarsl(cbind(Elec_radio_n[,c("Datum","Q1A","Q3A")],ref[,c("Elec_Radio")])[,-1])
-x8 <- corstarsl(cbind(Transport_n[,c("Datum","Q1A","Q3A")],ref[,c("Transport.sa")])[,-1])
-x9 <- corstarsl(cbind(Furniture_n[,c("Datum","Q1A","Q3A")],ref[,c("Furniture_all.sa")])[,-1])
+x1 <- corstarsl(cbind(Food_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Food.sa")])[,-1])
+x2 <- corstarsl(cbind(Textiles_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Textiles")])[,-1])
+x3 <- corstarsl(cbind(Wood_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Wood.sa")])[,-1])
+x4 <- corstarsl(cbind(Chemicals_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Chemical")])[,-1])
+x5 <- corstarsl(cbind(Glass_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Glass.sa")])[,-1])
+x6 <- corstarsl(cbind(Metals_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Metals.sa")])[,-1])
+x7 <- corstarsl(cbind(Electrical_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Elec_Radio")])[,-1])
+x8 <- corstarsl(cbind(Transport_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Transport.sa")])[,-1])
+x9 <- corstarsl(cbind(Furniture_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Furniture_all.sa")])[,-1])
 
 x_2 <- rbind(x1[3,],x2[3,],x3[3,],x4[3,],x5[3,],x6[3,],x7[3,],x8[3,],x9[3,])
 
 
-x1 <- corstarsl(cbind(Food_u[,c("Datum","Q1A","Q3A")],ref[,c("Food.sa")])[,-1])
-x2 <- corstarsl(cbind(Textiles_u[,c("Datum","Q1A","Q3A")],ref[,c("Textiles")])[,-1])
-x3 <- corstarsl(cbind(Wood_u[,c("Datum","Q1A","Q3A")],ref[,c("Wood.sa")])[,-1])
-x4 <- corstarsl(cbind(Chemicals_u[,c("Datum","Q1A","Q3A")],ref[,c("Chemical")])[,-1])
-x5 <- corstarsl(cbind(Glass_u[,c("Datum","Q1A","Q3A")],ref[,c("Glass.sa")])[,-1])
-x6 <- corstarsl(cbind(Metals_u[,c("Datum","Q1A","Q3A")],ref[,c("Metals.sa")])[,-1])
-x7 <- corstarsl(cbind(Elec_radio_u[,c("Datum","Q1A","Q3A")],ref[,c("Elec_Radio")])[,-1])
-x8 <- corstarsl(cbind(Transport_u[,c("Datum","Q1A","Q3A")],ref[,c("Transport.sa")])[,-1])
-x9 <- corstarsl(cbind(Furniture_u[,c("Datum","Q1A","Q3A")],ref[,c("Furniture_all.sa")])[,-1])
+x1 <- corstarsl(cbind(Food_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Food.sa")])[,-1])
+x2 <- corstarsl(cbind(Textiles_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Textiles")])[,-1])
+x3 <- corstarsl(cbind(Wood_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Wood.sa")])[,-1])
+x4 <- corstarsl(cbind(Chemicals_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Chemical")])[,-1])
+x5 <- corstarsl(cbind(Glass_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Glass.sa")])[,-1])
+x6 <- corstarsl(cbind(Metals_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Metals.sa")])[,-1])
+x7 <- corstarsl(cbind(Electrical_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Elec_Radio")])[,-1])
+x8 <- corstarsl(cbind(Transport_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Transport.sa")])[,-1])
+x9 <- corstarsl(cbind(Furniture_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Furniture_all.sa")])[,-1])
 
 x_3 <- rbind(x1[3,],x2[3,],x3[3,],x4[3,],x5[3,],x6[3,],x7[3,],x8[3,],x9[3,])
 
-x1 <- corstarsl(cbind(Food_2[,c("Datum","Q1A","Q3A")],ref[,c("Food.sa")])[,-1])
-x2 <- corstarsl(cbind(Textiles_2[,c("Datum","Q1A","Q3A")],ref[,c("Textiles")])[,-1])
+x1 <- corstarsl(cbind(Food_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Food.sa")])[,-1])
+x2 <- corstarsl(cbind(Textiles_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Textiles")])[,-1])
 x3 <- corstarsl(cbind(Wood_2[,c("Datum","Q1A","Q3A")],ref[,c("Wood.sa")])[,-1])
-x4 <- corstarsl(cbind(Chemicals_2[,c("Datum","Q1A","Q3A")],ref[,c("Chemical")])[,-1])
-x5 <- corstarsl(cbind(Glass_2[,c("Datum","Q1A","Q3A")],ref[,c("Glass.sa")])[,-1])
-x6 <- corstarsl(cbind(Metals_2[,c("Datum","Q1A","Q3A")],ref[,c("Metals.sa")])[,-1])
-x7 <- corstarsl(cbind(Elec_radio_2[,c("Datum","Q1A","Q3A")],ref[,c("Elec_Radio")])[,-1])
-x8 <- corstarsl(cbind(Transport_2[,c("Datum","Q1A","Q3A")],ref[,c("Transport.sa")])[,-1])
-x9 <- corstarsl(cbind(Furniture_2[,c("Datum","Q1A","Q3A")],ref[,c("Furniture_all.sa")])[,-1])
+x4 <- corstarsl(cbind(Chemicals_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Chemical")])[,-1])
+x5 <- corstarsl(cbind(Glass_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Glass.sa")])[,-1])
+x6 <- corstarsl(cbind(Metals_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Metals.sa")])[,-1])
+x7 <- corstarsl(cbind(Electrical_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Elec_Radio")])[,-1])
+x8 <- corstarsl(cbind(Transport_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Transport.sa")])[,-1])
+x9 <- corstarsl(cbind(Furniture_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Furniture_all.sa")])[,-1])
 
 x_4 <- rbind(x1[3,],x2[3,],x3[3,],x4[3,],x5[3,],x6[3,],x7[3,],x8[3,],x9[3,])
 
@@ -2336,7 +2603,7 @@ xt <- xtable(V)
 print(xt, "latex",comment=FALSE,scalebox = 0.6)
 
 
-ccf(Food_u[,c("Q1A")],ref[,c("Food.sa")], na.action = na.pass)
+ccf(Food_u[,c("Q1A")],ref_m[,c("Food.sa")], na.action = na.pass)
 
 
 #====================================================
@@ -2423,11 +2690,42 @@ write.csv(Manufacturing,"Indicators.csv")
 #=============================
 #RETAIL
 
+BERplot <- BER.R
+BERplot$Sector[BERplot$sector %in% retailsd] <- "Retail (semi-durable)" 
+BERplot$Sector[BERplot$sector %in% retailnd] <- "Retail (non-durable)"  
+BERplot$Sector[BERplot$sector %in% retaild] <- "Retail (durable)" 
+BERplot$Sector[BERplot$sector %in% retailo] <- "Retail (other)"  
+BERplot$sectorw <- BERplot$factor/BERplot$weight
+
+BERplot1 <- aggregate(BERplot$id, by=list(BERplot$surveyQ,BERplot$Sector), FUN = length)
+BERplot1$Group.1 <- as.Date(as.yearqtr(BERplot1$Group.1, format = "%YQ%q"))
+g <- ggplot(BERplot1, aes(x=Group.1, y=x,fill=Group.2))
+g <- g + geom_bar(stat="identity")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + scale_fill_discrete(name="Subsector")
+g <- g + scale_y_continuous(labels=comma)
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + ylab("Number of Respondents")
+g <- g + xlab("Date")
+g
+
+ave <- mean(aggregate(BER.R$id, by=list(BER.R$surveyQ), FUN = length)[,2])
+tafel <- cbind("1992Q2-2017Q2",length(BER.R$id),round(ave,2),round(ave/1400,2),
+               "1992Q4,1993Q3,2005Q4")
+colnames(tafel) <- c("Sample","Total Obs","Obs/Quarter", "Response Rate","Missing Quarters")     
+row.names(tafel) <- "Retail Survey"
+xt <- xtable(tafel, caption="Sample characteristics")
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8,
+      include.rownames=TRUE)
+
+
+
 indicator_plot <- cbind(Retail[,c("Datum","Q1")],ad_r[,"Total_Q1"],pub_r[,"Total_Q1"]) 
 colnames(indicator_plot) <- c("Date","Weighted","Adjusted","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
+g <- g + geom_point()
 g <- g + ylab("Indicator") + xlab("")
 g <- g + ggtitle("Retail")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
@@ -2436,38 +2734,24 @@ g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
 
-indicator_plot <- cbind(Retail[,c("Datum","Q6A")],pub_r[,"Total_Q6A"]) 
-colnames(indicator_plot) <- c("Date","Microdata","Published")
+indicator_plot <- cbind(Retail[,c("Datum","Q8")],ad_r[,"Total_Q8"],pub_r[,"Total_Q8"]) 
+colnames(indicator_plot) <- c("Date","Weighted","Adjusted","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
+g <- g + geom_point()
 g <- g + ylab("Indicator") + xlab("")
-g <- g + ggtitle("Retail Categories")
+g <- g + ggtitle("Retail Q8")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + theme(legend.title=element_blank()) 
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
-
-
-indicator_plot <- cbind(Hardware[,c("Datum","Q1")],Other_duarbles[,"Q1"]) 
-colnames(indicator_plot) <- c("Date","Hardware","Other_duarbles")
-indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
-g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
-g <- g + geom_line()
-g <- g + ylab("Indicator") + xlab("")
-g <- g + ggtitle("Retail")
-g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g <- g + theme(legend.title=element_blank()) 
-g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + theme(legend.position="bottom")
-g
-
 
 
 #Total Retail
-indicator_plot <- cbind(Retail[,c("Datum","Q1")],ad_r[,"Total_Q1"],pub_r[,"Total_Q1"]) 
-colnames(indicator_plot) <- c("Date","Weighted","Adjusted","Published")
+indicator_plot <- cbind(Retail[,c("Datum","Q1")],ad_r[,"Total_Q1"])#,pub_r[,"Total_Q1"]) 
+colnames(indicator_plot) <- c("Date","Weighted","Adjusted")#,"Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g1 <- g1 + geom_line()
@@ -2479,8 +2763,8 @@ g1 <- g1 + theme(legend.title=element_blank())
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g1 <- g1 + theme(legend.position="none")
 
-indicator_plot <- cbind(Retail[,c("Datum","Q2A")],ad_r[,"Total_Q2A"],pub_r[,"Total_Q2A"]) 
-colnames(indicator_plot) <- c("Date","Weighted","Adjusted","Published")
+indicator_plot <- cbind(Retail[,c("Datum","Q2A")],ad_r[,"Total_Q2A"])#,pub_r[,"Total_Q2A"]) 
+colnames(indicator_plot) <- c("Date","Weighted","Adjusted")#,"Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g2 <- g2 + geom_line()
@@ -2492,8 +2776,8 @@ g2 <- g2 + theme(legend.title=element_blank())
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g2 <- g2 + theme(legend.position="none")
 
-indicator_plot <- cbind(Retail[,c("Datum","Q3A")],ad_r[,"Total_Q3A"],pub_r[,"Total_Q3A"]) 
-colnames(indicator_plot) <- c("Date","Weighted","Adjusted","Published")
+indicator_plot <- cbind(Retail[,c("Datum","Q3A")],ad_r[,"Total_Q3A"])#,pub_r[,"Total_Q3A"]) 
+colnames(indicator_plot) <- c("Date","Weighted","Adjusted")#,"Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g3 <- g3 + geom_line()
@@ -2505,8 +2789,8 @@ g3 <- g3 + theme(legend.title=element_blank())
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
 
-indicator_plot <- cbind(Retail[,c("Datum","Q8")],ad_r[,"Total_Q8"],pub_r[,"Total_Q8"]) 
-colnames(indicator_plot) <- c("Date","Weighted","Adjusted","Published")
+indicator_plot <- cbind(Retail[,c("Datum","Q8")],ad_r[,"Total_Q8"])#,pub_r[,"Total_Q8"]) 
+colnames(indicator_plot) <- c("Date","Weighted","Adjusted")#,"Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g4 <- g4 + geom_line()
@@ -2589,7 +2873,7 @@ g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=var
 g1 <- g1 + geom_line()
 g1 <- g1 + ylab("Indicator") + xlab("")
 g1 <- g1 + theme(legend.title=element_blank())
-g1 <- g1 + ggtitle("Retail: Q1") 
+g1 <- g1 + ggtitle("Retail Non-Durable: Q1") 
 g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g1 <- g1 + theme(legend.title=element_blank()) 
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
@@ -2602,7 +2886,7 @@ g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=var
 g2 <- g2 + geom_line()
 g2 <- g2 + ylab("") + xlab("")
 g2 <- g2 + theme(legend.title=element_blank())
-g2 <- g2 + ggtitle("Retail: Q2A") 
+g2 <- g2 + ggtitle("Retail Non-Durable: Q2A") 
 g2 <- g2 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g2 <- g2 + theme(legend.title=element_blank()) 
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
@@ -2615,7 +2899,7 @@ g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=var
 g3 <- g3 + geom_line()
 g3 <- g3 + ylab("Indicator") + xlab("")
 g3 <- g3 + theme(legend.title=element_blank())
-g3 <- g3 + ggtitle("Retail: Q3A") 
+g3 <- g3 + ggtitle("Retail Non-Durable: Q3A") 
 g3 <- g3 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g3 <- g3 + theme(legend.title=element_blank()) 
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
@@ -2628,7 +2912,7 @@ g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=var
 g4 <- g4 + geom_line()
 g4 <- g4 + ylab("") + xlab("")
 g4 <- g4 + theme(legend.title=element_blank())
-g4 <- g4 + ggtitle("Retail: Q8") 
+g4 <- g4 + ggtitle("Retail Non-Durable: Q8") 
 g4 <- g4 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g4 <- g4 + theme(legend.title=element_blank()) 
 g4 <- g4 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
@@ -2647,7 +2931,7 @@ g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=var
 g1 <- g1 + geom_line()
 g1 <- g1 + ylab("Indicator") + xlab("")
 g1 <- g1 + theme(legend.title=element_blank())
-g1 <- g1 + ggtitle("Retail: Q1") 
+g1 <- g1 + ggtitle("Retail Durable: Q1") 
 g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g1 <- g1 + theme(legend.title=element_blank()) 
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
@@ -2660,7 +2944,7 @@ g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=var
 g2 <- g2 + geom_line()
 g2 <- g2 + ylab("") + xlab("")
 g2 <- g2 + theme(legend.title=element_blank())
-g2 <- g2 + ggtitle("Retail: Q2A") 
+g2 <- g2 + ggtitle("Retail Durable: Q2A") 
 g2 <- g2 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g2 <- g2 + theme(legend.title=element_blank()) 
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
@@ -2673,7 +2957,7 @@ g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=var
 g3 <- g3 + geom_line()
 g3 <- g3 + ylab("Indicator") + xlab("")
 g3 <- g3 + theme(legend.title=element_blank())
-g3 <- g3 + ggtitle("Retail: Q3A") 
+g3 <- g3 + ggtitle("Retail Durable: Q3A") 
 g3 <- g3 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g3 <- g3 + theme(legend.title=element_blank()) 
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
@@ -2686,7 +2970,7 @@ g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=var
 g4 <- g4 + geom_line()
 g4 <- g4 + ylab("") + xlab("")
 g4 <- g4 + theme(legend.title=element_blank())
-g4 <- g4 + ggtitle("Retail: Q8") 
+g4 <- g4 + ggtitle("Retail Durable: Q8") 
 g4 <- g4 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g4 <- g4 + theme(legend.title=element_blank()) 
 g4 <- g4 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
@@ -2694,6 +2978,20 @@ g4 <- g4 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 
 library(gridExtra)
 grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
+
+
+indicator_plot <- cbind(Hardware[,c("Datum","Q1")],Other_duarbles[,"Q1"]) 
+colnames(indicator_plot) <- c("Date","Hardware","Other_duarbles")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Indicator") + xlab("")
+#g <- g + ggtitle("Retail")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) 
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
 
 
 #Regions
@@ -2822,17 +3120,227 @@ g4 <- g4 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 library(gridExtra)
 grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 
+#------------------
+#New weights
+#------------------------
+BER.R2$Sector[BER.R2$sector %in% retailsd] <- "Retail (semi-durable)" 
+BER.R2$Sector[BER.R2$sector %in% retailnd] <- "Retail (non-durable)" 
+BER.R2$Sector[BER.R2$sector %in% retaild] <- "Retail (durable)" 
+BER.R2$Sector[BER.R2$sector %in% retailo] <- "Retail (other)" 
+
+BER.R2$sectorw <- BER.R2$factor/BER.R2$weight
+BERplot <- aggregate(BER.R2$sectorw, by=list(BER.R2$surveyQ,BER.R2$sector,BER.R2$Sector), FUN = mean, na.rm=TRUE)
+colnames(BERplot) <- c("surveyQ","sector","Sector","weight")
+BERplot1 <- dcast(BERplot, formula = surveyQ ~ Sector + sector)
+BERplot1 <- merge(datums,BERplot1,by.x="Date",by.y ="surveyQ")
+BERplot1[,-1:-2] <- na.locf(BERplot1[,-1:-2],fromLast = TRUE)
+BERplot1[,-1:-2] <- na.locf(BERplot1[,-1:-2])
+#BERplot1[16,4] <- 0.04
+#BERplot1[16,18] <- 0.12
+
+BERplot <- BERplot1
+BERplot$retailsd <- rowMeans(BERplot1[,10:14])
+BERplot$retailnd <- rowMeans(BERplot1[,6:9])
+BERplot$retaild <- rowMeans(BERplot1[,3:5])
+#BERplot$retailo <- rowMeans(BERplot1[,16:17],na.rm = TRUE)
+
+BERplot <- BERplot[,c(1,15:17)]
+BERplot$Total <- rowSums(BERplot[,2:4])
+BERplot[,-1] <- BERplot[,-1]/BERplot[,5]
+colnames(BERplot) <- c("Date","Retail (semi-durable)","Retail (non-durable)","Retail (durable)")
+
+#BERplot <- aggregate(BER.M$factor, by=list(BER.M$surveyQ,BER.M$Sector), FUN = sum, na.rm=TRUE)
+#BERplot1 <- aggregate(BER.M$factor, by=list(BER.M$surveyQ), FUN = sum, na.rm=TRUE)
+#BERplot$y <- BERplot$x/BERplot1$x
+
+#BERplot <- merge(BERplot,BERplot1,by="Group.1")
+#BERplot$y <- BERplot$x.x/BERplot$x.y
+#BERplot <- BERplot[order(BERplot$Group.2),]
+#BERplot <- aggregate(BER.M$factor, by=list(BER.M$surveyQ,BER.M$Sector), FUN = mean)
+BERplot$Date <- as.Date(as.yearqtr(BERplot$Date, format = "%YQ%q"), frac = 1)
+#BERplot <- BERplot[,c(1,8,4,3,5,2,7,6,9)]
+index_plot <- melt(BERplot[,-5], id="Date")
+g <- ggplot(index_plot, aes(x=Date,y=value,group=variable,fill=variable)) 
+g <- g + geom_bar(stat="identity")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + scale_fill_discrete(name="Sub-sector")
+g <- g + scale_y_continuous(labels=comma)
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + ylab("Weights") + xlab("Date")
+g <- g + guides(fill = guide_legend(reverse = TRUE))
+g
+
+
+BERplot <- aggregate(BER.R2$factor, by=list(BER.R2$surveyQ,BER.R2$Sector), FUN = sum, na.rm=TRUE)
+BERplot1 <- aggregate(BER.R2$factor, by=list(BER.R2$surveyQ), FUN = sum, na.rm=TRUE)
+BERplot <- merge(BERplot,BERplot1,by="Group.1")
+BERplot$y <- BERplot$x.x/BERplot$x.y
+BERplot <- BERplot[order(BERplot$Group.2),]
+#BERplot <- aggregate(BER.M$factor, by=list(BER.M$surveyQ,BER.M$Sector), FUN = mean)
+BERplot$Group.1 <- as.Date(as.yearqtr(BERplot$Group.1, format = "%YQ%q"), frac = 1)
+g <- ggplot(BERplot, aes(x=Group.1, y=y,fill=Group.2))
+g <- g + geom_bar(stat="identity")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + scale_fill_discrete(name="Sub-sector")
+g <- g + scale_y_continuous(labels=comma)
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + ylab("Weights") + xlab("Date")
+g <- g + guides(fill = guide_legend(reverse = TRUE))
+g
+
+
+BERplot <- aggregate(BER.R2$factor, by=list(BER.R2$surveyQ,BER.R2$Sector), FUN = length)
+#BERplot1 <- aggregate(BER.S$factor, by=list(BER.S$surveyQ), FUN = sum, na.rm=TRUE)
+#BERplot$y <- BERplot$x/BERplot1$x
+BERplot1 <- aggregate(BER.R2$factor, by=list(BER.R2$surveyQ), FUN = length)
+BERplot <- merge(BERplot,BERplot1,by="Group.1")
+BERplot$y <- BERplot$x.x/BERplot$x.y
+BERplot <- BERplot[order(BERplot$Group.2),]
+#BERplot <- aggregate(BER.M$factor, by=list(BER.M$surveyQ,BER.M$Sector), FUN = mean)
+BERplot$Group.1 <- as.Date(as.yearqtr(BERplot$Group.1, format = "%YQ%q"), frac = 1)
+g <- ggplot(BERplot, aes(x=Group.1, y=y,fill=Group.2))
+g <- g + geom_bar(stat="identity")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + scale_fill_discrete(name="Sub-sector")
+g <- g + scale_y_continuous(labels=comma)
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + ylab("Weights") + xlab("Date")
+g <- g + guides(fill = guide_legend(reverse = TRUE))
+g
+
+
+#----------------------------
+indicator_plot <- cbind(Retail[,c("Datum","Q1")],
+                        Retail_n[,c("Q1")],Retail_2[,c("Q1")])
+colnames(indicator_plot) <- c("Date","Microdata","New","2-step")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g1 <- g1 + geom_line()
+g1 <- g1 + ylab("Indicator") + xlab("")
+g1 <- g1 + theme(legend.title=element_blank())
+g1 <- g1 + ggtitle("Q1") 
+g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g1 <- g1 + theme(legend.title=element_blank()) 
+g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g1 <- g1 + theme(legend.position="none")
+
+indicator_plot <- cbind(Retail[,c("Datum","Q2A")],
+                        Retail_n[,c("Q2A")],Retail_2[,c("Q2A")])
+colnames(indicator_plot) <- c("Date","Microdata","New","2-step")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g2 <- g2 + geom_line()
+g2 <- g2 + ylab("") + xlab("")
+g2 <- g2 + theme(legend.title=element_blank())
+g2 <- g2 + ggtitle("Q2A") 
+g2 <- g2 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g2 <- g2 + theme(legend.title=element_blank()) 
+g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g2 <- g2 + theme(legend.position="none")
+
+indicator_plot <- cbind(Retail[,c("Datum","Q3A")],
+                        Retail_n[,c("Q3A")],Retail_2[,c("Q3A")])
+colnames(indicator_plot) <- c("Date","Microdata","New","2-step")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g3 <- g3 + geom_line()
+g3 <- g3 + ylab("Indicator") + xlab("")
+g3 <- g3 + theme(legend.title=element_blank())
+g3 <- g3 + ggtitle("Q3A") 
+g3 <- g3 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g3 <- g3 + theme(legend.title=element_blank()) 
+g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
+
+indicator_plot <- cbind(Retail[,c("Datum","Q9")],
+                        Retail_n[,c("Q9")],Retail_2[,c("Q9")])
+colnames(indicator_plot) <- c("Date","Microdata","New","2-step")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g4 <- g4 + geom_line()
+g4 <- g4 + ylab("") + xlab("")
+g4 <- g4 + theme(legend.title=element_blank())
+g4 <- g4 + ggtitle("Q9") 
+g4 <- g4 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g4 <- g4 + theme(legend.title=element_blank()) 
+g4 <- g4 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
+g4 <- g4 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+
+library(gridExtra)
+grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
+
+
+
+indicator_plot <- cbind(Retaild[,c("Datum","Q2A")],
+                        Retaild_n[,c("Q2A")],Retaild_2[,c("Q2A")])
+colnames(indicator_plot) <- c("Date","Microdata","New","2-step")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g1 <- g1 + geom_line()
+g1 <- g1 + ylab("Indicator") + xlab("")
+g1 <- g1 + theme(legend.title=element_blank())
+g1 <- g1 + ggtitle("Q2A: Durable") 
+g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g1 <- g1 + theme(legend.title=element_blank()) 
+g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g1 <- g1 + theme(legend.position="none")
+
+indicator_plot <- cbind(Retailnd[,c("Datum","Q2A")],
+                        Retailnd_n[,c("Q2A")],Retailnd_2[,c("Q2A")])
+colnames(indicator_plot) <- c("Date","Microdata","New","2-step")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g2 <- g2 + geom_line()
+g2 <- g2 + ylab("") + xlab("")
+g2 <- g2 + theme(legend.title=element_blank())
+g2 <- g2 + ggtitle("Q2A: Non-Durable") 
+g2 <- g2 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g2 <- g2 + theme(legend.title=element_blank()) 
+g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g2 <- g2 + theme(legend.position="none")
+
+indicator_plot <- cbind(Retailsd[,c("Datum","Q2A")],
+                        Retailsd_n[,c("Q2A")],Retailnd_2[,c("Q2A")])
+colnames(indicator_plot) <- c("Date","Microdata","New","2-step")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g3 <- g3 + geom_line()
+g3 <- g3 + ylab("Indicator") + xlab("")
+g3 <- g3 + theme(legend.title=element_blank())
+g3 <- g3 + ggtitle("Q2A: Semi-Durable") 
+g3 <- g3 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g3 <- g3 + theme(legend.title=element_blank()) 
+g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
+
+indicator_plot <- cbind(Hardware[,c("Datum","Q2A")],
+                        Hardware_n[,c("Q2A")],Hardware_2[,c("Q2A")])
+colnames(indicator_plot) <- c("Date","Microdata","New","2-step")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g4 <- g4 + geom_line()
+g4 <- g4 + ylab("") + xlab("")
+g4 <- g4 + theme(legend.title=element_blank())
+g4 <- g4 + ggtitle("Q2A: Hardware") 
+g4 <- g4 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g4 <- g4 + theme(legend.title=element_blank()) 
+g4 <- g4 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
+g4 <- g4 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+
+library(gridExtra)
+grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
+
 #--------------------------------
 #Reference Series
 
-indicator_plot <- cbind(Retail[,c("Datum","Q2A","Q3A")],ref_r[,c("Total_SARB","Total_StatsSA")]) 
-colnames(indicator_plot)[1] <- c("Date")#,"Microdata","Published")
+indicator_plot <- cbind(Retail[,c("Datum","Q2A")],Retail_n[,c("Q2A")],ref_r[,c("Total_SARB","Total_StatsSA")]) 
+colnames(indicator_plot) <- c("Date","Microdata","Published","Total_SARB","Total_StatsSA")
 indicator_plot[,-1] <- scale(indicator_plot[,-1])
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
 g <- g + ylab("Indicator") + xlab("")
-g <- g + ggtitle("Retail Categories")
+g <- g + ggtitle("Retail Reference Series")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + theme(legend.title=element_blank()) 
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
@@ -2840,26 +3348,31 @@ g <- g + theme(legend.position="bottom")
 g
 
 
-retail_trade <- cbind(Retail[,c("Datum","Q2A","Q3A")],ref_r[,c("Total_SARB","Total_StatsSA")]) 
-source("corstarsl.R")
-xt <- xtable(corstarsl(retail_trade[,-1])[3:4,1:2])
-print(xt, "latex",comment=FALSE,scalebox = 0.8)
+retail_trade <- cbind(Retail[,c("Q2A","Q3A")],Retail_u[,c("Q2A","Q3A")],
+                      Retail_n[,c("Q2A","Q3A")],Retail_2[,c("Q2A","Q3A")],
+                      ref_r[,c("Total_SARB","Total_StatsSA")]) 
+colnames(retail_trade) <- c("Q2A","Q3A","Q2A_u","Q3A_u","Q2A_new","Q3A_new",
+                            "Q2A_2s","Q3A_2s","Total_SARB","Total_StatsSA")
 
-Q2A <- retail_trade[,2]
-Q3A <- retail_trade[,3] 
-Sales_SARB <- retail_trade[,4]
-Sales_StatsSA <- retail_trade[,5]
+source("corstarsl.R")
+xt <- xtable(corstarsl(retail_trade)[9:10,1:8])
+print(xt, "latex",comment=FALSE,scalebox = 0.9)
+
+Q2A <- retail_trade[,1]
+Q2A_u <- retail_trade[,3] 
+Q2A_n <- retail_trade[,5] 
+Q2A_2s <- retail_trade[,7] 
+Sales_StatsSA <- retail_trade[,10]
 
 par(mfrow=c(2,2))
-ccf(Q2A, Sales_SARB, na.action = na.pass, ylim=c(-0.2, 0.8))
 ccf(Q2A, Sales_StatsSA, na.action = na.pass, ylim=c(-0.2, 0.8))
-ccf(Q3A, Sales_SARB, na.action = na.pass, ylim=c(-0.2, 0.8))
-ccf(Q3A, Sales_StatsSA, na.action = na.pass, ylim=c(-0.2, 0.8))
+ccf(Q2A_u, Sales_StatsSA, na.action = na.pass, ylim=c(-0.2, 0.8))
+ccf(Q2A_n, Sales_StatsSA, na.action = na.pass, ylim=c(-0.2, 0.8))
+ccf(Q2A_2s, Sales_StatsSA, na.action = na.pass, ylim=c(-0.2, 0.8))
 
 
 
-
-
+#-----------------------------------
 indicator_plot <- cbind(Retaild[,c("Datum","Q2A","Q3A")],ref_r[,c("Durable")])
 indicator_plot[,-1] <- scale(indicator_plot[,-1])
 colnames(indicator_plot) <- c("Date","Q2A","Q3A","StatsSA")
@@ -2909,41 +3422,120 @@ grid.arrange(g1, g2, g3, ncol=2, nrow =2)
 
 source("corstarsl.R")
 
-retail_trade <- cbind(Retaild[,c("Datum","Q2A","Q3A")],ref_r[,c("Durable")])
-xt1 <- corstarsl(retail_trade[,-1])[3,1:2]
-retail_trade <- cbind(Retailsd[,c("Datum","Q2A","Q3A")],ref_r[,c("Semi")])
-xt2 <- corstarsl(retail_trade[,-1])[3,1:2]
-retail_trade <- cbind(Retailnd[,c("Datum","Q2A","Q3A")],ref_r[,c("NonD")])
-xt3 <- corstarsl(retail_trade[,-1])[3,1:2]
-xt <- rbind(xt1,xt2,xt3)
+retail_trade1 <- cbind(Retaild[,c("Datum","Q2A","Q3A")],ref_r[,c("Durable")])
+xt1 <- corstarsl(retail_trade1[,-1])[3,1:2]
+retail_trade2 <- cbind(Retailsd[,c("Datum","Q2A","Q3A")],ref_r[,c("Semi")])
+xt2 <- corstarsl(retail_trade2[,-1])[3,1:2]
+retail_trade3 <- cbind(Retailnd[,c("Datum","Q2A","Q3A")],ref_r[,c("NonD")])
+xt3 <- corstarsl(retail_trade3[,-1])[3,1:2]
+xt_1 <- rbind(xt1,xt2,xt3)
+
+retail_trade1 <- cbind(Retaild_n[,c("Datum","Q2A","Q3A")],ref_r[,c("Durable")])
+xt1 <- corstarsl(retail_trade1[,-1])[3,1:2]
+retail_trade2 <- cbind(Retailsd_n[,c("Datum","Q2A","Q3A")],ref_r[,c("Semi")])
+xt2 <- corstarsl(retail_trade2[,-1])[3,1:2]
+retail_trade3 <- cbind(Retailnd_n[,c("Datum","Q2A","Q3A")],ref_r[,c("NonD")])
+xt3 <- corstarsl(retail_trade3[,-1])[3,1:2]
+xt_2 <- rbind(xt1,xt2,xt3)
+
+retail_trade1 <- cbind(Retaild_2[,c("Datum","Q2A","Q3A")],ref_r[,c("Durable")])
+xt1 <- corstarsl(retail_trade1[,-1])[3,1:2]
+retail_trade2 <- cbind(Retailsd_2[,c("Datum","Q2A","Q3A")],ref_r[,c("Semi")])
+xt2 <- corstarsl(retail_trade2[,-1])[3,1:2]
+retail_trade3 <- cbind(Retailnd_2[,c("Datum","Q2A","Q3A")],ref_r[,c("NonD")])
+xt3 <- corstarsl(retail_trade3[,-1])[3,1:2]
+xt_3 <- rbind(xt1,xt2,xt3)
+
+xt <- cbind(xt_1,xt_2,xt_3)
+colnames(xt) <- c("Q2A","Q3A","Q2A_n","Q3A_n","Q2A_2s","Q3A_2s")
 row.names(xt) <- c("Durable Goods","Semi-Durable Goods","Non-Durable Goods")
-xt <- xtable(xt)
-print(xt, "latex",comment=FALSE,scalebox = 0.8)
+xt <- xtable(xt, caption="Correlations of subsector series")
+print(xt, "latex",comment=FALSE,scalebox = 0.6,
+      caption.placement = getOption("xtable.caption.placement", "top"))
+
+#colnames(retail_trade) <- c("Date","Q2A","Q3A","StatsSA")
+
+D_Q2A <- retail_trade1[,2]
+D_Q3A <- retail_trade1[,3] 
+D_Sales_StatsSA <- retail_trade1[,4]
+
+SD_Q2A <- retail_trade2[,2]
+SD_Q3A <- retail_trade2[,3] 
+SD_Sales_StatsSA <- retail_trade2[,4]
+
+ND_Q2A <- retail_trade3[,2]
+ND_Q3A <- retail_trade3[,3] 
+ND_Sales_StatsSA <- retail_trade3[,4]
+
+par(mfrow=c(2,3))
+ccf(D_Q2A, D_Sales_StatsSA, na.action = na.pass, ylim=c(-0.2, 0.8))
+ccf(D_Q3A, D_Sales_StatsSA, na.action = na.pass, ylim=c(-0.2, 0.8))
+ccf(SD_Q2A, SD_Sales_StatsSA, na.action = na.pass, ylim=c(-0.2, 0.8))
+ccf(SD_Q3A, SD_Sales_StatsSA, na.action = na.pass, ylim=c(-0.2, 0.8))
+ccf(ND_Q2A, ND_Sales_StatsSA, na.action = na.pass, ylim=c(-0.2, 0.8))
+ccf(ND_Q3A, ND_Sales_StatsSA, na.action = na.pass, ylim=c(-0.2, 0.8))
 
 
-colnames(retail_trade) <- c("Date","Q2A","Q3A","StatsSA")
+V <- sapply(colnames(retail_trade),function(x) sd(retail_trade[,x], na.rm = TRUE))[1:8]
+V <- t(as.data.frame(V))
 
+data <- cbind(Retaild[,c("Q2A","Q3A")],
+              Retaild_n[,c("Q2A","Q3A")],Retaild_2[,c("Q2A","Q3A")])
+V <- rbind(V,sapply(1:6,function(x) sd(data[,x], na.rm = TRUE))[1:6])
 
-Q2A <- retail_trade[,2]
-Q3A <- retail_trade[,3] 
-#Sales_SARB <- retail_trade[,4]
-Sales_StatsSA <- retail_trade[,4]
+data <- cbind(Retailsd[,c("Q2A","Q3A")],
+              Retailsd_n[,c("Q2A","Q3A")],Retailsd_2[,c("Q2A","Q3A")])
+V <- rbind(V,sapply(1:6,function(x) sd(data[,x], na.rm = TRUE))[1:6])
 
-par(mfrow=c(1,2))
-#ccf(Q2A, Sales_SARB, na.action = na.pass, ylim=c(-0.2, 0.8))
-ccf(Q2A, Sales_StatsSA, na.action = na.pass, ylim=c(-0.2, 0.8))
-#ccf(Q3A, Sales_SARB, na.action = na.pass, ylim=c(-0.2, 0.8))
-ccf(Q3A, Sales_StatsSA, na.action = na.pass, ylim=c(-0.2, 0.8))
+data <- cbind(Retailnd[,c("Q2A","Q3A")],
+              Retailnd_n[,c("Q2A","Q3A")],Retailnd_2[,c("Q2A","Q3A")])
+V <- rbind(V,sapply(1:6,function(x) sd(data[,x], na.rm = TRUE))[1:6])
+
+colnames(V) <- c("Q2A","Q3A","Q2A_New","Q3A_New","Q2A_2s","Q3A_2s")
+row.names(V) <- c("Total Retail","Durable Goods","Semi-Durable Goods","Non-Durable Goods")
+
+xt <- xtable(V, caption="Volatility of subsector series")
+print(xt, "latex",comment=FALSE,scalebox = 0.9,
+      caption.placement = getOption("xtable.caption.placement", "top"))
 
 
 #===============================================
 #WHOLESALE
+#===============================================
+
+BERplot <- BER.W
+BERplot$Sector[BERplot$sector %in% wholenc] <- "Wholesale (non-consumer)" 
+BERplot$Sector[BERplot$sector %in% wholec] <- "Wholesale (consumer)"  
+BERplot$sectorw <- BERplot$factor/BERplot$weight
+
+BERplot1 <- aggregate(BERplot$id, by=list(BERplot$surveyQ,BERplot$Sector), FUN = length)
+BERplot1$Group.1 <- as.Date(as.yearqtr(BERplot1$Group.1, format = "%YQ%q"))
+g <- ggplot(BERplot1, aes(x=Group.1, y=x,fill=Group.2))
+g <- g + geom_bar(stat="identity")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + scale_fill_discrete(name="Subsector")
+g <- g + scale_y_continuous(labels=comma)
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + ylab("Number of Respondents")
+g <- g + xlab("Date")
+g
+
+ave <- mean(aggregate(BER.W$id, by=list(BER.W$surveyQ), FUN = length)[,2])
+tafel <- cbind("1992Q2-2017Q2",length(BER.W$id),round(ave,2),round(ave/1400,2),
+               "1992Q4,1993Q3,2005Q4")
+colnames(tafel) <- c("Sample","Total Obs","Obs/Quarter", "Response Rate","Missing Quarters")     
+row.names(tafel) <- "Wholesale Survey"
+xt <- xtable(tafel, caption="Sample characteristics")
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8,
+      include.rownames=TRUE)
+
 
 indicator_plot <- cbind(Wholesale[,c("Datum","Q1")],ad_w[,"Total_Q1"],pub_w[,"Total_Q1"]) 
 colnames(indicator_plot) <- c("Date","Weighted","Adjusted","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
+g <- g + geom_point()
 g <- g + ylab("Indicator") + xlab("")
 g <- g + ggtitle("Wholesale")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
@@ -2952,11 +3544,12 @@ g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
 
-indicator_plot <- cbind(Wholesale[,c("Datum","Q6A")],ad_w[,"Total_Q6A"],pub_w[,"Total_Q6A"]) 
+indicator_plot <- cbind(Wholesale[,c("Datum","Q2A")],ad_w[,"Total_Q2A"],pub_w[,"Total_Q2A"]) 
 colnames(indicator_plot) <- c("Date","Weighted","Adjusted","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
+g <- g + geom_point()
 g <- g + ylab("Indicator") + xlab("")
 g <- g + ggtitle("Wholesale")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
@@ -2968,8 +3561,8 @@ g
 
 
 #Total Wholesale
-indicator_plot <- cbind(Wholesale[,c("Datum","Q1")],ad_w[,"Total_Q1"]),pub_w[,"Total_Q1"]) 
-colnames(indicator_plot) <- c("Date","Weighted","Adjusted","Published")
+indicator_plot <- cbind(Wholesale[,c("Datum","Q1")],ad_w[,"Total_Q1"])#,pub_w[,"Total_Q1"]) 
+colnames(indicator_plot) <- c("Date","Weighted","Adjusted")#,"Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g1 <- g1 + geom_line()
@@ -2981,8 +3574,8 @@ g1 <- g1 + theme(legend.title=element_blank())
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g1 <- g1 + theme(legend.position="none")
 
-indicator_plot <- cbind(Wholesale[,c("Datum","Q2A")],ad_w[,"Total_Q2A"],pub_w[,"Total_Q2A"]) 
-colnames(indicator_plot) <- c("Date","Weighted","Adjusted","Published")
+indicator_plot <- cbind(Wholesale[,c("Datum","Q2A")],ad_w[,"Total_Q2A"])#,pub_w[,"Total_Q2A"]) 
+colnames(indicator_plot) <- c("Date","Weighted","Adjusted")#,"Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g2 <- g2 + geom_line()
@@ -2994,8 +3587,8 @@ g2 <- g2 + theme(legend.title=element_blank())
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g2 <- g2 + theme(legend.position="none")
 
-indicator_plot <- cbind(Wholesale[,c("Datum","Q3A")],ad_w[,"Total_Q3A"],pub_w[,"Total_Q3A"]) 
-colnames(indicator_plot) <- c("Date","Weighted","Adjusted","Published")
+indicator_plot <- cbind(Wholesale[,c("Datum","Q3A")],ad_w[,"Total_Q3A"])#,pub_w[,"Total_Q3A"]) 
+colnames(indicator_plot) <- c("Date","Weighted","Adjusted")#,"Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g3 <- g3 + geom_line()
@@ -3007,8 +3600,8 @@ g3 <- g3 + theme(legend.title=element_blank())
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
 
-indicator_plot <- cbind(Wholesale[,c("Datum","Q8")],ad_w[,"Total_Q8"],pub_w[,"Total_Q8"]) 
-colnames(indicator_plot) <- c("Date","Weighted","Adjusted","Published")
+indicator_plot <- cbind(Wholesale[,c("Datum","Q8")],ad_w[,"Total_Q8"])#,pub_w[,"Total_Q8"]) 
+colnames(indicator_plot) <- c("Date","Weighted","Adjusted")#,"Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g4 <- g4 + geom_line()
@@ -3026,8 +3619,8 @@ grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 
 
 #Wholesale Consumer Goods
-indicator_plot <- cbind(Wholec[,c("Datum","Q1")],ad_w[,"CG_Q1"],pub_w[,"CG_Q1"]) 
-colnames(indicator_plot) <- c("Date","Weighted","Adjusted","Published")
+indicator_plot <- cbind(Wholec[,c("Datum","Q1")],ad_w[,"CG_Q1"])#,pub_w[,"CG_Q1"]) 
+colnames(indicator_plot) <- c("Date","Weighted","Adjusted")#,"Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g1 <- g1 + geom_line()
@@ -3039,8 +3632,8 @@ g1 <- g1 + theme(legend.title=element_blank())
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g1 <- g1 + theme(legend.position="none")
 
-indicator_plot <- cbind(Wholec[,c("Datum","Q2A")],ad_w[,"CG_Q2A"],pub_w[,"CG_Q2A"]) 
-colnames(indicator_plot) <- c("Date","Weighted","Adjusted","Published")
+indicator_plot <- cbind(Wholec[,c("Datum","Q2A")],ad_w[,"CG_Q2A"])#,pub_w[,"CG_Q2A"]) 
+colnames(indicator_plot) <- c("Date","Weighted","Adjusted")#,"Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g2 <- g2 + geom_line()
@@ -3052,8 +3645,8 @@ g2 <- g2 + theme(legend.title=element_blank())
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g2 <- g2 + theme(legend.position="none")
 
-indicator_plot <- cbind(Wholec[,c("Datum","Q3A")],ad_w[,"CG_Q3A"],pub_w[,"CG_Q3A"]) 
-colnames(indicator_plot) <- c("Date","Weighted","Adjusted","Published")
+indicator_plot <- cbind(Wholec[,c("Datum","Q3A")],ad_w[,"CG_Q3A"])#,pub_w[,"CG_Q3A"]) 
+colnames(indicator_plot) <- c("Date","Weighted","Adjusted")#,"Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g3 <- g3 + geom_line()
@@ -3065,8 +3658,8 @@ g3 <- g3 + theme(legend.title=element_blank())
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
 
-indicator_plot <- cbind(Wholec[,c("Datum","Q8")],ad_w[,"CG_Q8"],pub_w[,"CG_Q8"]) 
-colnames(indicator_plot) <- c("Date","Weighted","Adjusted","Published")
+indicator_plot <- cbind(Wholec[,c("Datum","Q8")],ad_w[,"CG_Q8"])#,pub_w[,"CG_Q8"]) 
+colnames(indicator_plot) <- c("Date","Weighted","Adjusted")#,"Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g4 <- g4 + geom_line()
@@ -3082,10 +3675,10 @@ library(gridExtra)
 grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 
 
-
+#------------------------------------------------------
 #Wholesale Non-Consumer Goods
-indicator_plot <- cbind(Wholenc[,c("Datum","Q1")],ad_w[,"NonCG_Q1"],pub_w[,"NonCG_Q1"]) 
-colnames(indicator_plot) <- c("Date","Weighted","Adjusted","Published")
+indicator_plot <- cbind(Wholenc[,c("Datum","Q1")],ad_w[,"NonCG_Q1"])#,pub_w[,"NonCG_Q1"]) 
+colnames(indicator_plot) <- c("Date","Weighted","Adjusted")#,"Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g1 <- g1 + geom_line()
@@ -3097,8 +3690,8 @@ g1 <- g1 + theme(legend.title=element_blank())
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g1 <- g1 + theme(legend.position="none")
 
-indicator_plot <- cbind(Wholenc[,c("Datum","Q2A")],ad_w[,"NonCG_Q2A"],pub_w[,"NonCG_Q2A"]) 
-colnames(indicator_plot) <- c("Date","Weighted","Adjusted","Published")
+indicator_plot <- cbind(Wholenc[,c("Datum","Q2A")],ad_w[,"NonCG_Q2A"])#,pub_w[,"NonCG_Q2A"]) 
+colnames(indicator_plot) <- c("Date","Weighted","Adjusted")#,"Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g2 <- g2 + geom_line()
@@ -3110,8 +3703,8 @@ g2 <- g2 + theme(legend.title=element_blank())
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g2 <- g2 + theme(legend.position="none")
 
-indicator_plot <- cbind(Wholenc[,c("Datum","Q3A")],ad_w[,"NonCG_Q3A"],pub_w[,"NonCG_Q3A"]) 
-colnames(indicator_plot) <- c("Date","Weighted","Adjusted","Published")
+indicator_plot <- cbind(Wholenc[,c("Datum","Q3A")],ad_w[,"NonCG_Q3A"])#,pub_w[,"NonCG_Q3A"]) 
+colnames(indicator_plot) <- c("Date","Weighted","Adjusted")#,"Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g3 <- g3 + geom_line()
@@ -3123,8 +3716,8 @@ g3 <- g3 + theme(legend.title=element_blank())
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
 
-indicator_plot <- cbind(Wholenc[,c("Datum","Q8")],ad_w[,"NonCG_Q8"],pub_w[,"NonCG_Q8"]) 
-colnames(indicator_plot) <- c("Date","Weighted","Adjusted","Published")
+indicator_plot <- cbind(Wholenc[,c("Datum","Q8")],ad_w[,"NonCG_Q8"])#,pub_w[,"NonCG_Q8"]) 
+colnames(indicator_plot) <- c("Date","Weighted","Adjusted")#,"Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g4 <- g4 + geom_line()
@@ -3155,8 +3748,8 @@ g <- g + xlab("Date")
 g
 
 
-indicator_plot <- cbind(WC.W[,c("Datum","Q1")],ad_w[,"WC_Q1"],pub_w[,"WC_Q1"]) 
-colnames(indicator_plot) <- c("Date","Microdata","Adjusted","Published")
+indicator_plot <- cbind(WC.W[,c("Datum","Q1")],ad_w[,"WC_Q1"])#,pub_w[,"WC_Q1"]) 
+colnames(indicator_plot) <- c("Date","Microdata","Adjusted")#,"Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g1 <- g1 + geom_line()
@@ -3168,8 +3761,8 @@ g1 <- g1 + theme(legend.title=element_blank())
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g1 <- g1 + theme(legend.position="none")
 
-indicator_plot <- cbind(GP.W[,c("Datum","Q1")],ad_w[,"GP_Q1"],pub_w[,"GP_Q1"]) 
-colnames(indicator_plot) <- c("Date","Microdata","Adjusted","Published")
+indicator_plot <- cbind(GP.W[,c("Datum","Q1")],ad_w[,"GP_Q1"])#,pub_w[,"GP_Q1"]) 
+colnames(indicator_plot) <- c("Date","Microdata","Adjusted")#,"Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g2 <- g2 + geom_line()
@@ -3181,8 +3774,8 @@ g2 <- g2 + theme(legend.title=element_blank())
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g2 <- g2 + theme(legend.position="none")
 
-indicator_plot <- cbind(KZN.W[,c("Datum","Q1")],ad_w[,"KZN_Q1"],pub_w[,"KZN_Q1"]) 
-colnames(indicator_plot) <- c("Date","Microdata","Adjusted","Published")
+indicator_plot <- cbind(KZN.W[,c("Datum","Q1")],ad_w[,"KZN_Q1"])#,pub_w[,"KZN_Q1"]) 
+colnames(indicator_plot) <- c("Date","Microdata","Adjusted")#,"Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g3 <- g3 + geom_line()
@@ -3212,8 +3805,8 @@ grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 
 
 
-indicator_plot <- cbind(WC.W[,c("Datum","Q2A")],ad_w[,"WC_Q2A"],pub_w[,"WC_Q2A"]) 
-colnames(indicator_plot) <- c("Date","Microdata","Adjusted","Published")
+indicator_plot <- cbind(WC.W[,c("Datum","Q2A")],ad_w[,"WC_Q2A"])#,pub_w[,"WC_Q2A"]) 
+colnames(indicator_plot) <- c("Date","Microdata","Adjusted")#,"Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g1 <- g1 + geom_line()
@@ -3225,8 +3818,8 @@ g1 <- g1 + theme(legend.title=element_blank())
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g1 <- g1 + theme(legend.position="none")
 
-indicator_plot <- cbind(GP.W[,c("Datum","Q2A")],ad_w[,"GP_Q2A"],pub_w[,"GP_Q2A"]) 
-colnames(indicator_plot) <- c("Date","Microdata","Adjusted","Published")
+indicator_plot <- cbind(GP.W[,c("Datum","Q2A")],ad_w[,"GP_Q2A"])#,pub_w[,"GP_Q2A"]) 
+colnames(indicator_plot) <- c("Date","Microdata","Adjusted")#,"Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g2 <- g2 + geom_line()
@@ -3238,8 +3831,8 @@ g2 <- g2 + theme(legend.title=element_blank())
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g2 <- g2 + theme(legend.position="none")
 
-indicator_plot <- cbind(KZN.W[,c("Datum","Q2A")],ad_w[,"KZN_Q2A"],pub_w[,"KZN_Q2A"]) 
-colnames(indicator_plot) <- c("Date","Microdata","Adjusted","Published")
+indicator_plot <- cbind(KZN.W[,c("Datum","Q2A")],ad_w[,"KZN_Q2A"])#,pub_w[,"KZN_Q2A"]) 
+colnames(indicator_plot) <- c("Date","Microdata","Adjusted")#,"Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g3 <- g3 + geom_line()
@@ -3270,6 +3863,30 @@ grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 
 #===============================================
 #MOTOR VEHICLES
+#===============================================
+
+BERplot <- BER.V
+BERplot1 <- aggregate(BERplot$id, by=list(BERplot$surveyQ,BERplot$region), FUN = length)
+BERplot1$Group.1 <- as.Date(as.yearqtr(BERplot1$Group.1, format = "%YQ%q"))
+g <- ggplot(BERplot1, aes(x=Group.1, y=x,fill=Group.2))
+g <- g + geom_bar(stat="identity")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + scale_fill_discrete(name="Region")
+g <- g + scale_y_continuous(labels=comma)
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + ylab("Number of Respondents")
+g <- g + xlab("Date")
+g
+
+ave <- mean(aggregate(BER.V$id, by=list(BER.V$surveyQ), FUN = length)[,2])
+tafel <- cbind("1992Q2-2017Q2",length(BER.V$id),round(ave,2),round(ave/1000,2),
+               "1992Q4,1993Q3,2005Q4")
+colnames(tafel) <- c("Sample","Total Obs","Obs/Quarter", "Response Rate","Missing Quarters")     
+row.names(tafel) <- "Motor Vehicle Survey"
+xt <- xtable(tafel, caption="Sample characteristics")
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8,
+      include.rownames=TRUE)
+
 
 #New Vehicles
 indicator_plot <- cbind(Motor[,c("Datum","Q1")],pub_v[,"New_Q1"]) 
@@ -3599,11 +4216,183 @@ library(gridExtra)
 grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 
 
+#--------------------------------
+#Reference Series
+
+indicator_plot <- cbind(Motor[,c("Datum","Q2A","Q3A")],ref_v[,c("Total_Sales","Passenger_Sales")]) 
+colnames(indicator_plot) <- c("Date","Q2A","Q3A","Total_Sales","Passenger_Sales")
+indicator_plot[,-1] <- scale(indicator_plot[,-1])
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Indicator") + xlab("")
+g <- g + ggtitle("Motor Reference Series")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) 
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+
+
+motor_trade <- cbind(Motor[,c("Q2A","Q3A")],Motor_u[,c("Q2A","Q3A")],
+                      ref_v[,c("Total_Sales","Passenger_Sales")]) 
+colnames(motor_trade) <- c("Q2A","Q3A","Q2A_u","Q3A_u","Total_Sales","Passenger_Sales")
+
+source("corstarsl.R")
+xt <- xtable(corstarsl(motor_trade)[5:6,1:4])
+print(xt, "latex",comment=FALSE,scalebox = 0.9)
+
+Q2A <- motor_trade[,1]
+Q3A <- motor_trade[,2] 
+Q2A_u <- motor_trade[,3] 
+Q3A_u <- motor_trade[,4] 
+Passenger_Sales <- motor_trade[,6]
+
+par(mfrow=c(2,2))
+ccf(Q2A, Passenger_Sales, na.action = na.pass, ylim=c(-0.2, 1))
+ccf(Q3A, Passenger_Sales, na.action = na.pass, ylim=c(-0.2, 1))
+ccf(Q2A_u, Passenger_Sales, na.action = na.pass, ylim=c(-0.2, 1))
+ccf(Q3A_u, Passenger_Sales, na.action = na.pass, ylim=c(-0.2, 1))
+
+
+
+#-----------------------------------
+indicator_plot <- cbind(WC.V[,c("Datum","Q2A","Q3A")],ref_v[,c("WC_Passenger")])
+indicator_plot[,-1] <- scale(indicator_plot[,-1])
+colnames(indicator_plot) <- c("Date","Q2A","Q3A","Passenger_Sales")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g1 <- g1 + geom_line()
+g1 <- g1 + ylab("Indicator") + xlab("")
+g1 <- g1 + theme(legend.title=element_blank())
+g1 <- g1 + ggtitle("WC") 
+g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g1 <- g1 + theme(legend.title=element_blank()) 
+g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g1 <- g1 + theme(legend.position="none")
+
+indicator_plot <- cbind(GP.V[,c("Datum","Q2A","Q3A")],ref_v[,c("GP_Passenger")])
+indicator_plot[,-1] <- scale(indicator_plot[,-1])
+colnames(indicator_plot) <- c("Date","Q2A","Q3A","Passenger_Sales")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g2 <- g2 + geom_line()
+g2 <- g2 + ylab("") + xlab("")
+g2 <- g2 + theme(legend.title=element_blank())
+g2 <- g2 + ggtitle("GP") 
+g2 <- g2 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g2 <- g2 + theme(legend.title=element_blank()) 
+g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g2 <- g2 + theme(legend.position="none")
+
+
+indicator_plot <- cbind(KZN.V[,c("Datum","Q2A","Q3A")],ref_v[,c("KZN_Passenger")])
+indicator_plot[,-1] <- scale(indicator_plot[,-1])
+colnames(indicator_plot) <- c("Date","Q2A","Q3A","Passenger_Sales")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g3 <- g3 + geom_line()
+g3 <- g3 + ylab("Indicator") + xlab("")
+g3 <- g3 + theme(legend.title=element_blank())
+g3 <- g3 + ggtitle("KZN") 
+g3 <- g3 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g3 <- g3 + theme(legend.title=element_blank()) 
+g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
+
+library(gridExtra)
+grid.arrange(g1, g2, g3, ncol=2, nrow =2)
+
+
+source("corstarsl.R")
+
+motor_trade1 <- cbind(WC.V[,c("Datum","Q2A","Q3A")],ref_v[,c("WC_Total","WC_Passenger")])
+xt1 <- corstarsl(motor_trade1[,-1])[3:4,1:2]
+motor_trade2 <- cbind(GP.V[,c("Datum","Q2A","Q3A")],ref_v[,c("GP_Total","GP_Passenger")])
+xt2 <- corstarsl(motor_trade2[,-1])[3:4,1:2]
+motor_trade3 <- cbind(KZN.V[,c("Datum","Q2A","Q3A")],ref_v[,c("KZN_Total","KZN_Passenger")])
+xt3 <- corstarsl(motor_trade3[,-1])[3:4,1:2]
+xt <- cbind(xt1,xt2,xt3)
+
+colnames(xt) <- c("WC_Q2A","WC_Q3A","GP_Q2A","GP_Q3A","KZN_Q2A","KZN_Q3A")
+row.names(xt) <- c("Total Sales","Passenger Sales")
+xt <- xtable(xt)
+print(xt, "latex",comment=FALSE,scalebox = 0.8)
+
+
+#colnames(retail_trade) <- c("Date","Q2A","Q3A","StatsSA")
+
+WC_Q2A <- motor_trade1[,2]
+WC_Q3A <- motor_trade1[,3] 
+WC_Sales <- motor_trade1[,5]
+
+GP_Q2A <- motor_trade2[,2]
+GP_Q3A <- motor_trade2[,3] 
+GP_Sales <- motor_trade2[,5]
+
+KZN_Q2A <- motor_trade3[,2]
+KZN_Q3A <- motor_trade3[,3] 
+KZN_Sales <- motor_trade3[,5]
+
+par(mfrow=c(2,3))
+ccf(WC_Q2A, WC_Sales, na.action = na.pass, ylim=c(-0.2, 1))
+ccf(WC_Q3A, WC_Sales, na.action = na.pass, ylim=c(-0.2, 1))
+ccf(GP_Q2A, GP_Sales, na.action = na.pass, ylim=c(-0.2, 1))
+ccf(GP_Q3A, GP_Sales, na.action = na.pass, ylim=c(-0.2, 1))
+ccf(KZN_Q2A, KZN_Sales, na.action = na.pass, ylim=c(-0.2, 1))
+ccf(KZN_Q3A, KZN_Sales, na.action = na.pass, ylim=c(-0.2, 1))
+
+
+V <- sapply(colnames(motor_trade),function(x) sd(motor_trade[,x], na.rm = TRUE))[1:4]
+V <- t(as.data.frame(V))
+row.names(V) <- "Vol"
+xt <- xtable(V)
+print(xt, "latex",comment=FALSE,scalebox = 0.7)
+
+data <- cbind(WC.V[,c("Q2A","Q3A")],GP.V[,c("Q2A","Q3A")],KZN.V[,c("Q2A","Q3A")])
+V <- sapply(1:6,function(x) sd(data[,x], na.rm = TRUE))[1:6]
+V <- as.data.frame(t(V))
+colnames(V) <- c("WC_Q2A","WC_Q3A","GP_Q2A","GP_Q3A","KZN_Q2A","KZN_Q3A")
+row.names(V) <- c("Volatility")
+
+xt <- xtable(V)
+print(xt, "latex",comment=FALSE,scalebox = 0.7)
+
 
 
 #===============================================
 #SERVICES
 #===============================================
+
+BERplot <- BER.S
+BERplot$Sector[BERplot$sector %in% catering] <- "Catering and Accommodation" 
+BERplot$Sector[BERplot$sector %in% transport] <- "Transport and Storage" 
+BERplot$Sector[BERplot$sector %in% realestate] <- "Real Estate" 
+BERplot$Sector[BERplot$sector %in% business] <- "Business Services" 
+BERplot$Sector[BERplot$sector %in% other] <- "Other Business Activities" 
+BERplot$Sector[BERplot$sector %in% community] <- "Community and Personal Services" 
+
+BERplot1 <- aggregate(BERplot$id, by=list(BERplot$surveyQ,BERplot$region), FUN = length)
+BERplot1$Group.1 <- as.Date(as.yearqtr(BERplot1$Group.1, format = "%YQ%q"))
+g <- ggplot(BERplot1, aes(x=Group.1, y=x,fill=Group.2))
+g <- g + geom_bar(stat="identity")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + scale_fill_discrete(name="Region")
+g <- g + scale_y_continuous(labels=comma)
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + ylab("Number of Respondents")
+g <- g + xlab("Date")
+g
+
+ave <- mean(aggregate(BER.S$id, by=list(BER.S$surveyQ), FUN = length)[,2])
+tafel <- cbind("2005Q2-2017Q2",length(BER.S$id),round(ave,2),round(ave/1000,2),
+               "2005Q4")
+colnames(tafel) <- c("Sample","Total Obs","Obs/Quarter", "Response Rate","Missing Quarters")     
+row.names(tafel) <- "Services Survey"
+xt <- xtable(tafel, caption="Sample characteristics")
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8,
+      include.rownames=TRUE)
+
 
 #Services
 indicator_plot <- cbind(Services[,c("Datum","Q1")],pub_s[,"Total_Q1"]) 
@@ -3611,6 +4400,7 @@ colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
+g <- g + geom_point()
 g <- g + ylab("Indicator") + xlab("")
 g <- g + ggtitle("Services Q1")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
@@ -3619,7 +4409,7 @@ g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 g <- g + theme(legend.position="bottom")
 g
 
-indicator_plot <- cbind(Services[,c("Datum","Q2A")],pub_s[,"Total_Q2A"]) 
+indicator_plot <- cbind(Services[,c("Datum","Q7")],pub_s[,"Total_Q7"]) 
 colnames(indicator_plot) <- c("Date","Microdata","Published")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
@@ -3931,6 +4721,35 @@ g4 <- g4 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 
 library(gridExtra)
 grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
+
+
+
+
+
+#---------------------------------
+#Verskil tussen realisations and expectations
+w.indicators$Diff <- w.indicators$Confidence - w.indicators$Activity
+for(i in 1:98) {
+    w.indicators$Diff[i+1] <- w.indicators$Confidence[i] - w.indicators$Activity[i+1]
+}
+
+indicator_plot <- cbind(w.indicators,GDPgrowth4$RGDP) 
+indicator_plot[,-1] <- scale(indicator_plot[,-1])
+#colnames(indicator_plot) <- c("Date","Microdata","Published")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+#g <- g + geom_point()
+g <- g + ylab("Indicator") + xlab("")
+g <- g + ggtitle("Services Q1")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) 
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+
+
+
 
 
 
