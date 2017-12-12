@@ -3128,7 +3128,8 @@ BER.R2$Sector[BER.R2$sector %in% retailnd] <- "Retail (non-durable)"
 BER.R2$Sector[BER.R2$sector %in% retaild] <- "Retail (durable)" 
 BER.R2$Sector[BER.R2$sector %in% retailo] <- "Retail (other)" 
 
-BER.R2$sectorw <- BER.R2$factor/BER.R2$weight
+BER.R2$sectorw <- as.numeric(as.character(BER.R2$sectorw))
+#BER.R2$sectorw <- BER.R2$factor/BER.R2$weight
 BERplot <- aggregate(BER.R2$sectorw, by=list(BER.R2$surveyQ,BER.R2$sector,BER.R2$Sector), FUN = mean, na.rm=TRUE)
 colnames(BERplot) <- c("surveyQ","sector","Sector","weight")
 BERplot1 <- dcast(BERplot, formula = surveyQ ~ Sector + sector)
@@ -3498,6 +3499,100 @@ xt <- xtable(V, caption="Volatility of subsector series")
 print(xt, "latex",comment=FALSE,scalebox = 0.9,
       caption.placement = getOption("xtable.caption.placement", "top"))
 
+#-----------------------------------------------
+#Checks weights
+BER.R2$sectorw <- as.numeric(as.character(BER.R2$sectorw))
+BERplot <- aggregate(BER.R2$sectorw, by=list(BER.R2$surveyQ,BER.R2$sector), FUN = mean, na.rm=TRUE)
+colnames(BERplot) <- c("surveyQ","sector","weight")
+BERplot1 <- dcast(BERplot, formula = surveyQ ~ sector)
+BERplot1 <- merge(datums,BERplot1,by.x="Date",by.y ="surveyQ")
+BERplot1[,-1:-2] <- na.locf(BERplot1[,-1:-2],fromLast = TRUE)
+BERplot1[,-1:-2] <- na.locf(BERplot1[,-1:-2])
+#BERplot1$Total <- rowSums(BERplot[,3:14])
+#BERplot1[,-1] <- BERplot[,-1]/BERplot[,5]
+
+#BERplot1$Date <- as.Date(as.yearqtr(BERplot$Date, format = "%YQ%q"), frac = 1)
+index_plot <- melt(BERplot1[,-1], id="Datum")
+g <- ggplot(index_plot, aes(x=Datum,y=value,group=variable,fill=variable)) 
+g <- g + geom_bar(stat="identity")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + scale_fill_discrete(name="Sub-sector")
+g <- g + scale_y_continuous(labels=comma)
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + ylab("Weights") + xlab("Date")
+g <- g + guides(fill = guide_legend(reverse = TRUE))
+g
+
+
+geweeg2 <- function(sektor=all,streek=streke) {
+    weeg2 <- function(temp) {  #calculate weighted mean for each quarter for all columns
+        sectorw=temp$sectorw[1]
+        temp <- cbind(firmw=temp$firmw,temp$firmw*temp[(match("surveyQ",colnames(temp))+1):ncol(temp)])
+        #temp <- colSums(temp, na.rm=TRUE, dims = 1)/sum(temp$factor, na.rm=TRUE)
+        #calculate the sum(wi*xi)/sum(wi)
+        temp <- colSums(temp, na.rm=TRUE, dims = 1)/    
+            sapply(colnames(temp), function(x) sum(temp$firmw[!is.na(temp[colnames(temp) == x])]))
+        temp <- c(sectorw,temp)
+        #weight only by those that responded to a specific question
+        return(temp)
+    }
+    man <- BER.R2[BER.R2$sector %in% sektor & BER.R2$region %in% streek,-24]
+    sector <- data.frame()
+    for(kwartaal in levels(man$surveyQ)) {
+        sector <- rbind(sector,weeg2(man[man$surveyQ==kwartaal,]))
+    }
+    sector <- sector *100
+    sector[,2] <- levels(man$surveyQ)
+    colnames(sector) <- colnames(man)[c(7:ncol(man))]
+    sector <- merge(datums,sector, by.x="Date", by.y="surveyQ", all=TRUE)
+    #sector <- as.data.frame(t(sapply(levels(man$surveyQ), function(kwartaal) weeg(man[man$surveyQ==kwartaal,]))))
+    sector[,3:18] <- na.approx(sector[,3:18],na.rm = FALSE)
+    return(sector)
+}
+
+lys <- list()
+t <- 0
+for(k in sektor) {
+    t <- t+1
+    lys[[t]] <- geweeg2(k)
+}
+    
+saam <- lys[[1]]
+for(t in 1:length(sektor)) {
+    saam[,t+2] <- lys[[t]][,5]
+}
+colnames(saam)[-1:-2] <- sektor
+saam <- saam[-1,]
+
+saam$Retail_ref <- ref_r$Total_StatsSA
+saam1 <- saam[,c(-1:-2,-5,-14,-16:-23)]
+saam1 <- saam1[complete.cases(saam1),]
+
+m1 <- lm(Retail_ref ~ . - 1 , data = saam1)
+summary(m1)
+
+#plot(predict(m1))
+fit <- predict(m1)
+observed <- ts(saam1$Retail_ref,start=c(1992,2),frequency=4)
+fit <- ts(fit,start=c(1992,2),frequency=4)
+plot(observed,type="l",ylab="Actual and predicted values",xlab="")
+lines(fit,col="blue",lty=2)
+cor(observed,fit)
+
+lnsaam1 <- log(saam[,c(-1:-2,-5,-14,-16:-24)]+200)
+lnsaam1$Retail_ref <- saam$Retail_ref
+lnsaam1 <- lnsaam1[complete.cases(lnsaam1),]
+
+m2 <- lm(Retail_ref ~ . - 1 , data = lnsaam1)
+summary(m2)
+
+#plot(predict(m2))
+fit <- predict(m2)
+observed <- ts(lnsaam1$Retail_ref,start=c(1992,2),frequency=4)
+fit <- ts(fit,start=c(1992,2),frequency=4)
+plot(observed,type="l",ylab="Actual and predicted values",xlab="")
+lines(fit,col="blue",lty=2)
+cor(observed,fit)
 
 #===============================================
 #WHOLESALE

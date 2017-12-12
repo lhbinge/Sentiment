@@ -8,6 +8,21 @@ geometry: margin=1in
 ---
 
 
+\begin{table}[]
+\centering
+\caption{Survey questions used by sector}
+\label{my-label}
+\scalebox{0.8}{
+\begin{tabular}{|l|r|r|r|r|}
+\hline
+\textbf{Survey Question} & \textbf{Manufacturing} & \textbf{Construction} & \textbf{Trade    } & \multicolumn{1}{l|}{\textbf{Services   }} \\ \hline
+Business Conditions      & X                      & X                     & X              & X                                      \\ 
+Activity                 & X                      & X                     & X              & X                                      \\ 
+Employment               & X                      & X                     & X              & X                                      \\ 
+Profitability            &                        & X                     & X              & X                                      \\ 
+Orders Placed            & X                      &                       & X              &                                        \\ \hline
+\end{tabular}}
+\end{table}
 
 
 \begin{table}[]
@@ -161,6 +176,95 @@ $$\bar \epsilon_{it} = \frac{1}{W_t}\sum_{i=1}^N w_{it} \epsilon_{it}$$
 $$I_t = \frac{1}{W_{t+1}}\sum_{i=1}^N (w_{it+1} \epsilon_{it+1} - \bar{\epsilon}_{t+1})^2 $$
 $$A_t = \bar \epsilon_{it+1}^2 $$
 
+
+
+
+
+\begin{table}[]
+\centering
+\caption{Granger causality tests: confidence}
+\label{my-label}
+\scalebox{0.8}{
+\begin{tabular}{|l|l|r|}
+\hline
+\textbf{Granger causality H0:}                           & \multicolumn{1}{l|}{\textbf{statistic}} & \multicolumn{1}{l|}{\textbf{p-value}} \\ \hline
+Confidence (Current) does not Granger-cause RGDP Growth  & 2.70*                                   & 0.07                                  \\ 
+RGDP Growth does not Granger-cause Confidence (Current)  & 1.41                                    & 0.25                                  \\ \hline
+Confidence (Expected) does not Granger-cause RGDP Growth & 3.44**                                  & 0.03                                  \\ 
+RGDP Growth does not Granger-cause Confidence (Expected) & 0.58                                    & 0.56                                  \\ \hline
+BER BCI does not Granger-cause RGDP Growth               & 4.14**                                  & 0.02                                  \\ 
+RGDP Growth does not Granger-cause BER BCI               & 1.69                                    & 0.19                                  \\ \hline
+SACCI Growth does not Granger-cause RGDP Growth          & 3.23**                                  & 0.04                                  \\ 
+RGDP Growth does not Granger-cause SACCI Growth          & 0.03                                    & 0.97                                  \\ \hline
+\end{tabular}}
+\end{table}
+
+
+
+\begin{table}[]
+\centering
+\caption{Granger causality test statistics: sectoral confidence}
+\label{my-label}
+\scalebox{0.8}{
+\begin{tabular}{|l|l|l|l|l|}
+\hline
+\textbf{Granger causality H0:}                           & \multicolumn{1}{l|}{\textbf{Manufacturing}} & \multicolumn{1}{l|}{\textbf{Construction}} & \multicolumn{1}{l|}{\textbf{Trade}} & \multicolumn{1}{l|}{\textbf{Services}} \\ \hline
+Confidence (Current) does not Granger-cause RGDP Growth  & 4.85***                                     & 9.88***                                    & 1.04                                & 3.10*                                  \\ 
+RGDP Growth does not Granger-cause Confidence (Current)  & 3.23**                                      & 1.37                                       & 3.86**                              & 0.42                                   \\ \hline
+Confidence (Expected) does not Granger-cause RGDP Growth & 8.10***                                     & 11.19***                                   & 1.40                                & 5.90***                                \\ 
+RGDP Growth does not Granger-cause Confidence (Expected) & 2.45*                                       & 0.00                                       & 6.01***                             & 0.07                                   \\ \hline
+BER BCI does not Granger-cause RGDP Growth               & 3.79**                                      & 5.63**                                     & 0.60                                &                                        \\ 
+RGDP Growth does not Granger-cause BER BCI               & 3.01*                                       & 0.03                                       & 2.84*                               &                                        \\ \hline
+\end{tabular}}
+\end{table}
+
+
+
+\begin{table}[]
+\centering
+\caption{Granger causality tests: uncertainty}
+\label{my-label}
+\scalebox{0.8}{
+\begin{tabular}{|l|l|r|}
+\hline
+\textbf{Granger causality H0:}                            & \textbf{statistic} & \multicolumn{1}{l|}{\textbf{p-value}} \\ \hline
+Dispersion does not Granger-cause RGDP Growth             & 3.57**             & 0.03                                  \\ 
+RGDP Growth does not Granger-cause Dispersion             & 1.25               & 0.29                                  \\ \hline
+Aggregate error does not Granger-cause RGDP Growth        & 7.28***            & 0.00                                  \\ 
+RGDP Growth does not Granger-cause Aggregate error        & 0.13               & 0.88                                  \\ \hline
+Idiosyncratic error does not Granger-cause RGDP Growth    & 1.20               & 0.30                                  \\ 
+RGDP Growth does not Granger-cause Idiosyncratic error    & 0.98               & 0.38                                  \\ \hline
+EPU does not Granger-cause RGDP\_Growth                   & 0.93               & 0.43                                  \\ 
+RGDP Growth does not Granger-cause EPU                    & 1.93               & 0.13                                  \\ \hline
+SAVI does not Granger-cause RGDP Growth                   & 1.26               & 0.29                                  \\ 
+RGDP Growth does not Granger-cause SAVI                   & 1.01               & 0.36                                  \\ \hline
+Uncertainty (Combined) does not Granger-cause RGDP Growth & 5.85***            & 0.00                                  \\ 
+RGDP Growth does not Granger-cause Uncertainty (Combined) & 0.06               & 0.94                                  \\ \hline
+\end{tabular}}
+\end{table}
+
+
+
+
+
+\begin{table}[]
+\centering
+\caption{Granger causality test statistics: sectoral uncertainty}
+\label{my-label}
+\scalebox{0.8}{
+\begin{tabular}{|l|l|l|l|l|}
+\hline
+\textbf{Granger causality H0:}                            & \textbf{Manufacturing} & \textbf{Construction} & \textbf{Trade} & \textbf{Services} \\ \hline
+Dispersion does not Granger-cause RGDP Growth             & 7.50***                & 2.69                  & 0.34           & 0.09              \\ 
+RGDP Growth does not Granger-cause Dispersion             & 1.76                   & 0.01                  & 0.46           & 4.54**            \\ \hline
+Aggregate error does not Granger-cause RGDP Growth        & 1.52                   & 1.13                  & 2.10           & 0.44              \\ 
+RGDP Growth does not Granger-cause Aggregate error        & 1.09                   & 0.28                  & 0.12           & 0.90              \\ \hline
+Idiosyncratic error does not Granger-cause RGDP Growth    & 3.18**                 & 0.42                  & 1.48           & 1.61              \\ 
+RGDP Growth does not Granger-cause Idiosyncratic error    & 1.14                   & 0.57                  & 0.73           & 2.33              \\ \hline
+Uncertainty (Combined) does not Granger-cause RGDP Growth & 9.61***                & 2.99*                 & 1.60           & 0.76              \\ 
+RGDP Growth does not Granger-cause Uncertainty (Combined) & 1.35                   & 0.02                  & 0.87           & 1.59              \\ \hline
+\end{tabular}}
+\end{table}
 
 
 

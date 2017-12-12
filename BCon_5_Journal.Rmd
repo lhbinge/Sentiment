@@ -389,10 +389,10 @@ This chapter therefore combines the responses to a number of questions in the BE
 \begin{tabular}{|l|r|r|r|r|}
 \hline
 \textbf{Survey Question} & \textbf{Manufacturing} & \textbf{Construction} & \textbf{Trade} & \multicolumn{1}{l|}{\textbf{Services}} \\ \hline
-Business Conditions      & X                      & X                     & X              & X                                      \\ \hline
-Activity                 & X                      & X                     & X              & X                                      \\ \hline
-Employment               & X                      & X                     & X              & X                                      \\ \hline
-Profitability            &                        & X                     & X              & X                                      \\ \hline
+Business Conditions      & X                      & X                     & X              & X                                      \\ 
+Activity                 & X                      & X                     & X              & X                                      \\ 
+Employment               & X                      & X                     & X              & X                                      \\ 
+Profitability            &                        & X                     & X              & X                                      \\ 
 Orders Placed            & X                      &                       & X              &                                        \\ \hline
 \end{tabular}
 \end{table}
@@ -871,8 +871,8 @@ for(k in 0:3) {
 
 #Concord2[i-2] <- (sum(S[,i]*S[,2])+sum((1-S[,i])*(1-S[,2])))/nrow(S)    
 
-Concord_1 <- t(round(Concord_1, digits = 4))
-Concord_2 <- t(round(Concord_2, digits = 4))
+Concord_1 <- t(round(Concord_1, digits = 3))
+Concord_2 <- t(round(Concord_2, digits = 3))
 
 p_1 <- t(round(p_1, digits = 6))
 p_2 <- t(round(p_2, digits = 6))
@@ -894,9 +894,8 @@ row.names(Concord_2) <- c(" ","lag=0","lag=1","lag=2","lag=3")
 Concord_1 <- Concord_1[-1,]
 colnames(Concord_1) <- c("Confidence (Current)","Confidence (Expected)","BER BCI","SACCI BCI")
 xt <- xtable(Concord_1, caption="Concordance statistics with the SARB business cycle")
-
 print(xt, "latex",comment=FALSE, include.rownames=TRUE, include.colnames=TRUE,
-      caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.9)
+      caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8)
 ```
 
 The composite current conditions confidence indicator therefore appears to be an improvement on existing confidence indicators in that it has a higher correlation with GDP growth and a higher concordance statistic with the official SARB business cycle. 

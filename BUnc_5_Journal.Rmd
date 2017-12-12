@@ -429,10 +429,10 @@ The composite uncertainty indicators for each sector are calculated as the avera
 \begin{tabular}{|l|r|r|r|r|}
 \hline
 \textbf{Survey Question} & \textbf{Manufacturing} & \textbf{Construction} & \textbf{Trade} & \multicolumn{1}{l|}{\textbf{Services}} \\ \hline
-Business Conditions      & X                      & X                     & X              & X                                      \\ \hline
-Activity                 & X                      & X                     & X              & X                                      \\ \hline
-Employment               & X                      & X                     & X              & X                                      \\ \hline
-Profitability            &                        & X                     & X              & X                                      \\ \hline
+Business Conditions      & X                      & X                     & X              & X                                      \\ 
+Activity                 & X                      & X                     & X              & X                                      \\ 
+Employment               & X                      & X                     & X              & X                                      \\ 
+Profitability            &                        & X                     & X              & X                                      \\ 
 Orders Placed            & X                      &                       & X              &                                        \\ \hline
 \end{tabular}
 \end{table}

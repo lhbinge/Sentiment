@@ -2715,11 +2715,20 @@ par(new = TRUE)
 plot(irf.y2,plot.type = c("single"), main="Response from RGDP Growth", xlab="Horizon in quarters")
 
 
+png(filename = "fevd_var1.png", width = 600, height = 360)
 source("plot_varfevd.R")
 par(mfrow=c(1,1), new=FALSE)
 par(mfrow=c(1,2))
 plot.varfevd(fevd(var1, n.ahead = 10 ),plot.type = "single", xlab="Horizon in quarters", 
              ylab="Proportion of variance explained")
+dev.off()
+
+library(png)
+library(grid)
+grid.raster(readPNG("fevd_var1.png"))
+
+
+
 
 vardat <- cbind(manufac[,2],manufac[,5])
 vardat <- cbind(construct[-1:-5,2],construct[-1:-5,5])
@@ -2747,9 +2756,20 @@ plot(irf.y1,plot.type = c("single"), main="Response from Confidence", xlab="Hori
 par(new = TRUE)
 plot(irf.y2,plot.type = c("single"), main="Response from RGDP Growth", xlab="Horizon in quarters")
 
+png(filename = "fevd_var2.png", width = 600, height = 360)
 source("plot_varfevd.R")
 par(mfrow=c(1,2))
-plot.varfevd(fevd(varm, n.ahead = 10 ),plot.type = "single")
+plot.varfevd(fevd(varm, n.ahead = 10 ),plot.type = "single", xlab="Horizon in quarters", 
+             ylab="Proportion of variance explained")
+dev.off()
+
+library(png)
+library(grid)
+grid.raster(readPNG("fevd_var2.png"))
+
+
+
+
 
 vardat <- cbind(uncert_indices[,2],conf_indices[,6])[-99,]
 colnames(vardat) <- c("Dispersion","RGDP_Growth")

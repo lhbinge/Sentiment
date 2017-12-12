@@ -3,7 +3,7 @@ output:
     pdf_document:
         fig_caption: yes
         number_sections: true
-fontsize: 12pt
+fontsize: 11pt
 geometry: margin=1in
 bibliography: References.bib
 csl: harvard.csl
@@ -233,7 +233,7 @@ GDPgrowth1 <- as.data.frame(sapply(log(realGDP[,-1]), diff, lag =1))
 ##====================================##
 ## READING IN THE DATA ##
 ##====================================##
-BER.M <- read.csv("Manufacturing_new faktor.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+BER.M <- read.csv("Manufacturing_new faktor_sep.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
 BER.M$Faktor <- BER.M$Gewig * BER.M$Sectorw
 BER.M <- BER.M[,c(1:5,8:75)]
 colnames(BER.M)[1:7] <- c("region","id","sector","weight","turnover","factor","surveyQ")
@@ -322,9 +322,9 @@ skoon <- function(data) {
     return(data)
 }
 
-BER.R <- skoon(read.csv("Retail_92Q2-17Q2.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
-BER.W <- skoon(read.csv("Wholesale_92Q2-17Q2.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
-BER.V <- skoon(read.csv("Motor_92Q2-17Q2.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
+BER.R <- skoon(read.csv("Retail_92Q2-17Q2_sep.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
+BER.W <- skoon(read.csv("Wholesale_92Q2-17Q2_sep.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
+BER.V <- skoon(read.csv("Motor_92Q2-17Q2_sep.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE))
 BER.V$factor <- BER.V$weight*0.2
 
 ##===============================##
@@ -520,15 +520,16 @@ This chapter therefore combines the responses to a number of questions in the BE
 \centering
 \caption{Survey questions used by sector}
 \label{my-label}
+\scalebox{0.8}{
 \begin{tabular}{|l|r|r|r|r|}
 \hline
-\textbf{Survey Question} & \textbf{Manufacturing} & \textbf{Construction} & \textbf{Trade} & \multicolumn{1}{l|}{\textbf{Services}} \\ \hline
-Business Conditions      & X                      & X                     & X              & X                                      \\ \hline
-Activity                 & X                      & X                     & X              & X                                      \\ \hline
-Employment               & X                      & X                     & X              & X                                      \\ \hline
-Profitability            &                        & X                     & X              & X                                      \\ \hline
+\textbf{Survey Question} & \textbf{Manufacturing} & \textbf{Construction} & \textbf{Trade    } & \multicolumn{1}{l|}{\textbf{Services   }} \\ \hline
+Business Conditions      & X                      & X                     & X              & X                                      \\ 
+Activity                 & X                      & X                     & X              & X                                      \\ 
+Employment               & X                      & X                     & X              & X                                      \\ 
+Profitability            &                        & X                     & X              & X                                      \\ 
 Orders Placed            & X                      &                       & X              &                                        \\ \hline
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 ###Uncertainty
@@ -557,13 +558,14 @@ Table 3.3 illustrates the nine possible forecast errors. For example, for a firm
 \centering
 \caption{Possible forecast errors}
 \label{my-label}
+\scalebox{0.8}{
 \begin{tabular}{llrrr}
                           &                                &                             & $Q2A_{t+1}$               &                             \\ \cline{2-5} 
 \multicolumn{1}{l|}{}     & \multicolumn{1}{l|}{}          & \multicolumn{1}{r|}{Better} & \multicolumn{1}{r|}{Same} & \multicolumn{1}{r|}{Poorer} \\ \cline{2-5} 
 \multicolumn{1}{l|}{}     & \multicolumn{1}{l|}{E(Better)} & \multicolumn{1}{r|}{0}      & \multicolumn{1}{r|}{-1}   & \multicolumn{1}{r|}{-2}     \\ \cline{2-5} 
 \multicolumn{1}{l|}{$Q2P_t$} & \multicolumn{1}{l|}{E(Same)}   & \multicolumn{1}{r|}{1}      & \multicolumn{1}{r|}{0}    & \multicolumn{1}{r|}{-1}     \\ \cline{2-5} 
 \multicolumn{1}{l|}{}     & \multicolumn{1}{l|}{E(Poorer)} & \multicolumn{1}{r|}{2}      & \multicolumn{1}{r|}{1}    & \multicolumn{1}{r|}{0}      \\ \cline{2-5} 
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 @Arslan2011 argued that firms make forecast errors because of uncertainty and that forecast errors should be treated as uncertainty. Following @Arslan2011, the second measure of uncertainty $A_t$, or 'aggregate error' uncertainty, is the square of the weighted cross-sectional mean of the forecast errors made across firms in each quarter:
@@ -660,7 +662,7 @@ g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + scale_fill_discrete(name="Sub-sector")
 g <- g + scale_y_continuous(labels=comma)
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + ylab("Weights") + xlab("Date")
+g <- g + ylab("Weights") + xlab(" ")
 g <- g + guides(fill = guide_legend(reverse = TRUE))
 g
 ```
@@ -723,7 +725,7 @@ g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + scale_fill_discrete(name="Sub-sector")
 g <- g + scale_y_continuous(labels=comma)
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + ylab("Weights") + xlab("Date")
+g <- g + ylab("Weights") + xlab(" ")
 g <- g + guides(fill = guide_legend(reverse = TRUE))
 g
 ```
@@ -787,7 +789,7 @@ g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + scale_fill_discrete(name="Sub-sector")
 g <- g + scale_y_continuous(labels=comma)
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + ylab("Weights") + xlab("Date")
+g <- g + ylab("Weights") + xlab(" ")
 g <- g + guides(fill = guide_legend(reverse = TRUE))
 g
 ```
@@ -849,10 +851,9 @@ g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + scale_fill_discrete(name="Sub-sector")
 g <- g + scale_y_continuous(labels=comma)
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + ylab("Weights") + xlab("Date")
+g <- g + ylab("Weights") + xlab(" ")
 g <- g + guides(fill = guide_legend(reverse = TRUE))
 g
-
 ```
 
 Figure 3.6 illustrates the GDP share weights that are used in aggregating the four sector indicators to calculate the aggregate indicators. The BER BCI, in contrast, is a simple equal weighted average of the sectoral indicators for manufacturing, contractors, retail, wholesale, and motor vehicles.  
@@ -869,7 +870,7 @@ g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + scale_fill_discrete(name="Sub-sector")
 g <- g + scale_y_continuous(labels=comma)
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
-g <- g + ylab("Weights") + xlab("Date")
+g <- g + ylab("Weights") + xlab(" ")
 g <- g + guides(fill = guide_legend(reverse = TRUE))
 g
 ```
@@ -957,12 +958,12 @@ The global financial crisis was followed by a large decline in the indicators fo
 index_plot <- cbind(activity[,1:2],conf[,2])
 #index_plot <- w.indicators.M[,c(2,14:15)]
 #colnames(index_plot) <- c("Date","Activity","Confidence")
-colnames(index_plot) <- c("Date","Confidence_Current","Confidence_Expected")
+colnames(index_plot) <- c("Date","Confidence (Current)","Confidence (Expected)")
 index_plot <- melt(index_plot, id="Date")  # convert to long format
 g1 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable)) 
 g1 <- g1 + geom_line()
 g1 <- g1 + theme(legend.title=element_blank())
-g1 <- g1 + ggtitle("Manufacturing") 
+g1 <- g1 + ggtitle("Manufacturing") + theme(plot.title = element_text(hjust = 0.5))
 g1 <- g1 + ylab("Indicator") + xlab("")
 g1 <- g1 + theme(legend.position="none")
 g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
@@ -971,12 +972,12 @@ g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 index_plot <- cbind(activity[,c(1,3)],conf[,3])
 #index_plot <- w.indicators.B[,c(2,14:15)]
 #colnames(index_plot) <- c("Date","Activity","Confidence")
-colnames(index_plot) <- c("Date","Confidence_Current","Confidence_Expected")
+colnames(index_plot) <- c("Date","Confidence (Current)","Confidence (Expected)")
 index_plot <- melt(index_plot, id="Date")  # convert to long format
 g2 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable)) 
 g2 <- g2 + geom_line()
 g2 <- g2 + theme(legend.title=element_blank())
-g2 <- g2 + ggtitle("Construction") 
+g2 <- g2 + ggtitle("Construction") + theme(plot.title = element_text(hjust = 0.5))
 g2 <- g2 + ylab("") + xlab("")
 g2 <- g2 + theme(legend.position="none")
 g2 <- g2 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
@@ -985,33 +986,49 @@ g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 index_plot <- cbind(activity[,c(1,4)],conf[,4])
 #index_plot <- w.indicators.T[,c(2,14:15)]
 #colnames(index_plot) <- c("Date","Activity","Confidence")
-colnames(index_plot) <- c("Date","Confidence_Current","Confidence_Expected")
+colnames(index_plot) <- c("Date","Confidence (Current)","Confidence (Expected)")
 index_plot <- melt(index_plot, id="Date")  # convert to long format
 g3 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable)) 
 g3 <- g3 + geom_line()
 g3 <- g3 + theme(legend.title=element_blank())
-g3 <- g3 + ggtitle("Trade") 
+g3 <- g3 + ggtitle("Trade") + theme(plot.title = element_text(hjust = 0.5))
 g3 <- g3 + ylab("Indicator") + xlab("")
-g3 <- g3 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
+g3 <- g3 + theme(legend.position="bottom")
 g3 <- g3 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 
 index_plot <- cbind(activity[,c(1,5)],conf[,5])
 #index_plot <- w.indicators.S[-1:-52,c(2,14:15)]
 #colnames(index_plot) <- c("Date","Activity","Confidence")
-colnames(index_plot) <- c("Date","Confidence_Current","Confidence_Expected")
+colnames(index_plot) <- c("Date","Confidence (Current)","Confidence (Expected)")
 index_plot <- melt(index_plot, id="Date")  # convert to long format
 g4 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable)) 
 g4 <- g4 + geom_line()
 g4 <- g4 + theme(legend.title=element_blank())
-g4 <- g4 + ggtitle("Services") 
+g4 <- g4 + ggtitle("Services") + theme(plot.title = element_text(hjust = 0.5))
 g4 <- g4 + ylab("") + xlab("")
-g4 <- g4 + theme(legend.position="bottom",plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
+g4 <- g4 + theme(legend.position="bottom")
 g4 <- g4 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g4 <- g4 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 
 library(gridExtra)
-grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
+library(grid)
+
+grid_arrange_shared_legend <- function(...) {
+    plots <- list(...)
+    g <- ggplotGrob(plots[[1]] + theme(legend.position="bottom"))$grobs
+    legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
+    lheight <- sum(legend$height)
+    grid.arrange(
+        do.call(arrangeGrob, lapply(plots, function(x)
+            x + theme(legend.position="none"))),
+        legend,
+        ncol = 1,
+        heights = unit.c(unit(1, "npc") - lheight, lheight))
+}
+
+#grid_arrange_shared_legend(p1, p2, p3, p4)
+grid_arrange_shared_legend(g1, g2, g3, g4, ncol=2, nrow =2)
 ```
 
 Figure 3.8 illustrates the weighted aggregate confidence indicators on current and expected conditions. The shaded areas denote the recessionary periods according to the official turning points of the SARB. The indices follow a similar cyclical trend over the period and are very highly correlated, as is reported in Table 3.4, below. 
@@ -1021,10 +1038,10 @@ The confidence indicator on expected conditions leads changes in the confidence 
 ```{r figure3.8, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted confidence indicators on current and expected conditions"}
 index_plot <- w.indicators
 #colnames(index_plot) <- c("Date","Activity","Confidence")
-colnames(index_plot) <- c("Date","Confidence_Current","Confidence_Expected")
+colnames(index_plot) <- c("Date","Confidence (Current)","Confidence (Expected)")
 g <- ggplot(index_plot) 
-g <- g + geom_line(aes(x=Date, y=Confidence_Current, colour="Confidence_Current"), size = 1)
-g <- g + geom_line(aes(x=Date, y=Confidence_Expected, colour="Confidence_Expected"), size = 1)
+g <- g + geom_line(aes(x=Date, y=`Confidence (Current)`, colour="Confidence (Current)"), size = 1)
+g <- g + geom_line(aes(x=Date, y=`Confidence (Expected)`, colour="Confidence (Expected)"), size = 1)
 #g <- g + geom_line(aes(x=Date, y=C, colour="C"), size = 1)
 g <- g + labs(color="Legend text")
 g <- g + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
@@ -1052,7 +1069,7 @@ colnames(conf_indices) <- c("Date","Confidence_Current","Confidence_Expected","B
 
 conf_indices1 <- cbind(w.indicators,GDPdata$BER_BCI, GDPdata$SACCI,GDPgrowth4$RGDP)
 #colnames(conf_indices1) <- c("Date","Activity","Confidence","BER_BCI","SACCI_BCI","RGDP_Growth")
-colnames(conf_indices1) <- c("Date","Confidence_Current","Confidence_Expected","BER_BCI","SACCI_BCI","RGDP_Growth")
+colnames(conf_indices1) <- c("Date","Confidence (Current)", "Confidence (Expected)", "BER BCI", "SACCI BCI", "RGDP Growth")
 
 #conf_indices <- cbind(w.indicators_2,GDPdata$BER_BCI, GDPdata$SACCI_G,GDPgrowth4$RGDP)
 #colnames(conf_indices) <- c("Date","Activity","Confidence","BER_BCI","SACCI_Growth","RGDP_Growth")
@@ -1060,11 +1077,11 @@ colnames(conf_indices1) <- c("Date","Confidence_Current","Confidence_Expected","
 index_plot <- conf_indices1
 index_plot[,2:6] <- scale(index_plot[,2:6])
 g <- ggplot(index_plot) 
-g <- g + geom_line(aes(x=Date, y=Confidence_Current, colour="Confidence_Current", linetype="Confidence_Current", size = "Confidence_Current"))
-g <- g + geom_line(aes(x=Date, y=Confidence_Expected, colour="Confidence_Expected", linetype="Confidence_Expected", size = "Confidence_Expected"))
-g <- g + geom_line(aes(x=Date, y=BER_BCI, colour="BER_BCI", linetype="BER_BCI", size = "BER_BCI"))
-g <- g + geom_line(aes(x=Date, y=SACCI_BCI, colour="SACCI_BCI", linetype="SACCI_BCI", size = "SACCI_BCI"))
-g <- g + geom_line(aes(x=Date, y=RGDP_Growth, colour="RGDP_Growth", linetype="RGDP_Growth", size = "RGDP_Growth"))
+g <- g + geom_line(aes(x=Date, y=`Confidence (Current)`, colour="Confidence (Current)", linetype="Confidence (Current)", size = "Confidence (Current)"))
+g <- g + geom_line(aes(x=Date, y=`Confidence (Expected)`, colour="Confidence (Expected)", linetype="Confidence (Expected)", size = "Confidence (Expected)"))
+g <- g + geom_line(aes(x=Date, y=`BER BCI`, colour="BER BCI", linetype="BER BCI", size = "BER BCI"))
+g <- g + geom_line(aes(x=Date, y=`SACCI BCI`, colour="SACCI BCI", linetype="SACCI BCI", size = "SACCI BCI"))
+g <- g + geom_line(aes(x=Date, y=`RGDP Growth`, colour="RGDP Growth", linetype="RGDP Growth", size = "RGDP Growth"))
 g <- g + scale_linetype_manual(values=c("twodash","solid","solid","dashed","longdash"))
 g <- g + scale_size_manual(values=c(0.71,1.1,1.1,1.1,0.71))
 g <- g + scale_colour_manual(values=c("#A3A500","#F8766D","#00BFC4","#E76BF3","#00BF7D"))
@@ -1082,7 +1099,9 @@ The tracking record of the indicators is measured by their correlation with the 
 
 ```{r table3.4, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
 source("corstarsl.R")
-xt <- xtable(corstarsl(conf_indices[,-1]), caption="Correlations between confidence indicators and real GDP growth")
+xt <- conf_indices[,-1]
+colnames(xt) <- c("Confidence (Current)","Confidence (Expected)","BER BCI","SACCI Growth","Real GDP Growth")
+xt <- xtable(corstarsl(xt), caption="Correlations between confidence indicators and real GDP growth")
 print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8)
 ```
 
@@ -1134,54 +1153,63 @@ services$BER_BCI <- 1
 services <- services[,c(1,2,3,5,4)]
 
 index_plot <- manufac
+colnames(index_plot) <- c("Date","Confidence (Current)", "Confidence (Expected)","BER BCI", "RGDP Growth")
 index_plot[,-1] <- scale(index_plot[,-1])
 index_plot <- melt(index_plot, id="Date")  # convert to long format
-g1 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable)) 
+g1 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable,linetype=variable)) 
+g1 <- g1 + scale_linetype_manual(values=c("solid","solid","dashed","twodash"))
 g1 <- g1 + geom_line()
 g1 <- g1 + theme(legend.title=element_blank())
-g1 <- g1 + ggtitle("Manufacturing") 
+g1 <- g1 + ggtitle("Manufacturing") + theme(plot.title = element_text(hjust = 0.5))
 g1 <- g1 + ylab("Indicator") + xlab("")
 g1 <- g1 + theme(legend.position="none")
 g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 
 index_plot <- construct
+colnames(index_plot) <- c("Date","Confidence (Current)", "Confidence (Expected)","BER BCI", "RGDP Growth")
 index_plot[,-1] <- scale(index_plot[,-1])
 index_plot <- melt(index_plot, id="Date")  # convert to long format
-g2 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable)) 
+g2 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable,linetype=variable))
+g2 <- g2 + scale_linetype_manual(values=c("solid","solid","dashed","twodash"))
 g2 <- g2 + geom_line()
 g2 <- g2 + theme(legend.title=element_blank())
-g2 <- g2 + ggtitle("Construction") 
+g2 <- g2 + ggtitle("Construction") + theme(plot.title = element_text(hjust = 0.5))
 g2 <- g2 + ylab("") + xlab("")
 g2 <- g2 + theme(legend.position="none")
 g2 <- g2 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 
 index_plot <- trade
+colnames(index_plot) <- c("Date","Confidence (Current)", "Confidence (Expected)","BER BCI", "RGDP Growth")
 index_plot[,-1] <- scale(index_plot[,-1])
 index_plot <- melt(index_plot, id="Date")  # convert to long format
-g3 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable)) 
+g3 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable,linetype=variable)) 
+g3 <- g3 + scale_linetype_manual(values=c("solid","solid","dashed","twodash"))
 g3 <- g3 + geom_line()
 g3 <- g3 + theme(legend.title=element_blank())
-g3 <- g3 + ggtitle("Trade") 
+g3 <- g3 + ggtitle("Trade") + theme(plot.title = element_text(hjust = 0.5))
 g3 <- g3 + ylab("Indicator") + xlab("")
 g3 <- g3 + theme(legend.position="bottom")
 g3 <- g3 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 
 index_plot <- services
+colnames(index_plot) <- c("Date","Confidence (Current)", "Confidence (Expected)","BER BCI", "RGDP Growth")
 index_plot[,-1] <- scale(index_plot[,-1])
 index_plot <- melt(index_plot, id="Date")  # convert to long format
-g4 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable)) 
+g4 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable,linetype=variable)) 
+g4 <- g4 + scale_linetype_manual(values=c("solid","solid","dashed","twodash"))
 g4 <- g4 + geom_line()
 g4 <- g4 + theme(legend.title=element_blank())
-g4 <- g4 + ggtitle("Services") 
+g4 <- g4 + ggtitle("Services") + theme(plot.title = element_text(hjust = 0.5))
 g4 <- g4 + ylab("") + xlab("")
 g4 <- g4 + theme(legend.position="bottom")
 g4 <- g4 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g4 <- g4 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 
 library(gridExtra)
+library(grid)
 
 grid_arrange_shared_legend <- function(...) {
     plots <- list(...)
@@ -1209,17 +1237,17 @@ xt1 <- sapply(xt1,as.character)
 xt2 <- sapply(xt2,as.character)
 xt2[3,4:5] <- ""
 xt2[4,6] <- ""
-xt1[1,] <- c("Current","Expected","BER_BCI","Current","Expected","BER_BCI")
-xt2[1,] <- c("Current","Expected","BER_BCI","Current","Expected","BER_BCI")
+xt1[1,] <- c("Confidence (Cur)","Confidence (Exp)","BER BCI","Confidence (Cur)","Confidence (Exp)","BER BCI")
+xt2[1,] <- c("Confidence (Cur)","Confidence (Exp)","BER BCI","Confidence (Cur)","Confidence (Exp)","BER BCI")
 colnames(xt1) <- c(" ","Manufacturing"," "," ","Construction"," ")
 colnames(xt2) <- c(" ","Trade"," "," ","Services"," ")
-row.names(xt1) <- c(" ","Expected","BER_BCI","RGDP_Growth")
-row.names(xt2) <- c(" ","Expected","BER_BCI","RGDP_Growth")
+row.names(xt1) <- c(" ","Confidence (Exp)","BER BCI","RGDP Growth")
+row.names(xt2) <- c(" ","Confidence (Exp)","BER BCI","RGDP Growth")
 
 xt <- xtable(xt1, caption="Correlations between sectoral confidence and real sectoral GDP growth")
 print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8)
 xt <- xtable(xt2)
-print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.85,floating=F)
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8)
 ```
 
 Figure 3.12 illustrates the cross-correlograms for the manufacturing indicators and real GDP growth in the manufacturing sector. The results are similar to the aggregate results. Again, all three survey-based measures exhibit relatively high correlations with lagged GDP growth, and the expected conditions confidence measure leads the other indicators and real GDP growth. The cross-correlograms for the other sectors are very similar, except for the services sector, where the expected conditions confidence measure has an even longer leading relationship with real GDP growth. 
@@ -1454,8 +1482,8 @@ for(k in 0:3) {
 
 #Concord2[i-2] <- (sum(S[,i]*S[,2])+sum((1-S[,i])*(1-S[,2])))/nrow(S)    
 
-Concord_1 <- t(round(Concord_1, digits = 4))
-Concord_2 <- t(round(Concord_2, digits = 4))
+Concord_1 <- t(round(Concord_1, digits = 3))
+Concord_2 <- t(round(Concord_2, digits = 3))
 
 p_1 <- t(round(p_1, digits = 6))
 p_2 <- t(round(p_2, digits = 6))
@@ -1474,10 +1502,11 @@ row.names(Concord_2) <- c(" ","lag=0","lag=1","lag=2","lag=3")
 ```
 
 ```{r table3.6, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+Concord_1 <- Concord_1[-1,]
+colnames(Concord_1) <- c("Confidence (Current)","Confidence (Expected)","BER BCI","SACCI BCI")
 xt <- xtable(Concord_1, caption="Concordance statistics with the SARB business cycle")
-
-print(xt, "latex",comment=FALSE, include.rownames=TRUE, include.colnames=F,
-      caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.9)
+print(xt, "latex",comment=FALSE, include.rownames=TRUE, include.colnames=TRUE,
+      caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8)
 ```
 
 This section has presented the new composite confidence indicators. The validity tests indicate that the two composite confidence indicators on current and expected conditions are highly correlated with each other and with the two existing measures of confidence. All the indicators examined in this section exhibit a significant positive correlation with real GDP growth. The confidence indicators on current conditions generally have the highest correlation with real GDP growth and therefore the most successful tracking record. 
@@ -1835,10 +1864,12 @@ The idiosyncratic error indicator tends to decrease as the economy enters a rece
 index_plot <- w.uncert_error 
 index_plot[,-1] <- scale(index_plot[,-1])
 g <- ggplot(index_plot) 
-g <- g + geom_line(aes(x=Date, y=Aggregate_error, colour="Aggregate_error"), size = 1)
-g <- g + geom_line(aes(x=Date, y=Idiosyncratic_error, colour="Idiosyncratic_error"), size = 1)
-g <- g + geom_line(aes(x=Date, y=Dispersion, colour="Dispersion"), size = 1)
-g <- g + labs(color="Legend text")
+g <- g + geom_line(aes(x=Date, y=Aggregate_error, colour="Aggregate_error", linetype="Aggregate_error", size = "Aggregate_error"))
+g <- g + geom_line(aes(x=Date, y=Idiosyncratic_error, colour="Idiosyncratic_error", linetype="Idiosyncratic_error", size = "Idiosyncratic_error"))
+g <- g + geom_line(aes(x=Date, y=Dispersion, colour="Dispersion", linetype="Dispersion", size = "Dispersion"))
+g <- g + scale_linetype_manual(values=c("twodash","solid","dotdash"))
+g <- g + scale_size_manual(values=c(1,1,1))
+g <- g + labs(color="Legend text", linetype="Legend text", size="Legend text")
 g <- g + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
 g <- g + ylab("Indicator") + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
@@ -1847,7 +1878,6 @@ g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"), e
                       limits = as.Date(c("1990-12-31", NA)))
 g <- g + theme(legend.position="bottom")
 g
-
 ```
 
 More formal tests of validity are undertaken in the following section. This is done by comparing the uncertainty indicators with alternative measures of uncertainty, the EPU and the SAVI, and by evaluating the indicators in terms of their correlation with real GDP growth. A combined indicator is then constructed from all five proxies, which tries to combine the information in all of the individual indicators. The relationships are analysed for the aggregate variables, as well as for each sector separately. The advantage of also looking at specific sectors separately is that general equilibrium effects are mitigated. The wait-and-see effect may be dampened by general equilibrium price adjustments (e.g. at least some firms will continue hiring if wages adjust in equilibrium). The focus on sectoral indicators offers a better chance of detecting the wait-and-see effect [@Bachmann2010].
@@ -1873,10 +1903,12 @@ uncert_indices <- uncert_indices[,c(1:6,8,7)]
 ```{r figure3.18, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Indicators of economic policy, financial market, and combined uncertainty"}
 index_plot <- uncert_indices
 g <- ggplot(index_plot) 
-g <- g + geom_line(aes(x=Date, y=EPU, colour="EPU"), size = 0.8)
-g <- g + geom_line(aes(x=Date, y=SAVI, colour="SAVI"), size = 0.8)
-g <- g + geom_line(aes(x=Date, y=Uncertainty_Combined, colour="Uncertainty_Combined"), size = 1)
-g <- g + labs(color="Legend text")
+g <- g + geom_line(aes(x=Date, y=EPU, colour="EPU", linetype="EPU", size = "EPU"))
+g <- g + geom_line(aes(x=Date, y=SAVI, colour="SAVI", linetype="SAVI", size = "SAVI"))
+g <- g + geom_line(aes(x=Date, y=Uncertainty_Combined, colour="Uncertainty_Combined", linetype="Uncertainty_Combined", size = "Uncertainty_Combined"))
+g <- g + scale_linetype_manual(values=c("twodash","dotdash","solid"))
+g <- g + scale_size_manual(values=c(0.8,0.8,1.1))
+g <- g + labs(color="Legend text", linetype="Legend text", size="Legend text")
 g <- g + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
 g <- g + ylab("Indicator") + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
@@ -1885,7 +1917,6 @@ g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"), e
                       limits = as.Date(c("1990-12-31", NA)))
 g <- g + theme(legend.position="bottom")
 g
-
 ```
 
 Table 3.7 reports the contemporaneous correlations of the indicators and real GDP growth. The dispersion, EPU and combined uncertainty indicators exhibit significant negative correlations with real GDP growth. These indicators are contemporaneously counter-cyclical, as is the case for the majority of the uncertainty indicators in the international literature [e.g. @Bloom2014]. The idiosyncratic error uncertainty indicator does not exhibit the negative correlation with real GDP growth found in @Bachmann2010 and @Bachmann2013.[^32]
@@ -1979,10 +2010,10 @@ colnames(xt2) <- c(" "," ","Trade"," "," "," ","Services"," ")
 row.names(xt1) <- c(" ","Aggregate","Idiosyncratic","Combined","RGDP")
 row.names(xt2) <- c(" ","Aggregate","Idiosyncratic","Combined","RGDP")
 
-xt <- xtable(xt1, caption="Correlations of uncertainty indicators and growth")
-print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.7)
+xt <- xtable(xt1, caption="Correlations between the sectoral uncertainty indicators and real GDP growth")
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.78)
 xt <- xtable(xt2)
-print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.75)
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8)
 ```
 
 Figure 3.20 illustrates the cross-correlograms for the manufacturing indicators and real GDP growth in the manufacturing sector. The correlograms are similar to the aggregated results reported above, where the dispersion and aggregate error measures have a significant negative relationship with real GDP growth. The results for the construction and trade sectors are similar, while the indicators for the services sector do not exhibit a negative relationship with real services GDP growth. 
@@ -2074,16 +2105,34 @@ colnames(G) <- c("Granger causality H0:","statistic","p-value")
 
 ```
 
-```{r table3.9, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+```{r table3.9, eval=FALSE, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
 xt <- xtable(G, caption="Granger causality tests: confidence")
 print(xt, "latex", include.rownames=FALSE,comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), 
       scalebox = 0.8)
-
 ```
+
+\begin{table}[]
+\centering
+\caption{Granger causality tests: confidence}
+\label{my-label}
+\scalebox{0.8}{
+\begin{tabular}{|l|l|r|}
+\hline
+\textbf{Granger causality H0:}                           & \multicolumn{1}{l|}{\textbf{statistic}} & \multicolumn{1}{l|}{\textbf{p-value}} \\ \hline
+Confidence (Current) does not Granger-cause RGDP Growth  & 2.70*                                   & 0.07                                  \\ 
+RGDP Growth does not Granger-cause Confidence (Current)  & 1.41                                    & 0.25                                  \\ \hline
+Confidence (Expected) does not Granger-cause RGDP Growth & 3.44**                                  & 0.03                                  \\ 
+RGDP Growth does not Granger-cause Confidence (Expected) & 0.58                                    & 0.56                                  \\ \hline
+BER BCI does not Granger-cause RGDP Growth               & 4.14**                                  & 0.02                                  \\ 
+RGDP Growth does not Granger-cause BER BCI               & 1.69                                    & 0.19                                  \\ \hline
+SACCI Growth does not Granger-cause RGDP Growth          & 3.23**                                  & 0.04                                  \\ 
+RGDP Growth does not Granger-cause SACCI Growth          & 0.03                                    & 0.97                                  \\ \hline
+\end{tabular}}
+\end{table}
 
 Table 3.10 reports the results of the Granger causality tests for the sectoral confidence indicators and their corresponding real sectoral GDP growth rates. The results are similar to those for the aggregate indicators, except for the trade sector, where lagged values of real GDP growth significantly predict all three survey-based confidence indicators. This implies that the confidence indicators for the trade sector are lagging indicators of real GDP growth in that sector.
 
-```{r table3.10, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+```{r table3.10, eval=FALSE, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
 calc_sectoralvar <- function(data, serv=0) {
     Confidence_Current <- data[,2]
     Confidence_Expected <- data[,3]
@@ -2141,6 +2190,23 @@ xt <- xtable(G_sector, caption="Granger causality tests: sectoral confidence")
 print(xt, "latex", include.rownames=FALSE,comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), 
       scalebox = 0.75)
 ```
+
+\begin{table}[]
+\centering
+\caption{Granger causality test statistics: sectoral confidence}
+\label{my-label}
+\scalebox{0.8}{
+\begin{tabular}{|l|l|l|l|l|}
+\hline
+\textbf{Granger causality H0:}                           & \multicolumn{1}{l|}{\textbf{Manufacturing}} & \multicolumn{1}{l|}{\textbf{Construction}} & \multicolumn{1}{l|}{\textbf{Trade}} & \multicolumn{1}{l|}{\textbf{Services}} \\ \hline
+Confidence (Current) does not Granger-cause RGDP Growth  & 4.85***                                     & 9.88***                                    & 1.04                                & 3.10*                                  \\ 
+RGDP Growth does not Granger-cause Confidence (Current)  & 3.23**                                      & 1.37                                       & 3.86**                              & 0.42                                   \\ \hline
+Confidence (Expected) does not Granger-cause RGDP Growth & 8.10***                                     & 11.19***                                   & 1.40                                & 5.90***                                \\ 
+RGDP Growth does not Granger-cause Confidence (Expected) & 2.45*                                       & 0.00                                       & 6.01***                             & 0.07                                   \\ \hline
+BER BCI does not Granger-cause RGDP Growth               & 3.79**                                      & 5.63**                                     & 0.60                                &                                        \\ 
+RGDP Growth does not Granger-cause BER BCI               & 3.01*                                       & 0.03                                       & 2.84*                               &                                        \\ \hline
+\end{tabular}}
+\end{table}
 
 Table 3.11 reports the results of Granger causality tests for the uncertainty indicators and real GDP growth. The results suggest that the lagged values of three of the uncertainty indicators significantly predict real GDP growth, with no evidence of Granger-causality in the reverse direction. In other words, the results suggest that the dispersion, aggregate error, and combined uncertainty indicators contain relevant information for the prediction of output growth. This implies that these measures exhibit a leading relationship with real GDP growth.
 
@@ -2215,16 +2281,38 @@ G[,2] <- Gnew
 colnames(G) <- c("Granger causality H0:","statistic","p-value")
 ```
 
-```{r table3.11, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+```{r table3.11, eval=FALSE, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
 xt <- xtable(G, caption="Granger causality tests: uncertainty")
 print(xt, "latex", include.rownames=FALSE,comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), 
       scalebox = 0.8)
-
 ```
+
+\begin{table}[]
+\centering
+\caption{Granger causality tests: uncertainty}
+\label{my-label}
+\scalebox{0.8}{
+\begin{tabular}{|l|l|r|}
+\hline
+\textbf{Granger causality H0:}                            & \textbf{statistic} & \multicolumn{1}{l|}{\textbf{p-value}} \\ \hline
+Dispersion does not Granger-cause RGDP Growth             & 3.57**             & 0.03                                  \\ 
+RGDP Growth does not Granger-cause Dispersion             & 1.25               & 0.29                                  \\ \hline
+Aggregate error does not Granger-cause RGDP Growth        & 7.28***            & 0.00                                  \\ 
+RGDP Growth does not Granger-cause Aggregate error        & 0.13               & 0.88                                  \\ \hline
+Idiosyncratic error does not Granger-cause RGDP Growth    & 1.20               & 0.30                                  \\ 
+RGDP Growth does not Granger-cause Idiosyncratic error    & 0.98               & 0.38                                  \\ \hline
+EPU does not Granger-cause RGDP\_Growth                   & 0.93               & 0.43                                  \\ 
+RGDP Growth does not Granger-cause EPU                    & 1.93               & 0.13                                  \\ \hline
+SAVI does not Granger-cause RGDP Growth                   & 1.26               & 0.29                                  \\ 
+RGDP Growth does not Granger-cause SAVI                   & 1.01               & 0.36                                  \\ \hline
+Uncertainty (Combined) does not Granger-cause RGDP Growth & 5.85***            & 0.00                                  \\ 
+RGDP Growth does not Granger-cause Uncertainty (Combined) & 0.06               & 0.94                                  \\ \hline
+\end{tabular}}
+\end{table}
 
 The results for the sectoral indices, reported in Table 3.12, are not consistent across the sectors. There is some evidence of Granger-causality for a few of the indicators for the manufacturing sector. The tests are not significant at conventional levels in the trade sector, and in the construction sector only the combined uncertainty indicator significantly Granger-causes real trade GDP growth. In the services sector dispersion indicator seems to lag real GDP growth.
 
-```{r table3.12, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+```{r table3.12, eval=FALSE, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
 calc_sectoralvar <- function(data) {
     Dispersion <- data[,2]
     Aggregate <- data[,3]
@@ -2290,6 +2378,25 @@ print(xt, "latex", include.rownames=FALSE,comment=FALSE, caption.placement = get
       scalebox = 0.8)
 ```
 
+\begin{table}[]
+\centering
+\caption{Granger causality test statistics: sectoral uncertainty}
+\label{my-label}
+\scalebox{0.8}{
+\begin{tabular}{|l|l|l|l|l|}
+\hline
+\textbf{Granger causality H0:}                            & \textbf{Manufacturing} & \textbf{Construction} & \textbf{Trade} & \textbf{Services} \\ \hline
+Dispersion does not Granger-cause RGDP Growth             & 7.50***                & 2.69                  & 0.34           & 0.09              \\ 
+RGDP Growth does not Granger-cause Dispersion             & 1.76                   & 0.01                  & 0.46           & 4.54**            \\ \hline
+Aggregate error does not Granger-cause RGDP Growth        & 1.52                   & 1.13                  & 2.10           & 0.44              \\ 
+RGDP Growth does not Granger-cause Aggregate error        & 1.09                   & 0.28                  & 0.12           & 0.90              \\ \hline
+Idiosyncratic error does not Granger-cause RGDP Growth    & 3.18**                 & 0.42                  & 1.48           & 1.61              \\ 
+RGDP Growth does not Granger-cause Idiosyncratic error    & 1.14                   & 0.57                  & 0.73           & 2.33              \\ \hline
+Uncertainty (Combined) does not Granger-cause RGDP Growth & 9.61***                & 2.99*                 & 1.60           & 0.76              \\ 
+RGDP Growth does not Granger-cause Uncertainty (Combined) & 1.35                   & 0.02                  & 0.87           & 1.59              \\ \hline
+\end{tabular}}
+\end{table}
+
 ###VAR Analysis
 This section provides evidence on the dynamic effects of sentiment shocks on real economic activity. As many economic variables move together over time, without an obvious causal direction, it can be challenging to identify the directions of relationships. In the literature, timing has often been relied on for identification. In this section, the literature (e.g. @Taylor2007; @Barsky2012; @Bachmann2013) is followed in using standard recursive VARs to trace out the dynamic responses of economic activity to surprise shocks in sentiment. The aim is to investigate whether the indicators have a significant dynamic relationship with real output, whether they contain predictive content for output growth, and whether shocks to sentiment generate responses that are in line with the theory and the findings in the literature. 
 
@@ -2320,18 +2427,17 @@ irf.y2 <- irf(var1,impulse = "RGDP_Growth", response = "Confidence_Current", n.a
 
 par(mfrow=c(1,1), new=FALSE)
 nf <- layout(matrix(c(1,2,1,2), 1, 2, byrow = TRUE))
-plot(irf.y1,plot.type = c("single"), main="Response from Confidence", xlab="Horizon in quarters")
+plot(irf.y1,plot.type = c("single"), main="Response from Confidence", xlab="Horizon in quarters", ylab="Real GDP Growth")
 par(new = TRUE)
-plot(irf.y2,plot.type = c("single"), main="Response from RGDP Growth", xlab="Horizon in quarters")
+plot(irf.y2,plot.type = c("single"), main="Response from RGDP Growth", xlab="Horizon in quarters", ylab="Confidence (Current)")
 ```
 
 The importance of innovations can also be examined with variance decompositions. While the IRFs describe the reaction of a variable of interest to an exogenous shock, the decomposition of the forecast error variance of a given variable shows how much of the error can be explained by exogenous shocks to the other variables in the system [@Girardi2015]. The forecast error variance decomposition (FEVD) shows the proportion of the movements in a sequence due to its own shocks and shocks to the other variable. Figure 3.22 illustrates the FEVDs for the current conditions confidence indicator and real GDP growth. Up to around half (46%) of the movements in real GDP growth are explained by the confidence indicator over the longer term, while real GDP explains up to 2% of the variance in the confidence indicator.
 
 ```{r figure3.22, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="FEVDs of confidence (current conditions) and real GDP growth"}
-source("plot_varfevd.R")
-par(mfrow=c(1,1), new=FALSE)
-par(mfrow=c(1,2))
-plot.varfevd(fevd(var1, n.ahead = 10 ),plot.type = "single", xlab="Horizon in quarters", ylab="Proportion of variance explained")
+library(png)
+library(grid)
+grid.raster(readPNG("fevd_var1.png"))
 ```
 
 The results for the sectoral indicators are very similar to the aggregate results. Figure 3.23 illustrates the IRFs of a bivariate VAR for the current conditions confidence indicator in the manufacturing sector and real GDP growth in the manufacturing sector. Following an increase in confidence, real GDP growth increases on impact, with a peak at two quarters. The impact on the growth rate dies out after approximately four quarters. Following an increase in real GDP growth, there is a significant increase in confidence in the following quarter. The results are similar for alternative orderings. The results for the other sectoral indicators are very similar to those for the manufacturing sector, with the exception that in the construction sector, the impact of a shock to confidence on GDP growth does not die out within the forecast horizon of 12 quarters.
@@ -2361,9 +2467,9 @@ plot(irf.y2,plot.type = c("single"), main="Response from RGDP Growth", xlab="Hor
 Figure 3.24 illustrates the FEVDs for the current conditions confidence indicator and real GDP growth in the manufacturing sector. Up to more than a third (37%) of the movements in real GDP growth are explained by confidence over the longer term, while real GDP explains up to 5% of the variance in confidence. Overall, the results suggest that shocks to the confidence indicators account for between 20% and 60% of the forecast error variance of the real GDP growth rate, depending on the level of aggregation and the indicator.
 
 ```{r figure3.24, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="FEVDs of confidence (current conditions) and real GDP growth in the manufacturing sector"}
-source("plot_varfevd.R")
-par(mfrow=c(1,2))
-plot.varfevd(fevd(varm, n.ahead = 10 ),plot.type = "single")
+library(png)
+library(grid)
+grid.raster(readPNG("fevd_var2.png"))
 ```
 
 ####Uncertainty
