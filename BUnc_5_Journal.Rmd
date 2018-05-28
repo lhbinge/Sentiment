@@ -10,7 +10,7 @@ csl: harvard.csl
 ---
 <!-- maketile -->
 \begin{center}
-\Large\scshape{Uncertainty and the South African Business Cycle} \\ 
+\Large\scshape{Economic Uncertainty in South Africa} \\ 
 \vspace{1em}
 \large\normalfont{Laurie H. Binge}\footnote{PhD candidate at the Department of Economics at Stellenbosch University. Corresponding author email address: lhbinge@gmail.com}, 
 \large\normalfont{Willem H. Boshoff}\footnote{Associate Professor at the Department of Economics at Stellenbosch University. Email address: wimpie2@sun.ac.za} \\
@@ -19,7 +19,7 @@ csl: harvard.csl
 \end{center}
 \begin{small}
 
-The idea that heightened uncertainty among firms contributed to the Great Recession and the lacklustre subsequent recovery has inspired a substantial literature examining the impact of changes in uncertainty on output and investment decisions. Yet to date there has been little research on business uncertainty in South Africa, partly due to the difficulty of measurement. This paper attempts to make two contributions to the literature. The first is to construct new composite indicators of uncertainty for South Africa, based on the microdata from the BER's business tendency surveys. The second is to examine whether these survey-based indicators have plausible and significant relationships with real economic activity. The findings indicate that the composite uncertainty indicators exhibit a significant negative correlation with real GDP growth. A positive shock to uncertainty is generally followed by a significant decrease in real activity growth, even after controlling for other economic variables. 
+The idea that heightened uncertainty among firms contributed to the Great Recession and the lacklustre subsequent recovery has inspired a substantial literature examining the impact of changes in uncertainty on output and investment decisions. Yet to date there has been little research on business uncertainty in South Africa, partly due to the difficulty of measurement. This paper attempts to make two contributions to the literature. The first is to construct new composite indicators of uncertainty for South Africa, based on the micro-data from the BER's business tendency surveys. The second is to examine whether these survey-based indicators have plausible and significant relationships with real economic activity. The findings indicate that the composite uncertainty indicators exhibit a significant negative correlation with real GDP growth. A positive shock to uncertainty is generally followed by a significant decrease in real activity growth, even after controlling for other economic variables.  
 
 \vspace{0.5em}
 \noindent{\textbf{JEL Classification:} C83, D81, E32} \\
@@ -28,25 +28,25 @@ The idea that heightened uncertainty among firms contributed to the Great Recess
 \renewcommand{\thefootnote}{\arabic{footnote}}\renewcommand{\thefootnote}{\arabic{footnote}}
 
 #Introduction
-According to the @ECB2013, the Great Recession and the lacklustre subsequent recovery were associated with unusually low levels of confidence and heightened uncertainty among firms. More recently, there has been increased uncertainty around the implications of the Brexit referendum [@Jackson2017] and the policy direction under President Trump [@Shen2017]. The idea that heightened uncertainty has influenced economic activity has inspired a substantial international literature examining the impact of changes in uncertainty on investment and output decisions.
+According to the @ECB2013, the Great Recession and the lacklustre subsequent recovery were associated with unusually low levels of confidence and heightened uncertainty among firms. More recently, there has been increased uncertainty around the implications of the Brexit referendum [@Jackson2017] and the policy direction under President Trump [@Shen2017]. The @IMF2017 cited elevated political uncertainty and weak confidence when it decreased South Africa's growth forecast for 2018. The idea that heightened uncertainty has influenced economic activity has inspired a substantial international literature examining the impact of changes in uncertainty on investment and output decisions.
 
 To date there has been little research on uncertainty in South Africa. This is, at least in part, due to the challenge is measuring uncertainty, as it is not directly observable and the definitions are difficult to operationalise. Only a few studies have created proxies for uncertainty in South Africa (e.g. @Redl2015 and @Hlatshwayo2016) and no study has fully exploited the information contained in the BER business tendency surveys. 
 
-In this paper new proxies for business uncertainty in South Africa are estimated, using the micro-data from the BER business tendency surveys, with the aim of improving on existing indicators. Although measuring uncertainty is challenging, survey-based indicators can be helpful in discovering the opinions of key economic agents on future economic developments [@OECD2003; @Girardi2015]. Three composite uncertainty indicators are calculated. The first is the scaled cross-sectional standard deviation of forward-looking responses [@Girardi2015]. The second is the cross-sectional mean of individual firm forecast errors, and the third is the cross-sectional standard deviation of forecast errors [@Arslan2011; @Bachmann2013]. 
+In this paper new proxies for business uncertainty in South Africa are estimated, using the micro-data from the BER business tendency surveys, with the aim of improving on existing indicators. Although measuring uncertainty is challenging, survey-based indicators can be helpful in discovering the opinions of key economic agents on future economic developments [@OECD2003; @Girardi2017]. Three composite uncertainty indicators are calculated: the scaled cross-sectional standard deviation of forward-looking responses [@Girardi2017]; and the cross-sectional mean and standard deviation of individual firm forecast errors [@Arslan2015; @Bachmann2013]. 
 
 The newly constructed uncertainty indicators are compared with a measure of financial market uncertainty and the economic policy uncertainty indicator created by @Hlatshwayo2016. In addition, a composite overall measure of uncertainty is constructed, which combines the survey-based uncertainty indicators with the measures of financial market and economic policy uncertainty. The uncertainty indicators are then used to examine the relationship between uncertainty and real economic activity in South Africa. The aim is to test whether there is a significant relationship between uncertainty and real GDP growth, and whether shocks to uncertainty generate responses that are in line with the theory and the findings in the literature. 
 
 #Uncertainty
-@Knight1921 defined uncertainty as "people's inability to forecast the likelihood of events happening." Uncertainty refers to a lack of knowledge of the set of possible outcomes and their associated probabilities (e.g. the number of coins ever produced), which makes forecasting difficult. According to this definition, uncertainty is distinct from the concept of risk, which refers to a known probability distribution of a set of outcomes (e.g. a coin toss). Nevertheless, researchers often refer to a single concept of uncertainty, which is typically a mixture of uncertainty and risk [@Bloom2014]. 
+@Knight1921 defined uncertainty as agents' "inability to forecast the likelihood of events happening." Uncertainty refers to a lack of knowledge of the set of possible outcomes and their associated probabilities, because the outcome is highly unique or complex, which makes forecasting difficult. According to this definition, uncertainty is distinct from the concept of risk, which refers to a known probability distribution of a set of outcomes (either through calculation *a priori* or from statistics of past experiences). For example, a coin toss entails risk, because there is a known probability distribution (e.g. 50% chance of heads). In contrast, the number of coins ever produced entails uncertainty, because the calculation would require estimating the distribution of all the coins minted in all countries throughout history [@Bloom2014]. 
 
-In this paper, the inability of firms to forecast future events are measured using the BER business tendency surveys. Three sets of composite uncertainty indicators are calculated at the sectoral and aggregate levels. The first is the scaled cross-sectional standard deviation of forward-looking responses. The second is the cross-sectional mean of individual firm forecast errors, and the third is the cross-sectional standard deviation of firm forecast errors [@Arslan2011; @Bachmann2013; @Girardi2015].
+While researchers occasionally refer to a mixture of risk and uncertainty [@Bloom2014], this paper focuses on uncertainty in the sense of a lack or predictability. The inability of firms to forecast future events are measured using the BER business tendency surveys. 
 
 This section begins with a review of the theoretical links between uncertainty and macroeconomic outcomes. It then turns to the empirical literature, by first discussing measurement challenges and the approaches to operationalising the definition of uncertainty, and then examining the evidence on the impact of uncertainty on economic outcomes. 
 
-##Macro Theory and Uncertainty
-The theoretical literature emphasises two negative and two positive channels through which uncertainty can influence economic activity. Most of the focus is on 'real options' theory, based on @Bernanke1983. Uncertainty may have economic consequences when there is a degree of irreversibility to firms' actions. Firms receive new information over time, reducing uncertainty and increasing their ability to undertake the optimal investment. If the value of time, i.e. the benefit of new information, exceeds the costs of committing to a suboptimal project, it is rational to wait before committing to an investment [@Binding2015]. Because uncertainty increases the value of waiting for new information, it delays the current rate of investment [@Bernanke1983]. Thus, the option value of waiting increases as uncertainty increases [@Bloom2014]. 
+##Theory on Uncertainty and Economic Outcomes
+The theoretical literature emphasises two negative and two positive channels through which uncertainty can influence economic activity. Most of the focus is on 'real options' theory, based on @Bernanke1983. Uncertainty may have economic consequences when there is a degree of irreversibility to firms' actions. Firms receive new information over time, reducing uncertainty and increasing their ability to undertake the optimal investment. If the value of time, i.e. the benefit of new information, exceeds the costs of committing to a suboptimal project, it is rational to wait before committing to an investment [@Binding2017]. Because uncertainty increases the value of waiting for new information, it delays the current rate of investment [@Bernanke1983]. Thus, the option value of waiting increases as uncertainty increases [@Bloom2014]. 
 
-This theory led to the idea of a 'wait-and-see' effect [@Bloom2009]. If a firm faces large fixed adjustment costs,[^23] higher uncertainty about future demand makes new investments and hiring less attractive. Firms try to minimise the number of times this fixed adjustment cost must be paid. When the future is uncertain, in the sense that demand could be either very high or low, it makes sense to wait until the uncertainty has been resolved [@Bachmann2010]. Facing a more uncertain environment, firms delay investment and hiring, i.e. they 'wait and see' how the future will unfold, which leads to a decrease in economic activity. As the future unfolds, there is pent-up demand for capital and labour. Firms are closer to their adjustment triggers, leading to a rebound and even an overshoot in economic activity [@Bachmann2013].  
+This theory led to the idea of a 'wait-and-see' effect [@Bloom2009]. If a firm faces large fixed adjustment costs,[^23] higher uncertainty about future demand makes new investments and hiring less attractive. Firms try to minimise the number of times this fixed adjustment cost must be paid. When the future is uncertain, in the sense that demand could be either very high or low, it makes sense to wait until the uncertainty has been resolved [@Bachmann2010]. Facing a more uncertain environment, firms delay investment and hiring, i.e. they 'wait and see' how the future will unfold, which leads to a decrease in economic activity. As the future unfolds, there is pent-up demand for capital and labour. Firms are closer to their adjustment triggers, leading to a rebound and even an overshoot in economic activity [@Bachmann2013]. 
 
 [^23]: For capital, these costs can be both physical (equipment may have been damaged in installation and removal) and financial (discounts for used goods). For labour, adjustment costs include recruitment, search frictions, training, and severance pay.
 
@@ -59,20 +59,20 @@ The Oi-Hartman-Abel effect highlights the possibility that firms may be risk-lov
 The theoretical literature therefore sets out potential channels through which uncertainty may have a positive or negative impact on economic activity. It then becomes an empirical question to determine the direction and significance of the impact. The following section provides a review of the empirical literature on uncertainty. 
 
 ##Empirical Findings
-The recent surge in research on uncertainty has been driven by the idea that uncertainty played a role in shaping the Great Recession. In addition, the availability of empirical proxies for uncertainty has increased, along with the ability to include uncertainty in a wide range of models [@Bloom2014]. Although the majority of studies seems to find that uncertainty indicators are at least negatively related to real economic activity, the findings have not been conclusive. This may be due to the two main challenges for empirical work on uncertainty: constructing proxies and distinguishing a separate causal impact. In this section these two challenges are discussed.
+Although the majority of studies seems to find that uncertainty indicators are at least negatively related to real economic activity, the findings have not been conclusive. The inconclusive findings may be due to the two main challenges when it comes to empirical work on uncertainty: how to construct proxies for uncertainty and how to distinguish a separate causal impact of uncertainty.
 
 ###Measuring Uncertainty
 Given its broad definition and the potential influence of a wide range of factors, a wide range of proxies for uncertainty have been proposed in the literature. These proxies can be grouped into five categories, depending on the nature of the data used for their construction [@Bloom2014]. All proxies for uncertainty measure a specific type of uncertainty, and have strengths and weaknesses. 
 
-The first category uses financial data to calculate proxies, often using implied or realised volatility in the stock market, GDP, bond yields and exchange rates. The rationale is that more volatile series are more difficult to forecast, and are associated with a higher of uncertainty [@Bloom2014]. @Bloom2009, @Baker2013, @Bonciani2015 and @Leduc2015, for instance, used stock market volatility as a proxy for uncertainty. A popular proxy is the Chicago Board Options Exchange Market Volatility Index, which focuses on the implied volatility of the S&P 500 Index. It reflects the dispersion of market participants' estimates of future stock prices, as measured by the implied volatility across all options with a given time to maturity. The most frequent criticism is that developments on stock markets may only partly reflect developments in the real economy [@Girardi2015]. 
+The first category uses financial data to calculate proxies, often using implied or realised volatility in the stock market, GDP, bond yields and exchange rates. The rationale is that more volatile series are more difficult to forecast, and are associated with a higher of uncertainty [@Bloom2014]. @Bloom2009, @Baker2013, @Bonciani2016 and @Leduc2016, for instance, used stock market volatility as a proxy for uncertainty. A popular proxy is the Chicago Board Options Exchange Market Volatility Index, which focuses on the implied volatility of the S&P 500 Index. It reflects the dispersion of market participants' estimates of future stock prices, as measured by the implied volatility across all options with a given time to maturity. The most frequent criticism is that developments on stock markets may only partly reflect developments in the real economy [@Girardi2017]. 
 
-The second category uses new information to construct uncertainty indicators. The most prominent examples are proxies based on references to 'uncertainty' in the media. @Baker2015, for instance, developed economic policy uncertainty indices based on the frequency of references to policy uncertainty in newspapers. This was combined with disagreement among forecasters on future government purchases and inflation, and the number of tax code provisions about to expire. One criticism is that the selection of newspapers and search terms entails a certain degree of subjectivity [@Girardi2015].
+The second category uses new information to construct uncertainty indicators. The most prominent examples are proxies based on references to 'uncertainty' in the media. @Baker2015 and @Baker2016, for instance, developed economic policy uncertainty indices based on the frequency of references to policy uncertainty in newspapers. @Baker2015 combined this text mining measure with disagreement among forecasters on future government purchases and inflation, and the number of tax code provisions about to expire to create an overall indicator. One criticism is that the selection of newspapers and search terms entails a certain degree of subjectivity [@Girardi2017].
 
-The third category is derived from the disagreement among professional forecasters. The rationale is that a larger dispersion of opinions about the future indicates a higher degree of uncertainty. @Popescu2010, for instance, used a proxy for uncertainty based on the dispersion of professional forecasts of consumption, industrial production, investment, output, prices and interest rates. The downside is that the factors influencing a limited set of professional forecasters might differ from those influencing producers and consumers [@Girardi2015].
+The third category is derived from the disagreement among professional forecasters. The rationale is that a larger dispersion of opinions about the future indicates a higher degree of uncertainty. @Popescu2010, for instance, used a proxy for uncertainty based on the dispersion of professional forecasts of consumption, industrial production, investment, output, prices and interest rates. The downside is that the factors influencing a limited set of professional forecasters might differ from those influencing producers and consumers [@Girardi2017].
 
-The fourth category uses the responses from business and consumer surveys. @Bachmann2013, for instance, used the dispersion of business survey responses, as well as the dispersion in individual forecast errors to construct proxies. @Arslan2011 used a similar measure of squared expectations errors to construct uncertainty indicators. @Leduc2015 also used a survey-based proxy for uncertainty, measured as the fraction of respondents who listed uncertainty as a factor limiting their spending plans. Survey-based measures have the advantage that they are derived from opinions of key economic agents, as opposed to outside observers (e.g. professional forecasters) or investors on financial markets [@Girardi2015]. In this paper, uncertainty indicators are calculated by using the BER business tendency surveys.
+The fourth category uses the responses from business and consumer surveys. @Bachmann2013, for instance, used the dispersion of business survey responses, as well as the dispersion in individual forecast errors to construct proxies. @Arslan2015 used a similar measure of squared expectations errors to construct uncertainty indicators. @Leduc2016 also used a survey-based proxy for uncertainty, measured as the fraction of respondents who listed uncertainty as a factor limiting their spending plans. Survey-based measures have the advantage that they are derived from opinions of key economic agents, as opposed to outside observers (e.g. professional forecasters) or investors on financial markets [@Girardi2017]. In this paper, uncertainty indicators are calculated by using the BER business tendency surveys.
 
-A fifth category was introduced by @Jurado2015. They argued that indicators of uncertainty should reflect the common variation across a vast array of variables, and that the forecastable component of each series should be removed when calculating volatility. They constructed new indicators using a large dataset of macroeconomic and financial indicators, as well as firm-level data. They extracted common factors, used them to predict industrial production, and subsequently calculated the forecast errors. Increases in the volatility of forecast errors were interpreted as increases in uncertainty. The disadvantage is that it is an *ex post* measure, which requires the outcome of the forecasted time series before computing the indicator [@Girardi2015].
+A fifth category was introduced by @Jurado2015. They argued that indicators of uncertainty should reflect the common variation across a vast array of variables, and that the forecastable component of each series should be removed when calculating volatility. They constructed new indicators using a large dataset of macroeconomic and financial indicators, as well as firm-level data. They extracted common factors, used them to predict industrial production, and subsequently calculated the forecast errors. Increases in the volatility of forecast errors were interpreted as increases in uncertainty. The disadvantage is that it is an *ex post* measure, which requires the outcome of the forecasted time series before computing the indicator [@Girardi2017].
 
 A few studies have created proxies for uncertainty in the South African context. @Redl2015 created an index of uncertainty for South Africa, based on disagreement among professional forecasters, the number of newspaper articles that mentioned economic uncertainty in South Africa, and references to uncertainty in the SARB's Quarterly Review. Recently, @NWU2016 created a policy uncertainty index for South Africa from three components: the frequency of references to economic policy uncertainty in leading publications, expert opinions of leading private sector economists, and responses from the BER manufacturing survey on whether the political climate is a constraint to doing business. This index is only available from July 2015.
 
@@ -85,13 +85,13 @@ None of these studies has fully exploited the information contained in the BER b
 ###The Impact of Uncertainty
 The majority of studies seems to find at least a negative relationship between uncertainty proxies and economic activity, although this does not necessarily imply causality. In the literature three approaches have been taken to identify the impact of uncertainty on activity [@Bloom2014]. The first approach uses structural models to identify the potential impact of uncertainty shocks. The second approach relies on timing, typically in a VAR framework, by estimating the movements in economic activity that follow changes in uncertainty. The third approach exploits natural experiments such as exchange rate movements, disasters, and political coups.
 
-In a number of papers (e.g. @Bloom2007, @Leduc2015, and @Bonciani2015) structural models have been used to investigate potential mechanisms through which uncertainty may influence economic activity. Empirical VAR models are then used to confirm the theoretical model predictions. In a seminal paper, @Bloom2009 used a structural model to simulate the impact of an uncertainty shock, which produced the rapid decrease and subsequent rebound in aggregate output and employment predicted by the 'wait-and-see' effect. This simulated impact was compared with VAR estimations on actual data, using stock market volatility as a proxy for uncertainty. The results matched in both magnitude and timing, with a shock to uncertainty generating a decrease and then an overshoot in employment and production. 
+In a number of papers (e.g. @Bloom2007, @Leduc2016, and @Bonciani2016) structural models have been used to investigate potential mechanisms through which uncertainty may influence economic activity. Empirical VAR models are then used to confirm the theoretical model predictions. In a seminal paper, @Bloom2009 used a structural model to simulate the impact of an uncertainty shock, which produced the rapid decrease and subsequent rebound in aggregate output and employment predicted by the 'wait-and-see' effect. This simulated impact was compared with VAR estimations on actual data, using stock market volatility as a proxy for uncertainty. The results matched in both magnitude and timing, with a shock to uncertainty generating a decrease and then an overshoot in employment and production. 
 
-A number of studies have investigated the timing of the relationship between uncertainty and economic activity in a VAR framework [e.g. @Arslan2011; @Baker2015; @Girardi2015; and @Jurado2015]. The results were generally similar to @Bloom2009, with a positive shock to uncertainty followed by a significant decrease in output, investment and employment. @Bachmann2013 found that positive shocks to uncertainty were associated with a significant decrease in production and employment in both Germany and the US. German production declined and rebounded relatively quickly following an increase in uncertainty, while the response of US output was protracted, with limited evidence of a rebound. The US results suggest that some of the other mechanisms proposed in the literature, such as financial frictions may be important.
+A number of studies have investigated the timing of the relationship between uncertainty and economic activity in a VAR framework [e.g. @Arslan2015; @Baker2016; @Girardi2017; and @Jurado2015]. The results were generally similar to @Bloom2009, with a positive shock to uncertainty followed by a significant decrease in output, investment and employment. @Bachmann2013 found that positive shocks to uncertainty were associated with a significant decrease in production and employment in both Germany and the US. German production declined and rebounded relatively quickly following an increase in uncertainty, while the response of US output was protracted, with limited evidence of a rebound. The US results suggest that some of the other mechanisms proposed in the literature, such as financial frictions may be important.
 
 A few studies have investigated the interaction of uncertainty and the financial frictions. @Popescu2010, for instance, argued that once a measure of financial stress is included in the regressions, the independent role of uncertainty shocks becomes minimal. @Caldara2016 found that uncertainty shocks had a significant negative impact on both financial conditions and real economic activity. Their results suggested that increases in uncertainty associated with tighter financial conditions had a particularly large negative effect on real economic activity.
 
-Other studies have exploited natural experiments such as disasters, political coups, and exchange rate movements. For instance, @Baker2013 used natural disasters, terrorist attacks and unexpected political shocks as instruments for the usual stock market proxies of uncertainty. They found that uncertainty shocks accounted for at least half of the variation in GDP growth. @Binding2015 showed how different uncertainty indicators reacted to an unexpected policy change when the Swiss National Bank decided to return to a floating exchange rate regime in 2015. Firms affected by this exogenous increase in uncertainty decreased their planned investment relative to firms that were unaffected. 
+Other studies have exploited natural experiments such as disasters, political coups, and exchange rate movements. For instance, @Baker2013 used natural disasters, terrorist attacks and unexpected political shocks as instruments for the usual stock market proxies of uncertainty. They found that uncertainty shocks accounted for at least half of the variation in GDP growth. @Binding2017 showed how different uncertainty indicators reacted to an unexpected policy change when the Swiss National Bank decided to return to a floating exchange rate regime in 2015. Firms affected by this exogenous increase in uncertainty decreased their planned investment relative to firms that were unaffected. 
 
 There is relatively little evidence on the impact of uncertainty on economic outcomes in South Africa. Developing countries, such as South Africa, tend to experience higher uncertainty because they tend to have less-diversified economies, which are more exposed to price and output fluctuations of volatile goods such as commodities [@Bloom2014]. Developing countries tend to have more political shocks and often have less effective stabilisation policies. Fluctuations in uncertainty might therefore have a more pronounced impact on output in developing countries.
 
@@ -331,13 +331,13 @@ BER$factorn <- BER$factor/BER$x
 BER <- BER[,c(3,4,2,5,6,19,1,7:17)]
 ```
 
-The BER has been conducting business tendency surveys in South Africa since March 1954. The BER's quarterly business surveys are similar to the business tendency surveys conducted all over the world, including the German Ifo Business Climate Survey and the Federal Reserve Bank of Philadelphia's Business Outlook Survey [@OECD2003].
+The BER, a research institute attached to Stellenbosch University, has been conducting business tendency surveys in South Africa since March 1954. The BER's surveys are similar to the business surveys conducted all over the world, including the German Ifo Business Climate Survey and the Federal Reserve Bank of Philadelphia's Business Outlook Survey [@OECD2003]. 
 
-During the last month of each quarter, questionnaires are sent to 1,000 firms in each of the manufacturing and services sectors and 1,400 firms in each of the construction and trade sectors (i.e. retail, wholesale and motor vehicles). The questions have remained largely unchanged since inception, and include those on current and expected future developments regarding, among others, sales, orders, inventories, prices, employment, and constraints. For the most part, the survey answers fall into three categories: 'up', 'the same' or 'down'. 
+During the second month of each quarter, questionnaires are sent to firms in each of the manufacturing, construction, trade (i.e. retail, wholesale and motor vehicles) and other services sectors. The questions have remained largely unchanged since inception, and include those on current and expected future developments regarding, among others, sales, orders, inventories, prices, employment, and constraints. For the most part, the survey answers fall into three categories: 'up', 'the same' or 'down'.  
 
 Table 1 reports the details of the survey data. The sample runs from 1992Q1 to 2016Q3, although the survey of the services sector started only in 2005Q2. Around 1,000 completed questionnaires are received every quarter, leading to an overall sample size of 119,438. All of the surveys have a few missing quarters, when the microeconomic data was lost. 
 
-```{r table1, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+```{r table1, eval=FALSE, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
 tafel <- aggregate(BER$id, by=list(BER$surveyQ,BER$Sector), FUN = length)
 tafel <- cbind(obs=aggregate(tafel$x, by=list(tafel$Group.2), FUN = sum ),ave=aggregate(tafel$x, by=list(tafel$Group.2), FUN = mean ))[,-3]
 tafel$obs.Group.1 <- as.character(tafel$obs.Group.1)
@@ -354,14 +354,31 @@ print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.p
       include.rownames=FALSE)
 ```
 
+\begin{table}[ht]
+\centering
+\caption{Sample characteristics} 
+\scalebox{0.8}{
+\begin{tabular}{p{3cm}rrrr}
+  \hline
+\multicolumn{1}{|l}{Sector} & \multicolumn{1}{|l}{Sample} & \multicolumn{1}{|l}{Total Obs} & \multicolumn{1}{|l}{Obs/Quarter} & \multicolumn{1}{|l|}{Missing Quarters} \\ 
+  \hline
+\multicolumn{1}{|l}{Manufacturing} & \multicolumn{1}{|r}{1992Q1-2016Q3} & \multicolumn{1}{|r}{36915} & \multicolumn{1}{|r}{384.53} &  \multicolumn{1}{|l|}{1997Q4,2000Q1,2005Q4} \\ 
+\multicolumn{1}{|l}{Construction} & \multicolumn{1}{|r}{1993Q2-2016Q3} & \multicolumn{1}{|r}{28139} & \multicolumn{1}{|r}{312.66} &  \multicolumn{1}{|l|}{1993Q4,1998Q3,2000Q2,2005Q4} \\ 
+\multicolumn{1}{|l}{Trade} & \multicolumn{1}{|r}{1992Q2-2016Q3} & \multicolumn{1}{|r}{40480} & \multicolumn{1}{|r}{426.11} &  \multicolumn{1}{|l|}{1992Q4,1993Q3,2005Q4} \\ 
+\multicolumn{1}{|l}{Services} & \multicolumn{1}{|r}{2005Q2-2016Q3} & \multicolumn{1}{|r}{13904} & \multicolumn{1}{|r}{308.98} &  \multicolumn{1}{|l|}{2005Q4} \\  
+\multicolumn{1}{|l}{Total} & \multicolumn{1}{|r}{1992Q1-2016Q3} & \multicolumn{1}{|r}{119438} & \multicolumn{1}{|r}{1218.76} & \multicolumn{1}{|l|}{2005Q4} \\ 
+   \hline
+\end{tabular}}
+\end{table}
+
 The sample of firms remains relatively stable from one survey to the next, effectively creating a panel. The panel is partly fixed and partly rotating, as inactive firms that fail to respond for a period of two years are removed and replaced with new firms. The fixed part reflects the opinions of the same firms over time, which ensures that the results remain comparable between surveys. The results are more likely to reflect changes in the variables under consideration than changes in the sample from one survey to the next [@Kershoff2002]. 
 
 Stratified deliberate sampling is used to design the BER's survey panels, which is the international norm. Participants are selected to be representative of particular sectors, regions and firm sizes. The respondents are reviewed periodically to ensure reasonable representation of the population universe. The exact number of firms in the universe is unknown to the BER, as censuses of the business sector are not conducted regularly and the BER does not have access to the National Business Register [@Kershoff2002]. Practical experience has shown that non-random samples can give acceptable results in conducting these types of surveys [@OECD2003]. 
 
-The BER makes no provision for firms that were not selected or did not respond during sampling, implicitly assuming that the non-participating or non-responding firms have the same distribution as the responding firms for the period. This corresponds to with the 'missing at random' assumption suggested by the @OECD2003. @Kershoff2015 argued that this is a reasonable assumption, given that the responses cannot vary infinitely, and the same factors influence firms in the same sector. 
+The BER does not adjust for firms that were not selected or failed to respond, implicitly assuming that the non-participating or non-responding firms have the same distribution as the responding firms for the period. This corresponds to with the 'missing at random' assumption suggested by the @EC2006. @Kershoff2015 argued that this is a reasonable assumption, given that the responses cannot vary infinitely, and the same factors influence firms in the same sector.  
 
 #Methodology
-Following the literature (e.g. @Bachmann2013, @Arslan2011, and @Girardi2015), this section sets out the methodology for calculating three composite forward-looking indicators of uncertainty: (i) the scaled weighted cross-sectional standard deviation of forward-looking responses, (ii) the weighted cross-sectional mean of individual firm forecast errors, and (iii) the weighted cross-sectional standard deviation of firm forecast errors. These measures are based on *ex ante* disagreement and *ex post* forecast errors and capture a low level of predictability. The BER survey microeconomic data is particularly useful in this case, as it allows individual firm forecast errors to be calculated.
+Following the literature (e.g. @Bachmann2013, @Arslan2015, and @Girardi2017), this section sets out the methodology for calculating three composite forward-looking indicators of uncertainty: (i) the scaled weighted cross-sectional standard deviation of forward-looking responses, (ii) the weighted cross-sectional mean of individual firm forecast errors, and (iii) the weighted cross-sectional standard deviation of firm forecast errors. The BER survey microeconomic data is particularly useful in this case, as it allows individual firm forecast errors to be calculated.
 
 ##Measuring Uncertainty
 The BER business tendency surveys ask for separate responses relating to current and expected future conditions. The questions on current conditions (e.g. Q2A) all have the following format: "(Estimated development in current quarter) Compared with the same quarter of a year ago, are general business conditions: better, the same, or poorer?" In other words, these questions ask whether the factor under consideration in time $t$ is better, the same, or poorer, compared with $t-4$. 
@@ -369,84 +386,90 @@ The BER business tendency surveys ask for separate responses relating to current
 The forward-looking questions (e.g. Q2P) all have the following format: "(Expected development in next quarter) Compared with the same quarter of a year ago, will general business conditions be: better, the same, or poorer?" As with the questions on current conditions, these questions ask whether the factor under consideration in time $t+1$ is expected to be better, the same, or poorer, compared with $t-3$. Responses are relative to the same quarter of the previous year, which corresponds with year-on-year growth rates. 
 
 Formally, one can define a $k$-period-ahead measure of expectations at time $t$ as: $E_t f(\Delta^h Y_{t+k})$, where $Y_{t+k}$ is a measure of real activity (usually output) at time $t+k$ and $\Delta^h Y_{t+k} = Y_{t+k} - Y_{t+k-h}$. A common definition of $f(\Delta^h Y_{t+k})$ relies on an up, unchanged, or down classification (e.g. Q2A in the BER survey): 
+
 $$ f(\Delta^h Y_{t+k}) = \begin{cases} -1,& \text{if } \Delta^h Y_{t+k} < 0\\ 0,& \text{if } \Delta^h Y_{t+k} = 0\\ 1,& \text{if } \Delta^h Y_{t+k} > 0\\ \end{cases} $$
 
 The cross-sectional standard deviation of responses to forward-looking questions (e.g. Q2P) $D^{1}_t$ at time $t$, is a measure of the dispersion of responses and is often used as a proxy for uncertainty. This measure of dispersion is analogous to the proxy for uncertainty based on forecaster disagreement used by @Baker2013. It may be defined as: 
 $$D^{1}_t = \frac{1}{W_t} \sum^N_{i=1} (w_{it} E_t f(\Delta^4 Y_{i,t+1}) - \mu_{t+1})^2 ,$$
 where $f(\Delta^4 Y_{i,t+1})$ is defined as above for firm $i$; $w_{it}$ is the weight that each firm $i$ receives at time $t$; $W_{t} = \sum^N_{i=1}w_i$ is the sum of the weights; and $\mu_{t+1}$ is the weighted sample mean. 
 
-The weights are calculated as: $w_{it} = f_{it} s_{jt} / F_{jt} ,$ where $f_{it}$ the firm size weight (i.e. the inner weight reflecting turnover or number of employees) for firm $i$ at time $t$; $s_{jt}$ is the subsector weight (i.e. the outer weight reflecting the share of total value added) for subsector $j$ at time $t$; and $F_{jt} = \sum^N_{i=1} f_{it}$ is the total firm weight for subsector $j$ at time $t$. These weights are equivalent to an explicit two-step weighting procedure, whereby weighted means are calculated for each subsector separately (with firm size weights), and then aggregated with the subsector weights [@UN2015]. 
+The weights are calculated as: $w_{it} = f_{it} s_{jt} / F_{jt} ,$ where $f_{it}$ the firm size weight (i.e. the inner weight reflecting turnover) for firm $i$ at time $t$; $s_{jt}$ is the subsector weight (i.e. the outer weight reflecting the share of total value added) for subsector $j$ at time $t$; and $F_{jt} = \sum^N_{i=1} f_{it}$ is the total firm weight for subsector $j$ at time $t$. These weights are equivalent to an explicit two-step weighting procedure, whereby weighted means are calculated for each subsector separately (with firm size weights), and then aggregated with the subsector weights [@UN2015]. 
 
-Firm size weights were recorded by the BER for all respondents. The firm size weights are divided into nine categories. In this paper, these firm size weights are applied to all the responses in all of the subsectors. The subsector weights for the manufacturing, retail and wholesale subsectors are updated periodically by the BER, based on the composition of production or sales in each subsector, as calculated by StatsSA. Subsector weights are not recorded for the construction, motor vehicle and services sectors. In this paper, they are set equal to the average number of respondents for each subsector over the period. The results are similar when using an equal weighting procedure. 
+Firm size weights are recorded by the BER for all respondents. The firm size weights are divided into nine categories and are applied to all the responses. The subsector weights for the manufacturing, retail and wholesale subsectors are updated periodically by the BER, based on the composition of production or sales in each subsector, as calculated by StatsSA. Subsector weights are not recorded for the construction, motor vehicle and services sectors. In this paper they are set equal to the average number of respondents for each subsector over the period. The results are similar when using an equal weighting procedure. 
 
-@Bachmann2013 noted that there are two potential problems with this dispersion measure as a proxy for uncertainty. First, time variation in the cross-sectional dispersion of responses may simply reflect firms reacting differently to aggregate shocks, without uncertainty changing over time. Second, time variation in dispersion may simply reflect time variation in the heterogeneity of expectations, without uncertainty changing over time. 
+@Bachmann2013 and @Girardi2017 noted that the dispersion proxy for uncertainty described above suffers from a major weakness, in that it reflects changes in two factors other than pure uncertainty. First, time variation in the cross-sectional dispersion of responses may simply reflect firms reacting differently to aggregate shocks (i.e. heterogeneity), without uncertainty changing over time. Respondents can have legitimately different views on current and future prospects depending on their characteristics, such as their economic sector, export orientation and dependency on external funding. For instance, in an upswing phase with an appreciating currency, export-oriented firms might switch to more negative assessments, while other firms have more positive assessments. This would drive up the dispersion measure, without uncertainty necessarily increasing. 
 
-Accordingly, @Girardi2015 suggested scaling the forward-looking dispersion measures $D^1_t$ in period $t$ by the dispersion of responses to questions on current conditions $D^0_{t+1}$ in period $t+1$. The idea is that respondents' assessments of current conditions should not be uncertain. The dispersion of a 'current conditions' question does not reflect uncertainty, but rather the degree to which conditions differ between respondents. The dispersion of forward-looking questions reflects both the 'natural' degree of dispersion and uncertainty about the future. This proxy therefore measures the extent of uncertainty, expressed as a share of the 'natural' dispersion. The disadvantage of this indicator is that it is an *ex post* measure, which requires the outcome at time $t+1$ before computing the indicator [@Girardi2015].
+Second, time variation in dispersion may simply reflect time variation in the heterogeneity of expectations (i.e. disagreement), without uncertainty changing over time. Firms might respond differently to the survey questions because they use different information sets. Their assessments might vary widely and translate into high dispersion, without this necessarily indicating that respondents are uncertain of their assessments.
 
-The first uncertainty indicator $D_t$, or 'dispersion', is the weighted cross-sectional standard deviation of forward-looking responses $D^1_t$ at time $t$, scaled by the weighted cross-sectional standard deviation of responses on current conditions $D^0_{t+1}$ at time $t+1$: 
+Accordingly, @Girardi2017 suggested scaling the forward-looking dispersion measures $D^1_t$ in period $t$ by the dispersion of responses to questions on current conditions $D^0_{t+1}$ in period $t+1$. The idea is that the possible drivers of dispersion differ between these assessments. The dispersion in the responses to forward-looking questions reflects the 'natural' degree of dispersion (from heterogeneity and disagreement), as well as uncertainty about the future. The dispersion of responses on current conditions should be less uncertain than assessments of future conditions, and should depend more on the degree to which conditions differ between respondents, i.e. heterogeneity and disagreement. This proxy therefore measures the extent of uncertainty, expressed as a share of the 'natural' dispersion. The scaling operation neutralises some of the impact of 'natural' dispersion of the responses to forward-looking questions. The scaled uncertainty indicator should at least be closer to actual uncertainty than dispersion based only on forward-looking question.
+
+The first uncertainty indicator $D_t$, or 'dispersion', is the weighted cross-sectional standard deviation of forward-looking responses $D^1_t$ at time $t$, scaled by the weighted cross-sectional standard deviation of responses on current conditions $D^0_{t+1}$ at time $t+1$. More formally: 
 $$D^{0}_{t+1} = \frac{1}{W_{t+1}} \sum^N_{i=1} (w_{it+1} E_{t+1} f(\Delta^4 Y_{i,t+1}) - \mu_{t+1})^2 $$
 $$D_t = \frac{D^{1}_t}{D^{0}_{t+1}} $$
 
-@Bachmann2013 recommended the use of individual firms forecast errors to estimate proxies for uncertainty. The panel dimension of the survey is exploited to construct the *ex post* forecast errors. Pairs of questions are used to construct forecast errors for each respondent, by comparing the expectations in period $t$ for a specific question with the realisations for that question in period $t+1$. For instance, the survey responses to Q2P in period $t$ are used to extract the expectations of general business conditions in time $t+1$ relative to $t-3$. The errors are then calculated by subtracting these expectations from the realisations of the responses to Q2A at time $t+1$ relative to $t-3$. The forecast errors $\epsilon_{i,t+1}$ in period $t+1$ may be defined as the realisations $E_{t+1} f(\Delta^4 Y_{i,t+1})$ of a specific outcome in period $t+1$ minus the expectations $E_t f(\Delta^4 Y_{i,t+1})$ in period $t$ of that outcome in period $t+1$: $$\epsilon_{i,t+1} = E_{t+1} f(\Delta^4 Y_{i,t+1}) - E_t f(\Delta^4 Y_{i,t+1})$$
+One disadvantage of this indicator is that if economic conditions do not remain broadly stable between the two responses, the scaling might neutralise too much or too little of the dispersion and artificially lower or increase the level of uncertainty. Another disadvantage is that it is an *ex post* measure, which requires the outcome at time $t+1$ before computing the indicator [@Girardi2017].
 
-Table 2 illustrates the nine possible forecast errors. For example, for a firm that expected an improvement in (i.e. better) conditions, the realisation of better conditions would be recorded as a 0 forecast error, no change as a -1 forecast error, and poorer conditions as a -2 forecast error. 
+Following @Bachmann2013, individual firms' forecast errors are used to estimate the other two proxies for uncertainty. The panel dimension of the survey is exploited to construct the *ex post* forecast errors. Pairs of questions are used to construct the forecast errors for each respondent, by comparing the expectations in period $t$ for a specific question with the realisations for that question in period $t+1$. For instance, the survey responses to Q2P in period $t$ are used to extract the expectations of general business conditions in time $t+1$ relative to $t-3$. The errors are then calculated by subtracting these expectations from the realisations of the responses to Q2A at time $t+1$ relative to $t-3$. The forecast errors $\epsilon_{i,t+1}$ in period $t+1$ may be defined as the realisations $E_{t+1} f(\Delta^4 Y_{i,t+1})$ of a specific outcome in period $t+1$ minus the expectations $E_t f(\Delta^4 Y_{i,t+1})$ in period $t$ of that outcome in period $t+1$:  $$\epsilon_{i,t+1} = E_{t+1} f(\Delta^4 Y_{i,t+1}) - E_t f(\Delta^4 Y_{i,t+1})$$
 
 \begin{table}[]
 \centering
 \caption{Possible forecast errors}
-\label{my-label}
+\scalebox{0.8}{
 \begin{tabular}{llrrr}
                           &                                &                             & $Q2A_{t+1}$               &                             \\ \cline{2-5} 
 \multicolumn{1}{l|}{}     & \multicolumn{1}{l|}{}          & \multicolumn{1}{r|}{Better} & \multicolumn{1}{r|}{Same} & \multicolumn{1}{r|}{Poorer} \\ \cline{2-5} 
 \multicolumn{1}{l|}{}     & \multicolumn{1}{l|}{E(Better)} & \multicolumn{1}{r|}{0}      & \multicolumn{1}{r|}{-1}   & \multicolumn{1}{r|}{-2}     \\ \cline{2-5} 
 \multicolumn{1}{l|}{$Q2P_t$} & \multicolumn{1}{l|}{E(Same)}   & \multicolumn{1}{r|}{1}      & \multicolumn{1}{r|}{0}    & \multicolumn{1}{r|}{-1}     \\ \cline{2-5} 
 \multicolumn{1}{l|}{}     & \multicolumn{1}{l|}{E(Poorer)} & \multicolumn{1}{r|}{2}      & \multicolumn{1}{r|}{1}    & \multicolumn{1}{r|}{0}      \\ \cline{2-5} 
-\end{tabular}
+\end{tabular}}
 \end{table}
 
-@Arslan2011 argued that firms make forecast errors because of uncertainty and that forecast errors should be treated as uncertainty. Following @Arslan2011, the second measure of uncertainty $A_t$, or 'aggregate error' uncertainty, is the square of the weighted cross-sectional mean of the forecast errors made across firms in each quarter:
+
+Table 2 illustrates the nine possible forecast errors. For example, for a firm that expected an improvement in (i.e. better) conditions, the realisation of better conditions would be recorded as a 0 forecast error, no change as a -1 forecast error, and poorer conditions as a -2 forecast error. 
+
+@Arslan2015 argued that firms make forecast errors because of uncertainty and that forecast errors should be treated as uncertainty. Following @Arslan2015, the second measure of uncertainty $A_t$, or 'aggregate error' uncertainty, is the square of the weighted cross-sectional mean of the forecast errors made across firms in each quarter:
 $$A_t = \bar \epsilon_{it+1}^2 ,$$
 where $\bar \epsilon_{it} = \frac{1}{W_t}\sum_{i=1}^N w_{it} \epsilon_{it}$. 
 
 Aggregate error uncertainty increases if more firms make similar and larger forecast errors. Thus, if more firms make the same forecast errors, aggregate error uncertainty will increase. If the same proportion of firms make positive and negative forecast errors, it implies zero aggregate error uncertainty. This is akin to the measure based on the mean of the absolute forecast errors proposed in @Bachmann2013.
 
 The third measure of uncertainty $I_t$, or 'idiosyncratic error' uncertainty, is the weighted cross-sectional standard deviation of the forecast errors in each quarter:
-$$I_t = \frac{1}{W_{t+1}}\sum_{i=1}^N (w_{it+1} \epsilon_{it+1} - \bar{\epsilon}_{t+1})^2 ,$$
+$$I_t = \frac{1}{W_{t+1}}\sum_{i=1}^N w_{it+1} (\epsilon_{it+1} - \bar{\epsilon}_{t+1})^2 ,$$
 where the variables are defined in the same way as above. 
 
 This proxy measures how individual firms depart from the overall mean forecast error. Idiosyncratic error uncertainty increases if firms make more dispersed forecast errors. If all firms make the same forecast error, it implies zero idiosyncratic error uncertainty. This is the measure of uncertainty proposed in @Bachmann2013.
 
-Although these measures are based on the realised forecast errors in the next quarter $t+1$, they depend on the knowledge and level of uncertainty in the current quarter $t$. Thus, the mean and standard deviation of realised forecast errors at time $t+1$ constitutes uncertainty in $t$ [@Bachmann2010]. 
+Although these measures are based on the realised forecast errors in the next quarter $t+1$, they depend on the knowledge and level of uncertainty in the current quarter $t$. Thus, the mean and standard deviation of realised forecast errors at time $t+1$ constitutes uncertainty in $t$ [@Bachmann2013].
 
-The BER business surveys contain a number of questions that may be useful in gauging uncertainty in South Africa. These include questions on general business conditions, production, orders placed, employment, and profitability. Composite indicators react to various sources of economic fluctuations, while being resilient to fluctuations affecting single components [@ECB2013]. This paper therefore combines the responses to a number of questions in the BER surveys to calculate composite indicators. For consistency, the composite indicators are derived from questions that are present in most of the sectoral business surveys. Table 3 reports the questions included in each of the sectoral surveys. These questions cover six types of variables, namely business conditions, activity (production or sales), orders placed, employment, and profitability. Not all of the variables are covered in all the surveys.
+The BER business surveys contain a number of questions that may be useful in gauging uncertainty in South Africa. These include questions on general business conditions, production, orders placed, employment, and profitability. Composite indicators react to various sources of economic fluctuations, while being resilient to fluctuations affecting single components [@ECB2013]. This paper therefore combines the responses to a number of questions in the BER surveys to calculate composite indicators. For consistency, the composite indicators are derived from questions that are present in most of the sectoral business surveys. Table 3 reports the questions included in each of the sectoral surveys. These questions cover five types of variables, namely business conditions, activity (production or sales), orders placed, employment, and profitability. Not all of the variables are covered in all the surveys.
 
-The composite uncertainty indicators for each sector are calculated as the average of the survey questions reported in Table 3. This should reduce their likelihood of producing 'false positives', i.e. signalling high uncertainty where there is none, and 'false negatives', i.e. failure to detect mounting uncertainty [@Girardi2015]. The results are similar when the questions are combined using principal components rather than averages. The sectoral indicators are then weighted by GDP share to form the overall aggregate composite indicators [@UN2015].
+The composite uncertainty indicators for each sector are calculated as the average of the survey questions reported in Table 3. This should reduce their likelihood of producing 'false positives', i.e. signalling high uncertainty where there is none, and 'false negatives', i.e. failure to detect mounting uncertainty [@Girardi2017]. The results are similar when the questions are combined using principal components rather than averages. The sectoral indicators are then weighted by GDP share to form the overall aggregate composite indicators [@UN2015].
 
 \begin{table}[]
 \centering
-\caption{Survey questions used by sector}
-\label{my-label}
+\caption{Survey questions used in each sector}
+\scalebox{0.8}{
 \begin{tabular}{|l|r|r|r|r|}
 \hline
 \textbf{Survey Question} & \textbf{Manufacturing} & \textbf{Construction} & \textbf{Trade} & \multicolumn{1}{l|}{\textbf{Services}} \\ \hline
-Business Conditions      & X                      & X                     & X              & X                                      \\ 
-Activity                 & X                      & X                     & X              & X                                      \\ 
-Employment               & X                      & X                     & X              & X                                      \\ 
-Profitability            &                        & X                     & X              & X                                      \\ 
+Business Conditions      & X                      & X                     & X              & X                                      \\ \hline
+Activity                 & X                      & X                     & X              & X                                      \\ \hline
+Employment               & X                      & X                     & X              & X                                      \\ \hline
+Profitability            &                        & X                     & X              & X                                      \\ \hline
 Orders Placed            & X                      &                       & X              &                                        \\ \hline
-\end{tabular}
+\end{tabular}}
 \end{table}
 
-Thus, there are three distinct proxies for business uncertainty: dispersion $D_t$, aggregate error uncertainty $A_t$ and idiosyncratic error uncertainty $I_t$. Business uncertainty can come from a number of sources and may manifest itself in an array of variables [@Jurado2015]. Hence, this paper also investigates two further proxies for uncertainty, namely economic policy uncertainty and financial market uncertainty. 
+Thus, there are three distinct survey-based proxies for business uncertainty: dispersion $D_t$, aggregate error uncertainty $A_t$ and idiosyncratic error uncertainty $I_t$. Business uncertainty can come from a number of sources and may manifest itself in an array of variables [@Jurado2015]. Hence, this paper also investigates two further proxies for uncertainty, namely economic policy uncertainty and financial market uncertainty. 
 
-The economic policy uncertainty indicator is the news-based EPU index created by @Hlatshwayo2016, discussed above. The financial market uncertainty indicator is a combination of implied and realised stock market volatility. The South African Volatility Index (SAVI) is a forecast of equity market risk on the Johannesburg Stock Exchange (JSE). It is modelled on the VIX, a popular measure for the volatility of the S&P 500, which has been used in a number of studies (e.g. @Bloom2009). The SAVI is a forward-looking index that provides a daily prediction of market volatility in three months' time. It is calculated using implied volatilities obtained daily from specific Top 40 options [@JSE2014]. The SAVI is available only from June 2007. Following the literature (e.g. @Bloom2009, @Valencia2013, @Bachmann2013 and @Redl2015), an index of realised stock return volatility was calculated as the standard deviation of the daily JSE All Share index for each quarter. The realised volatility for the period before June 2007 was then chained to the SAVI. 
+The economic policy uncertainty indicator is the news-based EPU index created by @Hlatshwayo2016, discussed above. The financial market uncertainty indicator is a combination of implied and realised stock market volatility. The South African Volatility Index (SAVI) is a forecast of equity market risk on the Johannesburg Stock Exchange (JSE). It is modelled on the VIX, a popular measure for the volatility of the S&P 500, which has been used in a number of studies (e.g. @Bloom2009). The SAVI is a forward-looking index that provides a daily prediction of market volatility in three months' time. It is calculated using implied volatilities obtained daily from specific Top 40 options [@JSE2014]. The SAVI is available only from June 2007. Following the literature (e.g. @Bloom2009, @Valencia2017, @Bachmann2013 and @Redl2015), an index of realised stock return volatility was calculated as the standard deviation of the daily JSE All Share index for each quarter. The realised volatility for the period before June 2007 was then chained to the SAVI. 
 
 The three survey-based uncertainty indicators can be combined with these two alternative indicators to form an overall uncertainty indicator for South Africa. The idea is to iron out the remaining idiosyncrasies by averaging the indicators to incorporate information from different sources of uncertainty. This is similar to practices in the literature, where uncertainty indicators are constructed from a range of different proxies (e.g. @Baker2007; @Baker2015, @Redl2015 and @NWU2016). In constructing their uncertainty measure, @Baker2007 and @Baker2015 use a simple average of their proxies, as well as the first principal component of the series.
 
 In this paper, the first principal component of the five standardised uncertainty proxies is used as an overall combined uncertainty measure ('combined'). A number of papers have used principal component analysis (PCA), or the related factor analysis, to reduce the dimensionality of their data (see @Stock2002 for a seminal contribution, and @Gupta2011, and @Bosch2013 for South African applications). PCA is used to reduce the dimensionality of a dataset consisting of a large number of variables, while retaining as much of the variation as possible [@Jolliffe2002]. The transformation is defined in such a way that the first principal component accounts for as much of the variability in the data as possible (see @Jolliffe2002 for a complete derivation of PCA). The results presented below indicate that the combined indicator exhibits a larger correlation with movements in real output growth than any of the separate components. The results are similar for an equal-weighted overall combined uncertainty index.
 
 ##The Impact of Uncertainty
-As many economic variables move together over time, without an obvious causal direction, it can be challenging to identify the directions of relationships. In the literature, timing has often been relied on for identification. In this section, the literature (e.g. @Bachmann2013) is followed in using standard recursive VARs to trace out the dynamic responses of economic activity to surprise shocks in uncertainty. The aim is to investigate whether the indicators have a significant dynamic relationship with real output, and whether shocks to uncertainty generate responses that are in line with the theory and the findings in the literature. 
+This section follows the literature (e.g. @Bachmann2013) in using standard recursive VARs to trace out the dynamic responses of economic activity to surprise shocks in uncertainty. The aim is to investigate whether the indicators have a significant dynamic relationship with real output, and whether shocks to uncertainty generate responses that are in line with the theory and the findings in the literature. 
 
 The relationships are investigated using bivariate recursive VARs featuring a measure of uncertainty and real GDP growth. A bivariate system is a parsimonious way to model the joint dynamics of uncertainty and real economic activity [@Bachmann2013]. In the bivariate case, both variables are treated as endogenous:
 $$y_t = \beta_{10} - \beta_{12} z_t + \gamma_{11} y_{t-1} + \gamma_{12} z_{t-1} + \epsilon_{yt}$$
@@ -455,10 +478,10 @@ where $y$ is output, $z$ is uncertainty, and $\epsilon$ is the residual of each 
 
 A range of VARs are estimated for the quarterly data running from 1992Q1 to 2016Q3. The indicators enter in levels, while the real GDP series enter as annual quarter-on-quarter growth rates, which corresponds with the survey reference period. Unit root tests indicate that virtually all of the aggregate and sectoral indicators, and the corresponding real GDP growth rates are stationary. The exception is real GDP growth in the services sector, which may be due to the shorter sample period. The appropriate number of lags are selected by means of the Akaike information criterion (AIC), the Schwarz criterion (SC) and the Hannan-Quinn criterion (HQ). The most parsimonious model is selected, provided that the diagnostic tests are satisfied. In the majority of cases, the information criteria point to two lags. The model fit is best when a constant term is included. 
 
-The uncertainty indicators are ordered first in a recursive identification strategy, with the Cholesky decomposition used to identify structural shocks. With this ordering, shocks to uncertainty are allowed to have a contemporaneous impact on output, but shocks to output have no contemporaneous impact on uncertainty ($\beta_{21} = 0$). This is the identification strategy and ordering used in the literature (e.g. @Bachmann2013, @Baker2015, and @Redl2015). It can be motivated by the timing of the surveys before the release of most macroeconomic data [@Leduc2015]. When the survey is completed in time $t$, the respondents do not know the realisations of output growth in time $t$, as the response deadline is generally the second month of the quarter. 
+The uncertainty indicators are ordered first in a recursive identification strategy, with the Cholesky decomposition used to identify structural shocks. With this ordering, shocks to uncertainty are allowed to have a contemporaneous impact on output, but shocks to output have no contemporaneous impact on uncertainty ($\beta_{21} = 0$). This is the identification strategy and ordering used in the literature (e.g. @Bachmann2013, @Baker2015, and @Redl2015). It can be motivated by the timing of the surveys before the release of most macroeconomic data [@Leduc2016]. When the survey is completed in time $t$, the respondents do not know the realisations of output growth in time $t$, as the response deadline is generally the second month of the quarter. 
 
 #Results
-This section presents the composite sectoral and aggregate indicators of uncertainty for South Africa. Simple linear interpolation is used for the few missing quarters and all the indicators are standardised. An overall uncertainty indicator is created, which combines the information in all of the indicators. The comovement of the indicators with real GDP growth is then investigated, to assess whether they improve on the existing indicators. 
+This section presents the composite sectoral and aggregate indicators of uncertainty for South Africa. Simple linear interpolation is used for the few missing quarters and all the indicators are standardised. 
 
 ##Uncertainty Indicators
 ```{r dispersion, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
@@ -672,7 +695,7 @@ services2$Uncertainty <- princomp(na.locf(services2[,2:4]))$scores[,1]
 services2 <- services2[,c(1:4,6,5)]
 ```
 
-Figure 1 illustrates the weighted composite sectoral indicators of uncertainty. These indicators are quite volatile by construction [@Girardi2015]. The indicators of dispersion for the manufacturing, construction and trade sectors spike during the 1997-1998 recession, associated with the East Asian and Russian crises. In those three sectors the indicators also increased in the recessionary period following the global financial crisis. The dispersion indicator for the manufacturing sector also exhibits a spike at the beginning of the period during the Democratic transition. In the services sector it is particularly volatile and does not exhibit the large increase during the Great Recession which is present in the other sectors.
+Figure 1 illustrates the weighted composite sectoral indicators of uncertainty. These indicators are quite volatile by construction [@Girardi2017]. The indicators of dispersion for the manufacturing, construction and trade sectors spike during the 1997-1998 recession, associated with the East Asian and Russian crises. The indicators also increased in the recessionary period following the global financial crisis. The dispersion indicator for the manufacturing sector also exhibits a spike at the beginning of the period during the Democratic transition. The dispersion indicator for the services sector is particularly volatile and does not exhibit the large increase during the Great Recession which is present in the indicators for the other sectors.
 
 ```{r figure1, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted sectoral indicators of uncertainty"}
 index_plot <- cbind(w.uncertainty[,c(1,2)],aggr.errors[,2],idio.errors[,2])
@@ -683,8 +706,8 @@ g1 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable,linet
 g1 <- g1 + scale_linetype_manual(values=c("solid","dashed","twodash"))
 g1 <- g1 + geom_line()
 g1 <- g1 + theme(legend.title=element_blank())
-g1 <- g1 + ggtitle("Maufacturing") 
-g1 <- g1 + ylab("Indicator") + xlab("")
+g1 <- g1 + ggtitle("Maufacturing") + theme(plot.title = element_text(hjust = 0.5))
+g1 <- g1 + ylab("Standardised Value") + xlab("")
 g1 <- g1 + theme(legend.position="none")
 g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
@@ -697,7 +720,7 @@ g2 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable,linet
 g2 <- g2 + scale_linetype_manual(values=c("solid","dashed","twodash"))
 g2 <- g2 + geom_line()
 g2 <- g2 + theme(legend.title=element_blank())
-g2 <- g2 + ggtitle("Construction") 
+g2 <- g2 + ggtitle("Construction") + theme(plot.title = element_text(hjust = 0.5))
 g2 <- g2 + ylab("") + xlab("")
 g2 <- g2 + theme(legend.position="none")
 g2 <- g2 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
@@ -711,8 +734,8 @@ g3 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable,linet
 g3 <- g3 + scale_linetype_manual(values=c("solid","dashed","twodash"))
 g3 <- g3 + geom_line()
 g3 <- g3 + theme(legend.title=element_blank())
-g3 <- g3 + ggtitle("Trade") 
-g3 <- g3 + ylab("Indicator") + xlab("")
+g3 <- g3 + ggtitle("Trade") + theme(plot.title = element_text(hjust = 0.5))
+g3 <- g3 + ylab("Standardised Value") + xlab("")
 g3 <- g3 + theme(legend.position="none")#,plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
 g3 <- g3 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
@@ -725,14 +748,14 @@ g4 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable,linet
 g4 <- g4 + scale_linetype_manual(values=c("solid","dashed","twodash"))
 g4 <- g4 + geom_line()
 g4 <- g4 + theme(legend.title=element_blank())
-g4 <- g4 + ggtitle("Services") 
+g4 <- g4 + ggtitle("Services") + theme(plot.title = element_text(hjust = 0.5))
 g4 <- g4 + ylab("") + xlab("")
 g4 <- g4 + theme(legend.position="none")#,plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
 g4 <- g4 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g4 <- g4 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
 
 library(gridExtra)
-
+library(grid)
 grid_arrange_shared_legend <- function(...) {
     plots <- list(...)
     g <- ggplotGrob(plots[[1]] + theme(legend.position="bottom"))$grobs
@@ -750,91 +773,15 @@ grid_arrange_shared_legend <- function(...) {
 grid_arrange_shared_legend(g1, g2, g3, g4, ncol=2, nrow =2)
 ```
 
-```{r figure1b, eval=FALSE, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted sectoral indicators of uncertainty"}
-index_plot <- cbind(w.uncertainty[,c(1:5)])
-index_plot[,-1] <- scale(index_plot[,-1])
-index_plot <- melt(index_plot, id="Date")  # convert to long format
-g1 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable,linetype=variable)) 
-g1 <- g1 + scale_linetype_manual(values=c("solid","dashed","twodash","dotdash"))
-g1 <- g1 + geom_line()
-g1 <- g1 + theme(legend.title=element_blank())
-g1 <- g1 + ggtitle("Dispersion") 
-g1 <- g1 + ylab("Indicator") + xlab("")
-g1 <- g1 + theme(legend.position="none")
-g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+The aggregate forecast error indicators in the manufacturing, construction and trade sectors spike at similar times as the corresponding indicators of dispersion. There are spikes during the Democratic transition, the 1997-1998 recession, the two semi-recessions (in 2001 and 2003), and the Great Recession. In addition, all four indicators exhibit spikes during the European debt crisis in 2011, and again in 2014, at the start of the downswing phase at the end of the sample period. 
 
-index_plot <- cbind(aggr.errors[,1:5])
-index_plot[,-1] <- scale(index_plot[,-1])
-index_plot <- melt(index_plot, id="Date")  # convert to long format
-g2 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable,linetype=variable)) 
-g2 <- g2 + scale_linetype_manual(values=c("solid","dashed","twodash","dotdash"))
-g2 <- g2 + geom_line()
-g2 <- g2 + theme(legend.title=element_blank())
-g2 <- g2 + ggtitle("Aggregate Error") 
-g2 <- g2 + ylab("") + xlab("")
-g2 <- g2 + theme(legend.position="none")
-g2 <- g2 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+The idiosyncratic error indicators do not always point to the same periods of heightened uncertainty to the ones highlighted above. The indicator of idiosyncratic error uncertainty in the manufacturing sector exhibits spikes in 1994, with the first Democratic election, and again in 1996, with the crisis in the foreign exchange market and the economic policy uncertainty before the adoption of the Growth, Employment and Redistribution (GEAR) framework [@Koma2013]. This indicator decreases during the Great Recession. The indicator in the construction sector exhibits a marked decrease during the 1997-1998 recession, which is following by spikes in 2000 and during the two semi-recessions. It is relatively flat for the rest of the period. The indicator for the trade sector is relatively volatile at the beginning of the period, and exhibits substantial decreases during all four recessionary periods. The indicator for the services sector is relatively high and volatile during the Great Recession, and exhibits a spike at the start of the final downswing phase in 2014. 
 
-index_plot <- cbind(idio.errors[,1:5])
-index_plot[,-1] <- scale(index_plot[,-1])
-index_plot <- melt(index_plot, id="Date")  # convert to long format
-g3 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable,linetype=variable)) 
-g3 <- g3 + scale_linetype_manual(values=c("solid","dashed","twodash","dotdash"))
-g3 <- g3 + geom_line()
-g3 <- g3 + theme(legend.title=element_blank())
-g3 <- g3 + ggtitle("Idiosyncratic Error") 
-g3 <- g3 + ylab("Indicator") + xlab("")
-g3 <- g3 + theme(legend.position="none")#,plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
-g3 <- g3 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+In some cases, therefore, the individual indicators for each sector do not point to the same periods of heightened uncertainty. Table 4 reports that the indicators are only weakly correlated in a few cases. The lack of correlation is due to the different calculation methods used to construct the proxies. The dispersion indicator measures the disagreement in expectations, expressed as a share of the natural dispersion. The aggregate and idiosyncratic error indicators measure respectively the mean and standard deviation of firm forecast errors. Aggregate error uncertainty will increase if more firms make similar and larger errors, while idiosyncratic error uncertainty will decrease if more firms make similar errors. On the whole, the sectoral indicators of dispersion and aggregate error uncertainty seem to identify periods when uncertainty was thought to be high in South Africa. 
 
-index_plot <- merge(manufac2[,c("Date","Uncertainty")], construct2[,c("Date","Uncertainty")], by="Date",all=TRUE)
-index_plot <- merge(index_plot, trade2[,c("Date","Uncertainty")], by="Date",all=TRUE)
-index_plot <- merge(index_plot, services2[,c("Date","Uncertainty")], by="Date",all=TRUE)
-#index_plot <- index_plot[,c(-3,-5,-7)]
-colnames(index_plot) <- c("Date","Manufacturing","Construction","Trade","Services")
-index_plot[,-1] <- scale(index_plot[,-1])
-index_plot <- melt(index_plot, id="Date")  # convert to long format
-g4 <- ggplot(index_plot, aes(x=Date,y=value,group=variable,colour=variable,linetype=variable)) 
-g4 <- g4 + scale_linetype_manual(values=c("solid","dashed","twodash","dotdash"))
-g4 <- g4 + geom_line()
-g4 <- g4 + theme(legend.title=element_blank())
-g4 <- g4 + ggtitle("Combined") 
-g4 <- g4 + ylab("") + xlab("")
-g4 <- g4 + theme(legend.position="none")#,plot.margin=unit(c(-0.5,0.4,0,0.4), "cm"))
-g4 <- g4 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-g4 <- g4 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+Table 4 reports the contemporaneous correlations for the sectoral indicators and sectoral real GDP growth. The combined uncertainty indicator for each sector is the first principal component of the three survey-based measures. The indicators of dispersion and combined uncertainty for the manufacturing, construction, and trade sectors are significantly negatively, if weakly, correlated with contemporaneous real sectoral GDP growth. 
 
-library(gridExtra)
-
-grid_arrange_shared_legend <- function(...) {
-    plots <- list(...)
-    g <- ggplotGrob(plots[[1]] + theme(legend.position="bottom"))$grobs
-    legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
-    lheight <- sum(legend$height)
-    grid.arrange(
-        do.call(arrangeGrob, lapply(plots, function(x)
-            x + theme(legend.position="none"))),
-        legend,
-        ncol = 1,
-        heights = unit.c(unit(1, "npc") - lheight, lheight))
-}
-
-#grid_arrange_shared_legend(p1, p2, p3, p4)
-grid_arrange_shared_legend(g1, g2, g3, g4, ncol=2, nrow =2)
-```
-
-The indicators of aggregate error uncertainty in the manufacturing, construction and trade sectors spike at similar times as the corresponding indicators of dispersion. There are spikes during the Democratic transition, the 1997-1998 recession, the two semi-recessions (in 2001 and 2003), and the Great Recession. In addition, all four indicators exhibit spikes during the European Debt crisis in 2011, and again in 2014, at the start of the downswing phase at the end of the sample period. 
-
-The idiosyncratic error indicators do not always point to the same periods of heightened uncertainty than the ones highlighted above. The indicator for the manufacturing sector exhibits spikes in 1994, with the first Democratic election, and again in 1996, with the adoption of the new Constitution, but decreases during the Great Recession. In the construction sector it exhibits a marked decrease during the 1997-1998 recession, which is followed by spikes in 2000 and during the two semi-recessions. It is relatively flat for the rest of the period. In the trade sector it is relatively volatile at the beginning of the period, and exhibits substantial decreases during all four recessionary periods. In the services sector it is relatively high and volatile during the Great Recession, and exhibits a spike at the start of the last downswing phase in 2014. 
-
-In some cases, therefore, the individual indicators for each sector do not point to the same periods of heightened uncertainty. Table 4 reports that the indicators are only weakly correlated in a few cases. The lack of correlation is due to the different calculation methods used to construct the proxies. The dispersion indicator measures the disagreement in expectations, expressed as a share of the natural dispersion. The aggregate and idiosyncratic error indicators measure respectively the mean and standard deviation of firm forecast errors. Aggregate error uncertainty will increase if more firms make similar and larger errors, while idiosyncratic error uncertainty will decrease if more firms make similar errors. 
-
-Table 4 also reports the contemporaneous correlations for the sectoral indicators and sectoral real GDP growth. The combined uncertainty indicator for each sector is the first principal component of the three survey-based measures. The indicators of dispersion and combined uncertainty for the manufacturing, construction, and trade sectors are significantly negatively, if weakly, correlated with contemporaneous real sectoral GDP growth. 
-
-```{r table4, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+```{r table4, eval=FALSE, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
 source("corstarsl.R")
 xt1 <- cbind(corstarsl(manufac2[,-1]),corstarsl(construct2[,-1]))
 xt2 <- cbind(corstarsl(trade2[,-1]),corstarsl(services2[,-1]))
@@ -853,6 +800,30 @@ xt <- xtable(xt2)
 print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8)
 ```
 
+\begin{table}[ht]
+\centering
+\caption{Correlations between the sectoral uncertainty indicators and real GDP growth} 
+\scalebox{0.7}{
+\begin{tabular}{|r|llll|llll|}
+  \hline
+ &   &  Manufacturing &  &   &   & Construction  &  &   \\ 
+  \hline
+  & Dispersion & Aggregate & Idiosyncratic & Combined & Dispersion & Aggregate & Idiosyncratic & Combined \\ \hline
+  Aggregate &  0.17*  &  &  &  &  0.39*** &  &  &  \\ 
+  Idiosyncratic & -0.28*** & -0.02  &  &  & -0.26**  &  0.17  &  &  \\ 
+  Combined &  0.81*** &  0.46*** & -0.69*** &  &  0.89*** &  0.73*** & -0.27*** &  \\ 
+  RGDP & -0.30*** &  0.04  &  0.10  & -0.22**  & -0.18*  & -0.17  & -0.05  & -0.19*  \\   \hline
+  \hline
+ &   & Trade  &  &   &   & Services  &  &   \\ 
+  \hline
+  & Dispersion & Aggregate & Idiosyncratic & Combined & Dispersion & Aggregate & Idiosyncratic & Combined \\ \hline
+  Aggregate & -0.01  &  &  &  & -0.08  &  &  &  \\ 
+  Idiosyncratic & -0.22**  &  0.18*  &  &  & -0.01  &  0.18  &  &  \\ 
+  Combined &  0.58*** & -0.56*** & -0.81*** &  &  0.35**  & -0.77*** & -0.70*** &  \\ 
+  RGDP & -0.28*** & -0.09  &  0.23**  & -0.23**  & -0.05  & -0.19  &  0.29*  & -0.06  \\    \hline
+\end{tabular}}
+\end{table}
+
 Figure 2 illustrates the three weighted uncertainty indicators at the aggregate level, with the recessionary periods shaded. As with the sectoral proxies, the indicators are relatively volatile, and are weakly correlated only in a few cases, as Table 5 below reports. 
 
 ```{r figure2, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="Weighted indicators of dispersion, aggregate error and idiosyncratic error uncertainty"}
@@ -866,7 +837,7 @@ g <- g + scale_linetype_manual(values=c("twodash","solid","dotdash"))
 g <- g + scale_size_manual(values=c(1,1,1))
 g <- g + labs(color="Legend text", linetype="Legend text", size="Legend text")
 g <- g + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
-g <- g + ylab("Indicator") + xlab("")
+g <- g + ylab("Standardised Value") + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + theme(legend.title=element_blank()) 
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"), expand=c(0,0),
@@ -875,11 +846,13 @@ g <- g + theme(legend.position="bottom")
 g
 ```
 
-The dispersion indicator seems to follow an anti-cyclical pattern, with spikes during the recessionary periods. In particular, it points to periods of heightened uncertainty during the recessions of the early 1990s, the late 1990s, and the late 2000s. The aggregate error indicator also seems to be broadly anti-cyclical. It exhibits large spikes in all four recessionary periods and during the two semi-recessions of the early 2000s. It also exhibits two spikes in 2010 and 2011, during the period associated with the European debt crisis.
+The dispersion indicator seems to follow an anti-cyclical pattern, with spikes during the recessionary periods. In particular, it points to periods of heightened uncertainty during the recessions of the early 1990s, the late 1990s, and the late 2000s. The aggregate error uncertainty indicator also seems to be broadly anti-cyclical. It exhibits large spikes in all four recessionary periods and during the two semi-recessions of the early 2000s. It also exhibits two large spikes in 2010 and 2011, during the period associated with the European debt crisis.
 
-The idiosyncratic error indicator tends to decrease as the economy enters a recessionary period and then to increase towards the end of the recession and into the start of the recovery phase. This is probably because the majority of firms expected poorer general conditions with more certainty, as the recession took hold. Uncertainty about the future then increased around the trough, as expectations became more dispersed. The indicator also exhibits the two large spikes in 1994 and 1996, with the first Democratic election and the adoption of the new Constitution.
+The idiosyncratic error indicator tends to decrease as the economy enters a recessionary period and then to increase towards the end of the recession and into the start of the recovery phase. This is probably because the majority of firms expected poorer general conditions with more certainty, as the recession took hold. Uncertainty about the future then increased around the trough, as expectations became more dispersed. The idiosyncratic error indicator also exhibits the two large spikes in 1994 and 1996, with the first Democratic election and the policy uncertainty before the adoption of the GEAR policy framework. 
 
-Figure 3 illustrates the two alternative indicators, as well as the combined overall uncertainty indicator, which was calculated as the first principal component of the five standardised uncertainty indicators. The combined indicator seems particularly plausible as a proxy for uncertainty, as a number of large spikes coincide with periods when uncertainty in South Africa was thought to be relatively high. For instance, uncertainty was relatively high during South Africa's Democratic transition up to 1994. There was quite a large spike, mainly in policy and idiosyncratic uncertainty, during the adoption of the new Constitution in 1996. Other spikes coincide with the East Asian and Russian crises, and the related recessionary period in 1997-1998; the semi-recession in 2003; the global financial crisis in 2008 and the subsequent recession; the European Debt crisis in 2011; and the start of the downswing phase in 2014.
+Figure 3 illustrates the two alternative indicators, as well as the combined overall uncertainty indicator, which was calculated as the first principal component of the five standardised uncertainty indicators. The dispersion measure and the EPU receive the highest weights in the calculation, while the idiosyncratic error indicator does not enter into the calculation. 
+
+The combined indicator seems particularly plausible as a proxy for uncertainty, as a number of large spikes coincide with periods when uncertainty in South Africa was thought to be relatively high. For instance, uncertainty was relatively high during the Democratic transition up to 1994. There was quite a large spike, mainly in policy and idiosyncratic uncertainty, associated with the foreign currency crisis before the adoption of the GEAR strategy. Other spikes coincide with the East Asian and Russian crises, and the related recessionary period in 1997-1998; the semi-recession in 2003; the global financial crisis in 2008 and the subsequent recession; the European debt crisis in 2011; and the start of the downswing phase in 2014.
 
 ```{r pca, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE}
 uncert_indices <- cbind(w.uncert_error,GDPdata$IMF_Uncertainty, GDPdata$SAVI,GDPgrowth4$RGDP)
@@ -901,7 +874,7 @@ g <- g + scale_linetype_manual(values=c("twodash","dotdash","solid"))
 g <- g + scale_size_manual(values=c(0.8,0.8,1.1))
 g <- g + labs(color="Legend text", linetype="Legend text", size="Legend text")
 g <- g + geom_rect(data=recessions.df, aes(xmin=Peak, xmax=Trough, ymin=-Inf, ymax=+Inf), fill='grey', alpha=0.5)
-g <- g + ylab("Indicator") + xlab("")
+g <- g + ylab("Standardised Value") + xlab("")
 g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
 g <- g + theme(legend.title=element_blank()) 
 g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"), expand=c(0,0),
@@ -910,22 +883,39 @@ g <- g + theme(legend.position="bottom")
 g
 ```
 
-Table 5 reports the contemporaneous correlations between the aggregate indicators and real GDP growth. The individual indicators are only weakly correlated with one another in a few cases. This is not too surprising as they attempt to capture different types of uncertainty [@Leduc2015]. Survey-based measures capture the opinions of key agents in the economy and are driven by changes in firm-level uncertainty. Due to their qualitative nature, however, they are poorly equipped to fully capture large increases in uncertainty during extreme events [@Bachmann2013]. The SAVI captures broad uncertainty in financial markets, but is derived from a specific segment of firms that are publicly traded, while the EPU is focused specifically on policy uncertainty. This is the motivation for using a combined indicator, which captures different types of uncertainty from multiple sources. The combined uncertainty indicator has a significant positive correlation with all of the indicators, except for idiosyncratic error uncertainty, which reflects the factor loadings used in deriving the first principal component. 
+Table 5 reports the contemporaneous correlations between the aggregate indicators and real GDP growth. The individual indicators are only weakly correlated with one another in a few cases. This is not too surprising as they attempt to capture different types of uncertainty [@Leduc2016]. Survey-based measures capture the opinions of key agents in the economy and are driven by changes in firm-level uncertainty. Due to their qualitative nature, however, they are poorly equipped to fully capture large increases in uncertainty during extreme events [@Bachmann2013]. The SAVI captures broad uncertainty in financial markets, but is derived from a specific segment of firms that are publicly traded, while the EPU is focused specifically on policy uncertainty. This is the motivation for using a combined indicator, which captures different types of uncertainty from multiple sources. The combined uncertainty indicator has a significant positive correlation with all of the indicators, except for idiosyncratic error uncertainty, which reflects the factor loadings used in deriving the first principal component.  
 
-```{r table5, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+```{r table5, eval=FALSE, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
 source("corstarsl.R")
 colnames(uncert_indices)[7] <- "Combined"
 xt <- xtable(corstarsl(uncert_indices[,-1]), caption="Correlations between the aggregate uncertainty indicators and real GDP growth")
 print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"), scalebox = 0.8)
 ```
 
-The dispersion, EPU and combined uncertainty indicators exhibit significant negative correlations with real GDP growth. These indicators are contemporaneously counter-cyclical, as is the case for the majority of the uncertainty indicators in the international literature [e.g. @Bloom2014]. The idiosyncratic error indicator does not exhibit the negative correlation with real GDP growth found in @Bachmann2013. Cross-correlograms indicate that all of the indicators, except for idiosyncratic error uncertainty, exhibit a significant negative leading relationship with real GDP growth. The combined indicator exhibits the highest negative correlation with real GDP growth with a lag of 2 quarters. Thus, all the indicators, except idiosyncratic error uncertainty, are anti-cyclical in the sense that they exhibit a significant negative correlation with real GDP growth, albeit at different horizons. The composite dispersion and combined uncertainty indicators, in particular, improve on the existing uncertainty indicators in that they exhibit a larger negative correlation with real GDP growth.
+\begin{table}[ht]
+\centering
+\caption{Correlations between the uncertainty indicators and real GDP growth} 
+\scalebox{0.8}{
+\begin{tabular}{|r|lllll|l|}
+  \hline
+ & Dispersion & Idiosyncratic\_error & Aggregate\_error & EPU & SAVI & Combined \\   \hline
+  Idiosyncratic\_error & -0.15  &  &  &  &  &  \\ 
+  Aggregate\_error &  0.20*  &  0.18*  &  &  &  &  \\ 
+  EPU &  0.14  &  0.08  &  0.09  &  &  &  \\ 
+  SAVI &  0.06  & -0.24**  &  0.07  &  0.28**  &  &  \\ 
+  Combined &  0.64*** & -0.10  &  0.54*** &  0.65*** &  0.56*** &  \\ \hline
+  RGDP\_Growth & -0.44*** &  0.17*  & -0.11  & -0.30*** & -0.11  & -0.43*** \\ 
+   \hline
+\end{tabular}}
+\end{table}
+
+The dispersion, EPU and combined uncertainty indicators exhibit significant negative correlations with real GDP growth. These indicators are contemporaneously counter-cyclical, as is the case for the majority of the uncertainty indicators in the international literature [e.g. @Bloom2014]. The idiosyncratic error indicator does not exhibit the negative correlation with real GDP growth found in @Bachmann2013. Cross-correlograms indicate that all of the indicators, except for idiosyncratic error uncertainty, exhibit a significant negative leading relationship with real GDP growth, albeit at different horizons. The combined indicator exhibits the highest negative correlation with real GDP growth (-0.53) with a lag of 2 quarters. The composite dispersion and combined uncertainty indicators, in particular, seem to improve on the existing uncertainty indicators in that they exhibit a larger negative correlation with real GDP growth.
 
 ##The Impact of Uncertainty on Real Economic Activity
-In this section, the aim is to test whether there is a significant relationship between the uncertainty indicators and real GDP growth, and whether shocks to uncertainty generate responses that are in line with the theory and the findings in the literature. A simple bivariate VAR is estimated to investigate the dynamic effects of uncertainty shocks on the economy. An extended VAR is then estimated to examine whether the results hold after the inclusion of additional variables.
+In this section, a simple bivariate VAR is estimated to investigate the dynamic effects of uncertainty shocks on the economy. An extended VAR is then estimated to examine whether the results hold after the inclusion of additional variables.
 
 ###Bivariate VAR Analysis
-Impulse response functions (IRFs) can be generated to illustrate the dynamic impact of a shock to uncertainty on the system. Figure 4 illustrates the IRFs of a bivariate VAR with the combined uncertainty indicator and real GDP growth. The left panel plots the responses of real GDP growth to an orthogonal shock in uncertainty, with 95% bootstrap confidence intervals. A shock to uncertainty is followed by a significant decrease in real GDP growth, with a peak at three quarters. The impact on the growth rate is transitory, dying out after approximately seven quarters. This result confirms the findings in much of the literature (e.g. @Bachmann2013 and @Redl2015), where innovations to uncertainty have protracted negative effects on economic activity. The right panel illustrates that the response of uncertainty to an orthogonal shock in real GDP growth is insignificant. The results are similar for the component uncertainty indicators, although the responses are smaller, while the IRFs for the idiosyncratic error indicator are not significant. The results are similar for alternative orderings.
+Impulse response functions (IRFs) can be generated to illustrate the dynamic impact of a shock to uncertainty on the system. Figure 4 illustrates the IRFs of a bivariate VAR with the combined uncertainty indicator and real GDP growth. The left panel plots the responses of real GDP growth to an orthogonal shock in uncertainty, with 95% bootstrap confidence intervals. A shock to uncertainty is followed by a significant decrease in real GDP growth, with a peak at three quarters. The impact on the growth rate is transitory, dying out after approximately seven quarters. This result confirms the findings in much of the literature (e.g. @Bachmann2013 and @Redl2015), where innovations to uncertainty have protracted negative effects on economic activity. The right panel illustrates that the response of uncertainty to an orthogonal shock in real GDP growth is insignificant. The results are similar for alternative orderings. The results are comparable for the component uncertainty indicators, although the responses are moderated, while the IRFs for the idiosyncratic error indicator are not significant. 
 
 ```{r figure4, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="IRFs of uncertainty (combined) and real GDP growth"}
 vardat <- cbind(uncert_indices[,7],GDPgrowth4$RGDP)
@@ -950,19 +940,19 @@ plot(irf.y2,plot.type = c("single"), main="Response from RGDP Growth", xlab="Hor
 The importance of innovations can also be examined with variance decompositions. The forecast error variance decomposition (FEVD) shows the proportion of the movements in a sequence due to its own shocks and shocks to the other variable. Figure 5 illustrates the FEVDs for the combined uncertainty indicator and real GDP growth. Over 30% of the movements in real GDP growth are explained by the uncertainty indicator over the longer term, while real GDP explains about 1% of the variance in uncertainty. 
 
 ```{r figure5, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="FEVDs of uncertainty (combined) and real GDP growth"}
-source("plot_varfevd.R")
-par(mfrow=c(1,2))
-plot.varfevd(fevd(var6, n.ahead = 10 ),plot.type = "single", xlab="Horizon in quarters", ylab="Proportion of variance explained")
+library(png)
+library(grid)
+grid.raster(readPNG("fevd_var3.png"))
 ```
 
-In the manufacturing sector, a shock to uncertainty is followed by a significant decrease in real GDP growth. There is even some evidence of a subsequent rebound predicted by the 'wait-and-see' effect demonstrated in @Bloom2009. There is no a consistent negative relationship for any single indicator and real GDP growth in the other three sectors. In the construction sector, the dispersion and combined uncertainty indicators have a significant negative impact on real GDP growth. In the trade sector, only the dispersion indicator has a significant negative impact, while in the services sector only the idiosyncratic error indicator has a significant impact on real GDP growth. 
+In the manufacturing sector (not shown), a shock to uncertainty is followed by a significant decrease in real GDP growth. There is even some evidence of a subsequent rebound predicted by the 'wait-and-see' effect demonstrated in @Bloom2009. There is no a consistent negative relationship for any single indicator and real GDP growth in the other three sectors. In the construction sector, the dispersion and combined uncertainty indicators have a significant negative impact on real GDP growth. In the trade sector, only the dispersion indicator has a significant negative impact on real GDP growth, while in the services sector only the idiosyncratic error indicator has a significant impact. 
 
 ###Expanded VAR
-In order to test the robustness of the negative effect of uncertainty shocks, this section follows the literature in estimating a larger VAR system (e.g. @Girardi2015, @Leduc2015, and @Baker2015). The extended VAR includes the variables suggested by @Redl2015 for South Africa: the BER Business Confidence Index, uncertainty, the JSE All Share Index, the yield spread (i.e. the Government Bond Yield minus the three-month T-Bill rate), GDP, industrial production, investment, and an employment index. These variables are typically included in the literature (e.g. @Leduc2013, @Bachmann2013, and @Baker2015). Confidence is to control for the possibility that uncertainty reflects respondents' perceptions of bad news, rather than of an uncertain future [@Baker2015].
+In order to test the robustness of the negative effect of uncertainty shocks, this section follows the literature in estimating a larger VAR system (e.g. @Girardi2017, @Leduc2016, and @Baker2016). The extended VAR includes the variables suggested by @Redl2015 for South Africa: the BER Business Confidence Index, uncertainty, the JSE All Share Index, the yield spread (i.e. the Government Bond Yield minus the three-month T-Bill rate), GDP, industrial production, investment, and an employment index. These variables are typically included in the literature (e.g. @Leduc2013, @Bachmann2013, and @Baker2016). Confidence is used to control for the possibility that uncertainty reflects respondents' perceptions of bad news, rather than of an uncertain future [@Baker2016].
 
-The variables are ordered with the sentiment variables first, the financial variables next and the real variables last. The financial variables are expected to move faster than the real variables [@Redl2015]. An alternative ordering of placing the sentiment indicators last provides qualitatively similar results. As was the case in the previous VAR, the variables enter as real annual quarter-on-quarter growth rates, except for the sentiment indices and the yield spread. The model was estimated with two lags, with the caveat that the information criteria indicate that more than the maximum number of lags are appropriate. The results with four lags are qualitatively similar. 
+The variables are ordered with the sentiment variables first, the financial variables next and the real variables last. The financial variables are expected to move faster than the real variables [@Redl2015]. An alternative ordering of placing the sentiment indicators last provides qualitatively similar results. As was the case in the previous VAR, the variables enter as real annual quarter-on-quarter growth rates, except for the sentiment indices and the yield spread. The model is estimated with two lags, with the caveat that the information criteria indicate that more than the maximum number of lags are appropriate. The results with four lags are qualitatively similar. 
 
-The IRFs for the impact of uncertainty (combined) on the growth rates of real GDP, production, employment and investment are illustrated in Figure 6. In this larger system, a shock to uncertainty leads to a significant impulse responses in all four variables. The responses in real GDP growth are similar to the findings in bivariate VAR and the magnitude of the impact on employment is similar. The responses of real production and investment growth are larger, which is what the wait-and-see theory would predict. According to the FEVD, uncertainty explains around 25%, 25%, 15% and 15% of the variance in real GDP, production, employment and investment growth.
+The IRFs for the impact of uncertainty (combined) on the growth rates of real GDP, production, employment and investment are illustrated in Figure 6. In this larger system, a shock to uncertainty leads to a significant impulse responses in all four variables. The responses in real GDP growth are similar to the findings in bivariate VAR and the magnitude of the impact on employment is similar. The responses of real production and investment growth are larger, which is what the wait-and-see theory would predict. According to the FEVD (not shown), uncertainty explains around 25%, 25%, 15% and 15% of the variance in real GDP, production, employment and investment growth.
 
 ```{r figure6, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5, fig.cap="IRFs of real GDP, production, employment and investment growth to uncertainty shocks"}
 #conf_indices <- read.csv("w.indicators.csv", header=TRUE, sep=",", skipNul = TRUE)
@@ -989,11 +979,11 @@ plot(irf.y1,plot.type = c("single"), main="Response from Uncertainty", xlab="Hor
 ```
 
 #Conclusion
-This paper has estimated new proxies for uncertainty in South Africa, using micro-data from the BER business tendency surveys. Three composite uncertainty indicators were calculated. The first was the scaled cross-sectional standard deviation of forward-looking responses [@Girardi2015]. The second was the cross-sectional mean of individual firm forecast errors, and the third was the cross-sectional standard deviation of firm forecast errors [@Arslan2011; @Bachmann2013]. 
+This paper has estimated new proxies for uncertainty in South Africa, using micro-data from the BER business tendency surveys. Three composite uncertainty indicators were calculated. The first was the scaled cross-sectional standard deviation of forward-looking responses [@Girardi2017]. The second was the cross-sectional mean of individual firm forecast errors, and the third was the cross-sectional standard deviation of firm forecast errors [@Arslan2015; @Bachmann2013]. 
 
 None of the indicators is a perfect measure of an elusive and multidimensional phenomenon, but all of them may contribute to our understanding of uncertainty [@Bachmann2013]. To reflect the different sources of uncertainty from the different proxies, overall combined uncertainty indicator was created from the three survey-based indicators, as well as a financial market uncertainty indicator and an economic policy uncertainty indicator. This combined indicator appears to be a plausible indicator of uncertainty in South Africa, reflecting key economic events. 
 
-Overall, the results provided evidence at least of significant negative relationships between the uncertainty indicators and real economic activity. The dispersion and combined uncertainty indicators, in particular, exhibited larger negative correlations with real GDP growth than the existing uncertainty indicators. The results from the bivariate VAR analysis indicated that a shock to the uncertainty indicator was followed by a significant decrease in real GDP growth. This was the case even after controlling for other economic variables in a larger VAR system. This confirms the findings in most of the literature, where innovations to uncertainty have protracted negative effects on economic activity. The responses of real production and investment growth to shocks to the uncertainty indicators were larger than the responses of real GDP growth, which is what the wait-and-see theory would predict [@Bloom2009]. 
+Overall, the results provided evidence at least of significant negative relationships between the uncertainty indicators and real economic activity. The dispersion and combined uncertainty indicators, in particular, exhibited larger negative correlations with real GDP growth than the existing uncertainty indicators. The results from the bivariate VAR analysis indicated that a shock to the uncertainty indicator was followed by a significant decrease in real GDP growth. This was the case even after controlling for other economic variables in a larger VAR system. This confirms the findings in most of the literature, where innovations to uncertainty have protracted negative effects on economic activity. The responses of real production and investment growth to shocks to the uncertainty indicators were larger than the responses of real GDP growth, which is what the wait-and-see theory would predict [@Bloom2009]. The results imply that the current climate of heightened political uncertainty and weak confidence are at least potential determinants of the lower growth that the South African economy is currently experiencing, as argued by the @IMF2017.
 
 #References
 

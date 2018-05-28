@@ -1,23 +1,24 @@
 ---
 title: "BER Manufacturing Survey"
 subtitle: "Preliminary Results"
-author: Laurie Binge
-date: "10 May 2017"
+author: 'Laurie Binge'
+date: "12 February 2018"
 output:
-  beamer_presentation:
-    theme: "CambridgeUS"
-    colortheme: "dolphin"
-    fonttheme: "structurebold" 
-    toc: true
-    slide_level: 2
+    beamer_presentation:
+        theme: "CambridgeUS"
+        colortheme: "dolphin"
+        fonttheme: "structurebold" 
+        toc: true
+        slide_level: 2
 ---
 
-# BER Manufacturing Surveys Results
 
-```{r M.man, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+
+#BER Manufacturing Surveys Results
+
+```{r read.man, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
 setwd("C:\\Users\\Laurie\\OneDrive\\Documents\\BING\\BER Confidence Surveys\\Sentiment")
 #change the working directory
-
 suppressMessages(library(ggplot2))
 suppressMessages(library(plyr))
 suppressMessages(library(dplyr))
@@ -29,85 +30,43 @@ suppressMessages(library(quantmod))
 suppressMessages(library(vars))
 suppressMessages(library(tseries))
 suppressMessages(library(urca))
+suppressMessages(library(zoo))
 
 ##=====================##
 ## READING IN THE DATA ##
 ##=====================##
-
-datums <- read.csv("dates3.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+datums <- read.csv("dates.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
 datums$Datum <- as.Date(datums$Datum, format = "%Y/%m/%d")
 
-pub <- read.csv("Manufacturing_BER_Published.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-ref <- read.csv("Ref Series_2.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-
-#library(xlsx)
-#write.xlsx(BER.M, "check.xlsx")
+pub_m <- read.csv("Manufacturing_BER_Published.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+ref_m <- read.csv("Ref Series_Manufac.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+ref_me <- read.csv("Ref Series_Manufac_exp.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
 
 ##=============================
-#Correcting the region kodes
-#BER.M <- read.csv("Manufacturing_full.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-
-#colnames(BER.M)[1:7] <- c("region","id","sector","weight","turnover","factor","surveyQ")
-#BER.M$surveyQ <- toupper(BER.M$surveyQ)
-#BER.M$sector <- factor(BER.M$sector) #could include labels
-#BER.M$id <- factor(BER.M$id)
-#BER.M$surveyQ <- factor(BER.M$surveyQ)
-
-##=============================
-#Clean regions
-#Mode <- function(x) {
-#    ux <- na.remove(unique(x))
-#    ux[which.max(tabulate(match(x, ux)))]
-#}
-
-#foute <- c("2000Q2","2000Q3","2000Q4","2001Q1")
-#korrek <- c("1999Q1","1999Q2","1999Q3","1999Q4","2001Q2","2001Q3","2001Q4",
-#            "2002Q1","2002Q2","2002Q3","2002Q4","2003Q1")
-
-#for(i in levels(BER.M$id)) {
-#    if(!is.na(Mode(BER.M$region[(BER.M$surveyQ %in% korrek) & (BER.M$id == i)]))) {
-#        BER.M$region[(BER.M$surveyQ %in% foute) & (BER.M$id == i)] <- Mode(BER.M$region[(BER.M$surveyQ %in% korrek) & (BER.M$id == i)]) 
-#    }
-#}
-#BER.M$region <- factor(BER.M$region)
-
-#write.csv(man, "check2.csv")
-
-
-##=============================
-#Correcting the faktor variable 
+#Correcting the old faktor variable 
 BER.M <- read.csv("Manufacturing_current faktor.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-
 colnames(BER.M)[1:7] <- c("region","id","sector","weight","turnover","factor","surveyQ")
 BER.M$surveyQ <- toupper(BER.M$surveyQ)
 BER.M$sector <- factor(BER.M$sector) #could include labels
 BER.M$id <- factor(BER.M$id)
 BER.M$surveyQ <- factor(BER.M$surveyQ)
 
-##=============================
 #Clean faktor
 Mode <- function(x) {
     ux <- na.remove(unique(x))
     ux[which.max(tabulate(match(x, ux)))]
 }
-
 foute <- c("2000Q2","2000Q3","2000Q4","2001Q1")
 korrek <- c("1999Q1","1999Q2","1999Q3","1999Q4",
             "2001Q2","2001Q3","2001Q4","2002Q1","2002Q2","2002Q3","2002Q4",
             "2003Q1","2003Q2","2003Q3","2003Q4")#,"2004Q1","2004Q2","2004Q3","2004Q4",
-            #"2005Q1","2005Q2","2005Q3","2006Q1","2006Q2","2006Q3","2006Q4")
-
+#"2005Q1","2005Q2","2005Q3","2006Q1","2006Q2","2006Q3","2006Q4")
 for(i in levels(BER.M$id)) {
     if(!is.na(Mode(BER.M$factor[(BER.M$surveyQ %in% korrek) & (BER.M$id == i)]))) {
         BER.M$factor[(BER.M$surveyQ %in% foute) & (BER.M$id == i)] <- Mode(BER.M$factor[(BER.M$surveyQ %in% korrek) & (BER.M$id == i)]) 
     }
 }
-
-#write.csv(BER.M, "check2.csv")
-
-##=============================
 #BER.M <- read.csv("Manufacturing_corrected.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-
 #colnames(BER.M)[1:7] <- c("region","id","sector","weight","turnover","factor","surveyQ")
 #BER.M$surveyQ <- toupper(BER.M$surveyQ)
 #BER.M$sector <- factor(BER.M$sector) #could include labels
@@ -118,7 +77,6 @@ for(i in levels(BER.M$id)) {
 BER.M <- BER.M[BER.M$Latecomer == FALSE | is.na(BER.M$Latecomer),]
 BER.M <- BER.M[,!grepl("X",colnames(BER.M))]    
 BER.M <- BER.M[,1:64]
-#==============================
 # replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
 for(i in 8:64) {
     BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==2, 0)
@@ -130,120 +88,337 @@ for(i in 43:49) {
     BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==-1, 0)
 }
 
+#-----------------------
+#New faktor variable 
+BER.Mn <- read.csv("Manufacturing_new faktor.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+colnames(BER.Mn)[1:7] <- c("region","id","sector","weight","turnover","factor","surveyQ")
+BER.Mn$surveyQ <- toupper(BER.Mn$surveyQ)
+BER.Mn$sector <- factor(BER.Mn$sector) #could include labels
+BER.Mn$id <- factor(BER.Mn$id)
+
+#Clean SurveyQ variable
+BER.Mn$temp <- NULL
+for(i in 1:nrow(BER.Mn)) {
+    ifelse(substr(BER.Mn$surveyQ[i], 1, 1)==9, 
+           BER.Mn$temp[i] <- paste0("19",BER.Mn$surveyQ[i],sep=""),
+           BER.Mn$temp[i] <- paste0("20",BER.Mn$surveyQ[i],sep=""))
+}
+BER.Mn$surveyQ <- BER.Mn$temp
+BER.Mn <- BER.Mn[,-ncol(BER.Mn)]
+BER.Mn$surveyQ <- factor(BER.Mn$surveyQ)
+
+#Exlcude Latecomers and old questions
+BER.Mn <- BER.Mn[BER.Mn$Latecomer == FALSE | is.na(BER.Mn$Latecomer),]
+BER.Mn <- BER.Mn[,!grepl("X",colnames(BER.Mn))]    
+BER.Mn <- BER.Mn[,1:64]
+
+# replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
+for(i in 8:64) {
+    BER.Mn[,i] <- replace(BER.Mn[,i], BER.Mn[,i]==2, 0)
+    BER.Mn[,i] <- replace(BER.Mn[,i], BER.Mn[,i]==3,-1)
+}
+for(i in 43:49) {
+    BER.Mn[,i] <- replace(BER.Mn[,i], BER.Mn[,i]==0, 0.5)
+    BER.Mn[,i] <- replace(BER.Mn[,i], BER.Mn[,i]==-1, 0)
+}
+
+#-----------------------
+#New 2-step weighting 
+BER.M2 <- read.csv("Manufacturing_new faktor_sep.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+colnames(BER.M2)[1:9] <- c("region","id","sector","weight","turnover","firmw","sectorw","factor","surveyQ")
+BER.M2$surveyQ <- toupper(BER.M2$surveyQ)
+BER.M2$sector <- factor(BER.M2$sector) #could include labels
+BER.M2$id <- factor(BER.M2$id)
+BER.M2$surveyQ <- factor(BER.M2$surveyQ)
+BER.M2$factor <- as.numeric(as.character(BER.M2$factor))
+#BER.M$factor <- BER.M$firmw * BER.M$sectorw
+
+BER.M2 <- BER.M2[BER.M2$Latecomer == FALSE | is.na(BER.M2$Latecomer),]
+BER.M2 <- BER.M2[,!grepl("X",colnames(BER.M2))]    
+BER.M2 <- BER.M2[,1:66]
+
+#Maak factor reg
+Ej <- aggregate(BER.M2$firmw, by=list(BER.M2$surveyQ,BER.M2$sector), FUN=sum)
+BER.M2 <-  merge(BER.M2, Ej, by.x=c("surveyQ","sector"), by.y=c("Group.1","Group.2"),all = TRUE)
+BER.M2$factor <- BER.M2$factor/BER.M2$x
+BER.M2 <- BER.M2[,c(3,4,2,5:9,1,10:66)]
+
+for(i in 10:66) {
+    BER.M2[,i] <- replace(BER.M2[,i], BER.M2[,i]==2, 0)
+    BER.M2[,i] <- replace(BER.M2[,i], BER.M2[,i]==3,-1)
+}
+for(i in 45:51) {
+    BER.M2[,i] <- replace(BER.M2[,i], BER.M2[,i]==0, 0.5)
+    BER.M2[,i] <- replace(BER.M2[,i], BER.M2[,i]==-1, 0)
+}
+
+
+#-----------------------
+#Exports: New faktor variable 
+BER.Mne <- read.csv("Manufacturing_new faktor_exp.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)[,c(-6,-7)]
+colnames(BER.Mne)[1:7] <- c("region","id","sector","weight","turnover","factor","surveyQ")
+BER.Mne$surveyQ <- toupper(BER.Mne$surveyQ)
+BER.Mne$sector <- factor(BER.Mne$sector) #could include labels
+BER.Mne$id <- factor(BER.Mne$id)
+
+#Clean SurveyQ variable
+BER.Mne$temp <- NULL
+for(i in 1:nrow(BER.Mne)) {
+    ifelse(substr(BER.Mne$surveyQ[i], 1, 1)==9, 
+           BER.Mne$temp[i] <- paste0("19",BER.Mne$surveyQ[i],sep=""),
+           BER.Mne$temp[i] <- paste0("20",BER.Mne$surveyQ[i],sep=""))
+}
+BER.Mne$surveyQ <- BER.Mne$temp
+BER.Mne <- BER.Mne[,-ncol(BER.Mne)]
+BER.Mne$surveyQ <- factor(BER.Mne$surveyQ)
+
+#Exlcude Latecomers and old questions
+BER.Mne <- BER.Mne[BER.Mne$Latecomer == FALSE | is.na(BER.Mne$Latecomer),]
+BER.Mne <- BER.Mne[,!grepl("X",colnames(BER.Mne))]    
+BER.Mne <- BER.Mne[,1:64]
+
+# replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
+for(i in 8:64) {
+    BER.Mne[,i] <- replace(BER.Mne[,i], BER.Mne[,i]==2, 0)
+    BER.Mne[,i] <- replace(BER.Mne[,i], BER.Mne[,i]==3,-1)
+}
+for(i in 43:49) {
+    BER.Mne[,i] <- replace(BER.Mne[,i], BER.Mne[,i]==0, 0.5)
+    BER.Mne[,i] <- replace(BER.Mne[,i], BER.Mne[,i]==-1, 0)
+}
+
+#-----------------------
+#Exports: New 2-step weighting 
+BER.M2e <- read.csv("Manufacturing_new faktor_exp.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
+colnames(BER.M2e)[1:9] <- c("region","id","sector","weight","turnover","firmw","sectorw","factor","surveyQ")
+BER.M2e$surveyQ <- toupper(BER.M2e$surveyQ)
+BER.M2e$sector <- factor(BER.M2e$sector) #could include labels
+BER.M2e$id <- factor(BER.M2e$id)
+BER.M2e$temp <- NULL
+for(i in 1:nrow(BER.M2e)) {
+    ifelse(substr(BER.M2e$surveyQ[i], 1, 1)==9, 
+           BER.M2e$temp[i] <- paste0("19",BER.M2e$surveyQ[i],sep=""),
+           BER.M2e$temp[i] <- paste0("20",BER.M2e$surveyQ[i],sep=""))
+}
+BER.M2e$surveyQ <- BER.M2e$temp
+BER.M2e <- BER.M2e[,-ncol(BER.M2e)]
+BER.M2e$surveyQ <- factor(BER.M2e$surveyQ)
+BER.M2e$factor <- as.numeric(as.character(BER.M2e$factor))
+BER.M2e <- BER.M2e[BER.M2e$Latecomer == FALSE | is.na(BER.M2e$Latecomer),]
+BER.M2e <- BER.M2e[,!grepl("X",colnames(BER.M2e))]    
+BER.M2e <- BER.M2e[,1:66]
+
+#Maak factor reg
+Ej <- aggregate(BER.M2e$firmw, by=list(BER.M2e$surveyQ,BER.M2e$sector), FUN=sum)
+BER.M2e <-  merge(BER.M2e, Ej, by.x=c("surveyQ","sector"), by.y=c("Group.1","Group.2"),all = TRUE)
+BER.M2e$factor <- BER.M2e$factor/BER.M2e$x
+BER.M2e <- BER.M2e[,c(3,4,2,5:9,1,10:66)]
+
+for(i in 10:66) {
+    BER.M2e[,i] <- replace(BER.M2e[,i], BER.M2e[,i]==2, 0)
+    BER.M2e[,i] <- replace(BER.M2e[,i], BER.M2e[,i]==3,-1)
+}
+for(i in 45:51) {
+    BER.M2e[,i] <- replace(BER.M2e[,i], BER.M2e[,i]==0, 0.5)
+    BER.M2e[,i] <- replace(BER.M2e[,i], BER.M2e[,i]==-1, 0)
+}
+
+```
+
+```{r M.man, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
 ##======================##
 ## CALCULATE INDICATORS ##
 ##======================##
+#MANUFACTURING
 food <- c(1010, 1011,1013,1019,1020,1021)
 textiles <- c(1120,1040,1049,1042,1060,1070)
 wood <- c(1109,1110,1080,1081)
 chemicals <- c(1130,1140,1149,1219)
 glass <- c(1153,1159)
 metals <- c(1160,1161,1170,1179,1181,1182,1189)
-electrical <- c(1190,1191,1199)
-radio <- c(1192,1194)
-transport <- c(1200,1201,1209)
+electrical <- c(1190,1191,1199,1192,1194)
+transport.m <- c(1200,1201,1209)
 furniture <- c(1090,1099)
-all <- as.numeric(as.character(unique(BER.M$sector)))
+all_m <- as.numeric(as.character(unique(BER.M$sector)))
 
 consumer <- c(1010,1011,1019,1049,1060,1070,1090,1099,1110,1120,1149,1189,1192,1020,1021)
 intermediate <- c(1013,1040,1042,1080,1081,1109,1130,1140,1153,1159,1160,1161,
                   1179,1191,1199,1219)
 capital <- c(1170,1181,1182,1189,1190,1194,1200,1201,1209)
-             
 streke <- unique(BER.M$region)
 
 
-ongeweeg <- function(sektor=all,streek=streke) {
-    man <- BER.M[BER.M$sector %in% sektor & BER.M$region %in% streek,]
-    sector <- aggregate(man[,(match("surveyQ",colnames(man))+1):ncol(man)], by=list(man$surveyQ), FUN=mean, na.rm=TRUE)
-    sector <- merge(datums,sector, by.x="Date", by.y="Group.1", all=TRUE)
-    sector[,-1:-2] <- na.approx(sector[,-1:-2]*100)
+ongeweeg <- function(data,sektor,streek,d) {
+    data <- data[data$sector %in% sektor & data$region %in% streek,]
+    sector <- aggregate(data[,(match("surveyQ",colnames(data))+1):ncol(data)], 
+                        by=list(data$surveyQ), FUN=mean, na.rm=TRUE)
+    sector$Obs <- aggregate(data$Q2A, by=list(data$surveyQ), FUN=length)[,2]
+    sector <- merge(datums[d,],sector, by.x="Date", by.y="Group.1", all=TRUE)
+    sector <- sector[,c(1:2,ncol(sector),3:(ncol(sector)-1))]
+    sector[,-1:-3] <- na.approx(sector[,-1:-3]*100)
     return(sector)
 }
 
-geweeg <- function(sektor=all,streek=streke) {
-    
+
+geweeg <- function(data,sektor,streek,d) {
     weeg <- function(temp) {  #calculate weighted mean for each quarter for all columns
         temp <- cbind(factor=temp$factor,temp$factor*temp[(match("surveyQ",colnames(temp))+1):ncol(temp)])
-        #temp <- colSums(temp, na.rm=TRUE, dims = 1)/sum(temp$factor, na.rm=TRUE)
-        #calculate the sum(wi*xi)/sum(wi)
-        temp <- colSums(temp, na.rm=TRUE, dims = 1)/    
+        temp <- colSums(temp, na.rm=TRUE, dims = 1)/    #calculate the sum(wi*xi)/sum(wi)
             sapply(colnames(temp), function(x) sum(temp$factor[!is.na(temp[colnames(temp) == x])]))
-        #weight only by those that responded to a specific question
-        return(temp)
+        return(temp) #weight only by those that responded to a specific question
     }
     
-    man <- BER.M[BER.M$sector %in% sektor & BER.M$region %in% streek,]
+    data <- data[data$sector %in% sektor & data$region %in% streek,]
     sector <- data.frame()
-    for(kwartaal in levels(man$surveyQ)) {
-        sector <- rbind(sector,weeg(man[man$surveyQ==kwartaal,]))
+    for(kwartaal in levels(data$surveyQ)) {
+        sector <- rbind(sector,weeg(data[data$surveyQ==kwartaal,]))
     }
-    sector <- sector *100
-    sector[,1] <- levels(man$surveyQ)
-    colnames(sector) <- colnames(man)[-1:-6]
-    sector <- merge(datums,sector, by.x="Date", by.y="surveyQ", all=TRUE)
-    #sector <- as.data.frame(t(sapply(levels(man$surveyQ), function(kwartaal) weeg(man[man$surveyQ==kwartaal,]))))
-    sector[,-1:-2] <- na.approx(sector[,-1:-2])
+    sector[,1] <- levels(data$surveyQ)
+    colnames(sector) <- colnames(data)[(match("surveyQ",colnames(data))):ncol(data)]
+    sector$Obs <- aggregate(data$Q2A, by=list(data$surveyQ), FUN=length)[,2]
+    sector <- merge(datums[d,],sector, by.x="Date", by.y="surveyQ", all=TRUE)
+    sector <- sector[,c(1:2,ncol(sector),3:(ncol(sector)-1))]
+    sector[,-1:-3] <- na.approx(sector[,-1:-3]*100)
     return(sector)
 }
+#MANUFACTURING
+Manufacturing <- geweeg(BER.M,all_m,streke,1:100)
 
-Manufacturing <- geweeg(all)
-Manufacturing[24,c(seq(3,31,by=2),33:48)] <- pub[24,2:32]
-Manufacturing[33,c(seq(3,31,by=2),33:48)] <- pub[33,2:32]
-Manufacturing[56,c(seq(3,31,by=2),33:48)] <- pub[56,2:32]
+Food <- geweeg(BER.M,food,streke,1:100)
+Textiles <- geweeg(BER.M,textiles,streke,1:100)
+Wood <- geweeg(BER.M,wood,streke,1:100)
+Chemicals <- geweeg(BER.M,chemicals,streke,1:100)
+Glass <- geweeg(BER.M,glass,streke,1:100)
+Metals <- geweeg(BER.M,metals,streke,1:100)
+Electrical <- geweeg(BER.M,electrical,streke,1:100)
+Transport <- geweeg(BER.M,transport.m,streke,1:100)
+Furniture <- geweeg(BER.M,furniture,streke,1:100)
 
-Food <- geweeg(food)
-Textiles <- geweeg(textiles)
-Wood <- geweeg(wood)
-Chemicals <- geweeg(chemicals)
-Glass <- geweeg(glass)
-Metals <- geweeg(metals)
-Electrical <- geweeg(electrical)
-Radio <- geweeg(radio)
-Elec_radio <- geweeg(c(electrical,radio))
-Transport <- geweeg(transport)
-Furniture <- geweeg(furniture)
+Consumer <- geweeg(BER.M,consumer,streke,1:100)
+Intermediate <- geweeg(BER.M,intermediate,streke,1:100)
+Capital <- geweeg(BER.M,capital,streke,1:100)
 
-Consumer <- geweeg(consumer)
-Intermediate <- geweeg(intermediate)
-Capital <- geweeg(capital)
+WC.M <- geweeg(BER.M,all_m,1,1:100)
+KZN.M <- geweeg(BER.M,all_m,5,1:100)
+GP.M <- geweeg(BER.M,all_m,6,1:100)
 
-WC <- geweeg(all,1)
-KZN <- geweeg(all,5)
-GP <- geweeg(all,6)
+#Interpolasie
+Manufacturing[24,c(seq(4,32,by=2),34:49)] <- pub_m[24,2:32]
+Manufacturing[33,c(seq(4,32,by=2),34:49)] <- pub_m[33,2:32]
+Manufacturing[56,c(seq(4,32,by=2),34:49)] <- pub_m[56,2:32]
 
-#----------------------------------
+#-------------------
 #Unweighted
-Manufacturing_u <- ongeweeg(all)
-Manufacturing[24,c(seq(3,31,by=2),33:48)] <- pub[24,2:32]
-Manufacturing[33,c(seq(3,31,by=2),33:48)] <- pub[33,2:32]
-Manufacturing[56,c(seq(3,31,by=2),33:48)] <- pub[56,2:32]
+Manufacturing_u <- ongeweeg(BER.M,all_m,streke,1:100)
 
-Food_u <- ongeweeg(food)
-Textiles_u <- ongeweeg(textiles)
-Wood_u <- ongeweeg(wood)
-Chemicals_u <- ongeweeg(chemicals)
-Glass_u <- ongeweeg(glass)
-Metals_u <- ongeweeg(metals)
-Electrical_u <- ongeweeg(electrical)
-Radio_u <- ongeweeg(radio)
-Elec_radio_u <- ongeweeg(c(electrical,radio))
-Transport_u <- ongeweeg(transport)
-Furniture_u <- ongeweeg(furniture)
+Food_u <- ongeweeg(BER.M,food,streke,1:100)
+Textiles_u <- ongeweeg(BER.M,textiles,streke,1:100)
+Wood_u <- ongeweeg(BER.M,wood,streke,1:100)
+Chemicals_u <- ongeweeg(BER.M,chemicals,streke,1:100)
+Glass_u <- ongeweeg(BER.M,glass,streke,1:100)
+Metals_u <- ongeweeg(BER.M,metals,streke,1:100)
+Electrical_u <- ongeweeg(BER.M,electrical,streke,1:100)
+Transport_u <- ongeweeg(BER.M,transport.m,streke,1:100)
+Furniture_u <- ongeweeg(BER.M,furniture,streke,1:100)
 
-Consumer_u <- ongeweeg(consumer)
-Intermediate_u <- ongeweeg(intermediate)
-Capital_u <- ongeweeg(capital)
+Consumer_u <- ongeweeg(BER.M,consumer,streke,1:100)
+Intermediate_u <- ongeweeg(BER.M,intermediate,streke,1:100)
+Capital_u <- ongeweeg(BER.M,capital,streke,1:100)
 
-WC_u <- ongeweeg(all,1)
-KZN_u <- ongeweeg(all,5)
-GP_u <- ongeweeg(all,6)
+WC.M_u <- ongeweeg(BER.M,all_m,1,1:100)
+KZN.M_u <- ongeweeg(BER.M,all_m,5,1:100)
+GP.M_u <- ongeweeg(BER.M,all_m,6,1:100)
+
+Manufacturing_u[24,c(seq(4,32,by=2),34:49)] <- pub_m[24,2:32]
+Manufacturing_u[33,c(seq(4,32,by=2),34:49)] <- pub_m[33,2:32]
+Manufacturing_u[56,c(seq(4,32,by=2),34:49)] <- pub_m[56,2:32]
+
+#------------------
+#New faktor
+Manufacturing_n <- geweeg(BER.Mn,all_m,streke,1:100)
+
+Food_n <- geweeg(BER.Mn,food,streke,1:100)
+Textiles_n <- geweeg(BER.Mn,textiles,streke,1:100)
+Wood_n <- geweeg(BER.Mn,wood,streke,1:100)
+Chemicals_n <- geweeg(BER.Mn,chemicals,streke,1:100)
+Glass_n <- geweeg(BER.Mn,glass,streke,1:100)
+Metals_n <- geweeg(BER.Mn,metals,streke,1:100)
+Electrical_n <- geweeg(BER.Mn,electrical,streke,1:100)
+Transport_n <- geweeg(BER.Mn,transport.m,streke,1:100)
+Furniture_n <- geweeg(BER.Mn,furniture,streke,1:100)
+
+Consumer_n <- geweeg(BER.Mn,consumer,streke,1:100)
+Intermediate_n <- geweeg(BER.Mn,intermediate,streke,1:100)
+Capital_n <- geweeg(BER.Mn,capital,streke,1:100)
+
+WC.M_n <- geweeg(BER.Mn,all_m,1,1:100)
+KZN.M_n <- geweeg(BER.Mn,all_m,5,1:100)
+GP.M_n <- geweeg(BER.Mn,all_m,6,1:100)
+
+Manufacturing_n[24,c(seq(4,32,by=2),34:49)] <- pub_m[24,2:32]
+Manufacturing_n[33,c(seq(4,32,by=2),34:49)] <- pub_m[33,2:32]
+Manufacturing_n[56,c(seq(4,32,by=2),34:49)] <- pub_m[56,2:32]
+
+#-------------------
+#Two-step
+BER.M2 <- BER.M2[,-6:-7]
+Manufacturing_2 <- geweeg(BER.M2,all_m,streke,1:100)
+
+Food_2 <- geweeg(BER.M2,food,streke,1:100)
+Textiles_2 <- geweeg(BER.M2,textiles,streke,1:100)
+Wood_2 <- geweeg(BER.M2,wood,streke,1:100)
+Chemicals_2 <- geweeg(BER.M2,chemicals,streke,1:100)
+Glass_2 <- geweeg(BER.M2,glass,streke,1:100)
+Metals_2 <- geweeg(BER.M2,metals,streke,1:100)
+Electrical_2 <- geweeg(BER.M2,electrical,streke,1:100)
+Transport_2 <- geweeg(BER.M2,transport.m,streke,1:100)
+Furniture_2 <- geweeg(BER.M2,furniture,streke,1:100)
+
+Consumer_2 <- geweeg(BER.M2,consumer,streke,1:100)
+Intermediate_2 <- geweeg(BER.M2,intermediate,streke,1:100)
+Capital_2 <- geweeg(BER.M2,capital,streke,1:100)
+
+WC.M_2 <- geweeg(BER.M2,all_m,1,1:100)
+KZN.M_2 <- geweeg(BER.M2,all_m,5,1:100)
+GP.M_2 <- geweeg(BER.M2,all_m,6,1:100)
+
+Manufacturing_2[24,c(seq(4,32,by=2),34:49)] <- pub_m[24,2:32]
+Manufacturing_2[33,c(seq(4,32,by=2),34:49)] <- pub_m[33,2:32]
+Manufacturing_2[56,c(seq(4,32,by=2),34:49)] <- pub_m[56,2:32]
+
+#-------------
+#Exports
+#New faktor
+Manufacturing_ne <- geweeg(BER.Mne,all_m,streke,1:100)
+
+Food_ne <- geweeg(BER.Mne,food,streke,1:100)
+Textiles_ne <- geweeg(BER.Mne,textiles,streke,1:100)
+Wood_ne <- geweeg(BER.Mne,wood,streke,1:100)
+Chemicals_ne <- geweeg(BER.Mne,chemicals,streke,1:100)
+Glass_ne <- geweeg(BER.Mne,glass,streke,1:100)
+Metals_ne <- geweeg(BER.Mne,metals,streke,1:100)
+Electrical_ne <- geweeg(BER.Mne,electrical,streke,1:100)
+Transport_ne <- geweeg(BER.Mne,transport.m,streke,1:100)
+Furniture_ne <- geweeg(BER.Mne,furniture,streke,1:100)
+
+#-------------------
+#Two-step
+#Manufacturing_n2e <- maak.index(all_m)[1:100,]
+BER.M2e <- BER.M2e[,-6:-7]
+Manufacturing_2e <- geweeg(BER.M2e,all_m,streke,1:100)
+Food_2e <- geweeg(BER.M2e,food,streke,1:100)
+Textiles_2e <- geweeg(BER.M2e,textiles,streke,1:100)
+Wood_2e <- geweeg(BER.M2e,wood,streke,1:100)
+Chemicals_2e <- geweeg(BER.M2e,chemicals,streke,1:100)
+Glass_2e <- geweeg(BER.M2e,glass,streke,1:100)
+Metals_2e <- geweeg(BER.M2e,metals,streke,1:100)
+Electrical_2e <- geweeg(BER.M2e,electrical,streke,1:100)
+Transport_2e <- geweeg(BER.M2e,transport.m,streke,1:100)
+Furniture_2e <- geweeg(BER.M2e,furniture,streke,1:100)
 ```
 
 
-
-
-## Weighted and Unweighted Results for Q20 (Confidence)
+##Weighted and Unweighted Results for Q20 (Confidence)
 
 ```{r figure1, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- cbind(Manufacturing[,c("Datum","Q20")],Manufacturing_u[,c("Q20")])
@@ -260,9 +435,9 @@ g
 
 ```
 
-# Published Results
+#Published Results
 
-## Results for Q20 (Confidence)
+##Results for Q20 (Confidence)
 ```{r figure2, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- cbind(Manufacturing[,c("Datum","Q20")],pub[,c("Total_Q20")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
@@ -278,7 +453,7 @@ g
 
 ```
 
-## Microdata vs. Published Results
+##Microdata vs. Published Results
 ```{r figure3, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- cbind(Manufacturing[,c("Datum","Q1A")],pub[,c("Total_Q1A")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
@@ -338,7 +513,7 @@ grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 ```
 
 
-## Microdata vs. Published Results (Constraints)
+##Microdata vs. Published Results (Constraints)
 ```{r figure4, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- cbind(Manufacturing[,c("Datum","Q21")],pub[,c("Total_Q21")])
 colnames(indicator_plot) <- c("Date","Microdata","Published")
@@ -398,180 +573,14 @@ grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 ```
 
 
-# New weightings
+#New Weights and Factors
 
-
-```{r M.man1, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
-##=============================
-#New faktor variable 
-BER.M <- read.csv("Manufacturing_new faktor.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-
-colnames(BER.M)[1:9] <- c("region","id","sector","weight","turnover","firmw","sectorw","factor","surveyQ")
-BER.M$surveyQ <- toupper(BER.M$surveyQ)
-BER.M$sector <- factor(BER.M$sector) #could include labels
-BER.M$id <- factor(BER.M$id)
-BER.M$surveyQ <- factor(BER.M$surveyQ)
-
-#Exlcude Latecomers and old questions
-BER.M <- BER.M[BER.M$Latecomer == FALSE | is.na(BER.M$Latecomer),]
-BER.M <- BER.M[,!grepl("X",colnames(BER.M))]    
-BER.M <- BER.M[,1:66]
-#==============================
-# replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
-for(i in 10:66) {
-    BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==2, 0)
-    BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==3,-1)
-}
-
-for(i in 45:51) {
-    BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==0, 0.5)
-    BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==-1, 0)
-}
-
-BER.M <- BER.M[,-6:-7]
-
-Manufacturing_n <- geweeg(all)
-Manufacturing_n[24,c(seq(3,31,by=2),33:48)] <- pub[24,2:32]
-Manufacturing_n[33,c(seq(3,31,by=2),33:48)] <- pub[33,2:32]
-Manufacturing_n[56,c(seq(3,31,by=2),33:48)] <- pub[56,2:32]
-
-Food_n <- geweeg(food)
-Textiles_n <- geweeg(textiles)
-Wood_n <- geweeg(wood)
-Chemicals_n <- geweeg(chemicals)
-Glass_n <- geweeg(glass)
-Metals_n <- geweeg(metals)
-Electrical_n <- geweeg(electrical)
-Radio_n <- geweeg(radio)
-Elec_radio_n <- geweeg(c(electrical,radio))
-Transport_n <- geweeg(transport)
-Furniture_n <- geweeg(furniture)
-
-Consumer_n <- geweeg(consumer)
-Intermediate_n <- geweeg(intermediate)
-Capital_n <- geweeg(capital)
-
-WC_n <- geweeg(all,1)
-KZN_n <- geweeg(all,5)
-GP_n <- geweeg(all,6)
-
-```
-
-```{r M.man2, echo=FALSE, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
-#New 2-step weighting 
-BER.M <- read.csv("Manufacturing_new faktor.csv", header=TRUE, sep=",",na.strings = "", skipNul = TRUE)
-
-colnames(BER.M)[1:9] <- c("region","id","sector","weight","turnover","firmw","sectorw","factor","surveyQ")
-BER.M$surveyQ <- toupper(BER.M$surveyQ)
-BER.M$sector <- factor(BER.M$sector) #could include labels
-BER.M$id <- factor(BER.M$id)
-BER.M$surveyQ <- factor(BER.M$surveyQ)
-
-#Exlcude Latecomers and old questions
-BER.M <- BER.M[BER.M$Latecomer == FALSE | is.na(BER.M$Latecomer),]
-BER.M <- BER.M[,!grepl("X",colnames(BER.M))]    
-BER.M <- BER.M[,1:66]
-#==============================
-# replace 1,2,3 (Up, Same, Down) responses with 1,0,-1
-for(i in 10:66) {
-    BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==2, 0)
-    BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==3,-1)
-}
-
-for(i in 45:51) {
-    BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==0, 0.5)
-    BER.M[,i] <- replace(BER.M[,i], BER.M[,i]==-1, 0)
-}
-
-geweeg2 <- function(sektor=all,streek=streke) {
-    
-    weeg2 <- function(temp) {  #calculate weighted mean for each quarter for all columns
-        sectorw=temp$sectorw[1]
-        temp <- cbind(firmw=temp$firmw,temp$firmw*temp[(match("surveyQ",colnames(temp))+1):ncol(temp)])
-        #temp <- colSums(temp, na.rm=TRUE, dims = 1)/sum(temp$factor, na.rm=TRUE)
-        #calculate the sum(wi*xi)/sum(wi)
-        temp <- colSums(temp, na.rm=TRUE, dims = 1)/    
-            sapply(colnames(temp), function(x) sum(temp$firmw[!is.na(temp[colnames(temp) == x])]))
-        temp <- c(sectorw,temp)
-        #weight only by those that responded to a specific question
-        return(temp)
-    }
-    
-    man <- BER.M[BER.M$sector %in% sektor & BER.M$region %in% streek,]
-    sector <- data.frame()
-    for(kwartaal in levels(man$surveyQ)) {
-        sector <- rbind(sector,weeg2(man[man$surveyQ==kwartaal,]))
-    }
-    
-    sector <- sector *100
-    sector[,2] <- levels(man$surveyQ)
-    colnames(sector) <- colnames(man)[c(7,9:ncol(man))]
-    sector <- merge(datums,sector, by.x="Date", by.y="surveyQ", all=TRUE)
-    #sector <- as.data.frame(t(sapply(levels(man$surveyQ), function(kwartaal) weeg(man[man$surveyQ==kwartaal,]))))
-    sector[,3:58] <- na.approx(sector[,3:58],na.rm = FALSE)
-    return(sector)
-    
-}
-
-
-
-maak.index <- function(sektor=all,streek=streke) {
-    lys <- list()
-    t <- 0
-    for(k in sektor) {
-        t <- t+1
-        lys[[t]] <- geweeg2(k)
-    }
-    saam <- lys[[1]]
-    for(j in 4:60) {
-        for(i in 1:100) {
-            x <- NULL
-            w <- NULL
-            for(t in 1:length(sektor)) {
-                x <- c(x,lys[[t]][i,j])
-                w <- c(w,lys[[t]][i,3])
-            }
-            saam[i,j] <- weighted.mean(x,w,na.rm=TRUE) 
-        }
-    }
-    saam <- saam[,-3]
-    return(saam)
-}
-
-
-Manufacturing_2 <- maak.index(all)
-Manufacturing_2[24,c(seq(3,31,by=2),33:48)] <- pub[24,2:32]
-Manufacturing_2[33,c(seq(3,31,by=2),33:48)] <- pub[33,2:32]
-Manufacturing_2[56,c(seq(3,31,by=2),33:48)] <- pub[56,2:32]
-
-Food_2 <- maak.index(food)
-Textiles_2 <- maak.index(textiles)
-Wood_2 <- maak.index(wood)
-Chemicals_2 <- maak.index(chemicals)
-Glass_2 <- maak.index(glass)
-Metals_2 <- maak.index(metals)
-Electrical_2 <- maak.index(electrical)
-Radio_2 <- maak.index(radio)
-Elec_radio_2 <- maak.index(c(electrical,radio))
-Transport_2 <- maak.index(transport)
-Furniture_2 <- maak.index(furniture)
-
-Consumer_2 <- maak.index(consumer)
-Intermediate_2 <- maak.index(intermediate)
-Capital_2 <- maak.index(capital)
-
-WC_2 <- maak.index(all,1)
-KZN_2 <- maak.index(all,5)
-GP_2 <- maak.index(all,6)
-
-```
-
-## New factors weightings
+##New weights and factors: Q20 (Confidence)
 
 ```{r figure5, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- cbind(Manufacturing[,c("Datum","Q20")],
                         Manufacturing_n[,c("Q20")],Manufacturing_2[,c("Q20")])
-colnames(indicator_plot) <- c("Date","Q20:Microdata","Q20:New","Q20:2-step")
+colnames(indicator_plot) <- c("Date","Microdata","New Factors","2-step")
 indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
 g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
 g <- g + geom_line()
@@ -584,9 +593,7 @@ g
 ```
 
 
-##Other questions
-
-
+##New weights and factors: Other questions
 ```{r figure6, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- cbind(Manufacturing[,c("Datum","Q1A")],
                         Manufacturing_n[,c("Q1A")],Manufacturing_2[,c("Q1A")])
@@ -648,8 +655,7 @@ library(gridExtra)
 grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 ```
 
-##Constraints
-
+##New weights and factors: Constraints
 ```{r figure7, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- cbind(Manufacturing[,c("Datum","Q21")],
                         Manufacturing_n[,c("Q21")],Manufacturing_2[,c("Q21")])
@@ -712,9 +718,9 @@ grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 ```
 
 
-# Sectors
+#Sectors
 
-## New BER classification: Q20 (Confidence)
+##New BER classifications: Q20 (Confidence)
 ```{r figure8, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- cbind(Food[,c("Datum","Q20")],
                         Food_n[,c("Q20")],Food_2[,c("Q20")])
@@ -778,8 +784,7 @@ grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 ```
 
 
-##Sectors2
-
+##New BER classifications: Q20 (Confidence)
 ```{r figure9, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- cbind(Glass[,c("Datum","Q20")],
                         Glass_n[,c("Q20")],Glass_2[,c("Q20")])
@@ -841,8 +846,7 @@ library(gridExtra)
 grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 ```
 
-
-## Main industrial groups: Q20 (Confidence) 
+##New BER classifications: Q20 (Confidence)
 ```{r figure10, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 #New Sector Classifications
 indicator_plot <- cbind(Furniture[,c("Datum","Q20")],
@@ -907,8 +911,7 @@ grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 
 #Regions
 
-## Regional Observations
-
+##Regional Observations
 ```{r figure11, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 BERplot <- aggregate(BER.M$id, by=list(BER.M$surveyQ,BER.M$region), FUN = length)
 BERplot$Group.1 <- as.Date(as.yearqtr(BERplot$Group.1, format = "%YQ%q"))
@@ -925,7 +928,7 @@ g
 ```
 
 
-## Regional Results for Q20 (Confidence)
+##Regional Results for Q20 (Confidence)
 ```{r figure12, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- cbind(WC[,c("Datum","Q20")],
                         WC_n[,c("Q20")],WC_2[,c("Q20")])
@@ -990,7 +993,7 @@ grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 
 #Reference Series
 
-## Total Manufacturing Activity
+##Total Manufacturing Activity
 ```{r figure13, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 #Reference series
 indicator_plot <- cbind(Manufacturing[,c("Datum","Q3A")],Manufacturing_n[,c("Q3A")],
@@ -1009,27 +1012,58 @@ g
 ```
 
 
-## Correlations with reference series
-```{r table1, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+##Correlations with reference series
+```{r table1, echo=FALSE, eval=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
 source("corstarsl.R")
 Manu <- cbind(Manufacturing[,c("Q1A","Q3A")],Manufacturing_u[,c("Q1A","Q3A")],
               Manufacturing_n[,c("Q1A","Q3A")],Manufacturing_2[,c("Q1A","Q3A")],
-              ref[,c("RTotal_Sales.sa","Total_Vol.sa","Total.sa")])
+              ref_m[,c("RTotal_Sales.sa","Total_Vol.sa","Total.sa")])
 colnames(Manu) <- c("Q1A","Q3A","Q1A_u","Q3A_u","Q1A_new","Q3A_new","Q1A_2s","Q3A_2s","SARB:Sales","SARB:Volume","StatsSA:Volume")
 
-xt <- xtable(corstarsl(Manu)[9:11,1:8])
-print(xt, "latex",comment=FALSE,scalebox = 0.6)
+xt <- xtable(corstarsl(Manu)[9:11,1:8], caption="Correlations between indicators and reference series")
+xt <- xt[,c(1,3,5,7,2,4,6,8)]
+print(xt, "latex",comment=FALSE, caption.placement = getOption("xtable.caption.placement", "top"),scalebox = 0.6)
 
 V <- sapply(colnames(Manu),function(x) sd(Manu[,x], na.rm = TRUE))[1:8]
-V <- t(as.data.frame(V))
-row.names(V) <- "Vol"
-xt <- xtable(V)
-print(xt, "latex",comment=FALSE,scalebox = 0.6)
-
+V <- t(as.data.frame(as.character(format(round(V,2),scientific=FALSE))))
+row.names(V) <- "Volatility"
+xt <- xtable(V, caption="Volatility of the indicators")
+xt <- xt[,c(1,3,5,7,2,4,6,8)]
+print(xt, "latex", comment=FALSE, scalebox = 0.6)
 ```
 
+\begin{table}[ht]
+\centering
+\caption{Correlations between indicators and reference series}
+\scalebox{0.6}{
+\begin{tabular}{|l|llll|llll|}
+  \hline
+ & Q1A & Q1A\_u & Q1A\_new & Q1A\_2s & Q3A & Q3A\_u & Q3A\_new & Q3A\_2s \\ 
+  \hline
+SARB:Sales &  0.62*** &  0.57*** &  0.58*** &  0.59*** &  0.65*** &  0.60*** &  0.61*** &  0.64*** \\ 
+  SARB:Volume &  0.72*** &  0.69*** &  0.71*** &  0.70*** &  0.74*** &  0.71*** &  0.72*** &  0.73*** \\ 
+  StatsSA:Volume &  0.74*** &  0.70*** &  0.72*** &  0.72*** &  0.71*** &  0.70*** &  0.71*** &  0.72*** \\ 
+   \hline
+\end{tabular}
+}
+\end{table}
 
-## Sectoral Manufacturing Activity
+
+\begin{table}[ht]
+\centering
+\caption{Volatility of the indicators}
+\scalebox{0.6}{
+\begin{tabular}{|l|llll|llll|}
+  \hline
+ & Q1A & Q1A\_u & Q1A\_new & Q1A\_2s & Q3A & Q3A\_u & Q3A\_new & Q3A\_2s \\ 
+  \hline
+Volatility & 27.18 & 22.99 & 23.2 & 24.45 & 24.98 & 21.58 & 21.71 & 22.66 \\ 
+   \hline
+\end{tabular}
+}
+\end{table}
+
+##Sectoral Manufacturing Activity
 ```{r figure14, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- cbind(Food[,c("Datum","Q3A")],Food_n[,c("Q3A")],ref[,c("Food.sa")])
 indicator_plot[,-1] <- scale(indicator_plot[,-1])
@@ -1091,7 +1125,7 @@ library(gridExtra)
 grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 ```
 
-## Sectoral Manufacturing Activity
+##Sectoral Manufacturing Activity
 ```{r figure15, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- cbind(Glass[,c("Datum","Q3A")],Glass_n[,c("Q3A")],ref[,c("Glass.sa")])
 indicator_plot[,-1] <- scale(indicator_plot[,-1])
@@ -1156,7 +1190,7 @@ grid.arrange(g1, g2, g3, g4, ncol=2, nrow =2)
 ```
 
 
-## Sectoral Manufacturing Activity
+##Sectoral Manufacturing Activity
 ```{r figure16, echo=FALSE, warning=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
 indicator_plot <- cbind(Furniture[,c("Datum","Q3A")],Furniture_n[,c("Q3A")],
                         ref[,c("Furniture.sa","Furniture_all.sa")])
@@ -1174,59 +1208,60 @@ g <- g + theme(legend.position="bottom")
 g
 ```
 
-## Correlations with reference series
-```{r table2, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+##Correlations with reference series
+```{r table2, echo=FALSE, eval=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
 source("corstarsl.R")
+ref_m$Elec_Radio <- rowMeans(ref_m[,c("Electrical.sa","Radio.sa")])
 
-x1 <- corstarsl(cbind(Food[,c("Datum","Q1A","Q3A")],ref[,c("Food.sa")])[,-1])
-x2 <- corstarsl(cbind(Textiles[,c("Datum","Q1A","Q3A")],ref[,c("Textiles")])[,-1])
-x3 <- corstarsl(cbind(Wood[,c("Datum","Q1A","Q3A")],ref[,c("Wood.sa")])[,-1])
-x4 <- corstarsl(cbind(Chemicals[,c("Datum","Q1A","Q3A")],ref[,c("Chemical")])[,-1])
-x5 <- corstarsl(cbind(Glass[,c("Datum","Q1A","Q3A")],ref[,c("Glass.sa")])[,-1])
-x6 <- corstarsl(cbind(Metals[,c("Datum","Q1A","Q3A")],ref[,c("Metals.sa")])[,-1])
-x7 <- corstarsl(cbind(Elec_radio[,c("Datum","Q1A","Q3A")],ref[,c("Elec_Radio")])[,-1])
-x8 <- corstarsl(cbind(Transport[,c("Datum","Q1A","Q3A")],ref[,c("Transport.sa")])[,-1])
-x9 <- corstarsl(cbind(Furniture[,c("Datum","Q1A","Q3A")],ref[,c("Furniture_all.sa")])[,-1])
+x1 <- corstarsl(cbind(Food[,c("Datum","Q1A","Q3A")],ref_m[,c("Food.sa")])[,-1])
+x2 <- corstarsl(cbind(Textiles[,c("Datum","Q1A","Q3A")],ref_m[,c("Textiles")])[,-1])
+x3 <- corstarsl(cbind(Wood[,c("Datum","Q1A","Q3A")],ref_m[,c("Wood.sa")])[,-1])
+x4 <- corstarsl(cbind(Chemicals[,c("Datum","Q1A","Q3A")],ref_m[,c("Chemical")])[,-1])
+x5 <- corstarsl(cbind(Glass[,c("Datum","Q1A","Q3A")],ref_m[,c("Glass.sa")])[,-1])
+x6 <- corstarsl(cbind(Metals[,c("Datum","Q1A","Q3A")],ref_m[,c("Metals.sa")])[,-1])
+x7 <- corstarsl(cbind(Electrical[,c("Datum","Q1A","Q3A")],ref_m[,c("Elec_Radio")])[,-1])
+x8 <- corstarsl(cbind(Transport[,c("Datum","Q1A","Q3A")],ref_m[,c("Transport.sa")])[,-1])
+x9 <- corstarsl(cbind(Furniture[,c("Datum","Q1A","Q3A")],ref_m[,c("Furniture_all.sa")])[,-1])
 
 x_1 <- rbind(x1[3,],x2[3,],x3[3,],x4[3,],x5[3,],x6[3,],x7[3,],x8[3,],x9[3,])
 row.names(x_1) <- c("Food","Textiles","Wood","Chemicals","Glass","Metals",
-                  "Elec_radio","Transport","Furniture")
+                    "Elec_radio","Transport","Furniture")
 
 
-x1 <- corstarsl(cbind(Food_n[,c("Datum","Q1A","Q3A")],ref[,c("Food.sa")])[,-1])
-x2 <- corstarsl(cbind(Textiles_n[,c("Datum","Q1A","Q3A")],ref[,c("Textiles")])[,-1])
-x3 <- corstarsl(cbind(Wood_n[,c("Datum","Q1A","Q3A")],ref[,c("Wood.sa")])[,-1])
-x4 <- corstarsl(cbind(Chemicals_n[,c("Datum","Q1A","Q3A")],ref[,c("Chemical")])[,-1])
-x5 <- corstarsl(cbind(Glass_n[,c("Datum","Q1A","Q3A")],ref[,c("Glass.sa")])[,-1])
-x6 <- corstarsl(cbind(Metals_n[,c("Datum","Q1A","Q3A")],ref[,c("Metals.sa")])[,-1])
-x7 <- corstarsl(cbind(Elec_radio_n[,c("Datum","Q1A","Q3A")],ref[,c("Elec_Radio")])[,-1])
-x8 <- corstarsl(cbind(Transport_n[,c("Datum","Q1A","Q3A")],ref[,c("Transport.sa")])[,-1])
-x9 <- corstarsl(cbind(Furniture_n[,c("Datum","Q1A","Q3A")],ref[,c("Furniture_all.sa")])[,-1])
+x1 <- corstarsl(cbind(Food_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Food.sa")])[,-1])
+x2 <- corstarsl(cbind(Textiles_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Textiles")])[,-1])
+x3 <- corstarsl(cbind(Wood_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Wood.sa")])[,-1])
+x4 <- corstarsl(cbind(Chemicals_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Chemical")])[,-1])
+x5 <- corstarsl(cbind(Glass_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Glass.sa")])[,-1])
+x6 <- corstarsl(cbind(Metals_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Metals.sa")])[,-1])
+x7 <- corstarsl(cbind(Electrical_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Elec_Radio")])[,-1])
+x8 <- corstarsl(cbind(Transport_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Transport.sa")])[,-1])
+x9 <- corstarsl(cbind(Furniture_n[,c("Datum","Q1A","Q3A")],ref_m[,c("Furniture_all.sa")])[,-1])
 
 x_2 <- rbind(x1[3,],x2[3,],x3[3,],x4[3,],x5[3,],x6[3,],x7[3,],x8[3,],x9[3,])
 
 
-x1 <- corstarsl(cbind(Food_u[,c("Datum","Q1A","Q3A")],ref[,c("Food.sa")])[,-1])
-x2 <- corstarsl(cbind(Textiles_u[,c("Datum","Q1A","Q3A")],ref[,c("Textiles")])[,-1])
-x3 <- corstarsl(cbind(Wood_u[,c("Datum","Q1A","Q3A")],ref[,c("Wood.sa")])[,-1])
-x4 <- corstarsl(cbind(Chemicals_u[,c("Datum","Q1A","Q3A")],ref[,c("Chemical")])[,-1])
-x5 <- corstarsl(cbind(Glass_u[,c("Datum","Q1A","Q3A")],ref[,c("Glass.sa")])[,-1])
-x6 <- corstarsl(cbind(Metals_u[,c("Datum","Q1A","Q3A")],ref[,c("Metals.sa")])[,-1])
-x7 <- corstarsl(cbind(Elec_radio_u[,c("Datum","Q1A","Q3A")],ref[,c("Elec_Radio")])[,-1])
-x8 <- corstarsl(cbind(Transport_u[,c("Datum","Q1A","Q3A")],ref[,c("Transport.sa")])[,-1])
-x9 <- corstarsl(cbind(Furniture_u[,c("Datum","Q1A","Q3A")],ref[,c("Furniture_all.sa")])[,-1])
+x1 <- corstarsl(cbind(Food_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Food.sa")])[,-1])
+x2 <- corstarsl(cbind(Textiles_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Textiles")])[,-1])
+x3 <- corstarsl(cbind(Wood_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Wood.sa")])[,-1])
+x4 <- corstarsl(cbind(Chemicals_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Chemical")])[,-1])
+x5 <- corstarsl(cbind(Glass_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Glass.sa")])[,-1])
+x6 <- corstarsl(cbind(Metals_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Metals.sa")])[,-1])
+x7 <- corstarsl(cbind(Electrical_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Elec_Radio")])[,-1])
+x8 <- corstarsl(cbind(Transport_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Transport.sa")])[,-1])
+x9 <- corstarsl(cbind(Furniture_u[,c("Datum","Q1A","Q3A")],ref_m[,c("Furniture_all.sa")])[,-1])
 
 x_3 <- rbind(x1[3,],x2[3,],x3[3,],x4[3,],x5[3,],x6[3,],x7[3,],x8[3,],x9[3,])
 
-x1 <- corstarsl(cbind(Food_2[,c("Datum","Q1A","Q3A")],ref[,c("Food.sa")])[,-1])
-x2 <- corstarsl(cbind(Textiles_2[,c("Datum","Q1A","Q3A")],ref[,c("Textiles")])[,-1])
-x3 <- corstarsl(cbind(Wood_2[,c("Datum","Q1A","Q3A")],ref[,c("Wood.sa")])[,-1])
-x4 <- corstarsl(cbind(Chemicals_2[,c("Datum","Q1A","Q3A")],ref[,c("Chemical")])[,-1])
-x5 <- corstarsl(cbind(Glass_2[,c("Datum","Q1A","Q3A")],ref[,c("Glass.sa")])[,-1])
-x6 <- corstarsl(cbind(Metals_2[,c("Datum","Q1A","Q3A")],ref[,c("Metals.sa")])[,-1])
-x7 <- corstarsl(cbind(Elec_radio_2[,c("Datum","Q1A","Q3A")],ref[,c("Elec_Radio")])[,-1])
-x8 <- corstarsl(cbind(Transport_2[,c("Datum","Q1A","Q3A")],ref[,c("Transport.sa")])[,-1])
-x9 <- corstarsl(cbind(Furniture_2[,c("Datum","Q1A","Q3A")],ref[,c("Furniture_all.sa")])[,-1])
+x1 <- corstarsl(cbind(Food_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Food.sa")])[,-1])
+x2 <- corstarsl(cbind(Textiles_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Textiles")])[,-1])
+x3 <- corstarsl(cbind(Wood_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Wood.sa")])[,-1])
+x4 <- corstarsl(cbind(Chemicals_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Chemical")])[,-1])
+x5 <- corstarsl(cbind(Glass_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Glass.sa")])[,-1])
+x6 <- corstarsl(cbind(Metals_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Metals.sa")])[,-1])
+x7 <- corstarsl(cbind(Electrical_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Elec_Radio")])[,-1])
+x8 <- corstarsl(cbind(Transport_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Transport.sa")])[,-1])
+x9 <- corstarsl(cbind(Furniture_2[,c("Datum","Q1A","Q3A")],ref_m[,c("Furniture_all.sa")])[,-1])
 
 x_4 <- rbind(x1[3,],x2[3,],x3[3,],x4[3,],x5[3,],x6[3,],x7[3,],x8[3,],x9[3,])
 
@@ -1234,12 +1269,35 @@ x_4 <- rbind(x1[3,],x2[3,],x3[3,],x4[3,],x5[3,],x6[3,],x7[3,],x8[3,],x9[3,])
 x <- cbind(x_1,x_3,x_2,x_4)
 colnames(x) <- c("Q1A","Q3A","Q1A_U","Q3A_U","Q1A_New","Q3A_New","Q1A_2s","Q3A_2s")
 
-xt <- xtable(x)
-print(xt, "latex",comment=FALSE,scalebox = 0.6)
+xt <- xtable(x, caption="Correlations between sectoral indicators and reference series")
+xt <- xt[,c(1,3,5,7,2,4,6,8)]
+print(xt, "latex",comment=FALSE, scalebox = 0.6)
 ```
 
-## Volatility
-```{r table3, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+\begin{table}[ht]
+\centering
+\caption{Correlations between indicators and reference series}
+\scalebox{0.6}{
+\begin{tabular}{|l|llll|llll|}
+  \hline
+ & Q1A & Q1A\_U & Q1A\_New & Q1A\_2s & Q3A & Q3A\_U & Q3A\_New & Q3A\_2s \\ 
+  \hline
+Food & -0.08  &  0.05  &  0.02  &  0.01  & -0.14  &  0.05  &  0.00  & -0.02  \\ 
+  Textiles &  0.29**  &  0.63*** &  0.50*** &  0.63*** &  0.30**  &  0.65*** &  0.51*** &  0.62*** \\ 
+  Wood &  0.41*** &  0.53*** &  0.47*** &  0.45*** &  0.41*** &  0.49*** &  0.42*** &  0.42*** \\ 
+  Chemicals &  0.31*** &  0.30**  &  0.33*** &  0.36*** &  0.37*** &  0.34*** &  0.38*** &  0.41*** \\ 
+  Glass &  0.57*** &  0.59*** &  0.61*** &  0.60*** &  0.47*** &  0.56*** &  0.55*** &  0.51*** \\ 
+  Metals &  0.62*** &  0.68*** &  0.69*** &  0.67*** &  0.57*** &  0.69*** &  0.68*** &  0.66*** \\ 
+  Elec\_radio &  0.01  &  0.22*  &  0.03  &  0.01  &  0.04  &  0.24**  &  0.07  &  0.07  \\ 
+  Transport &  0.43*** &  0.48*** &  0.48*** &  0.50*** &  0.49*** &  0.47*** &  0.48*** &  0.54*** \\ 
+  Furniture &  0.45*** &  0.48*** &  0.48*** &  0.54*** &  0.38*** &  0.41*** &  0.39*** &  0.44*** \\ 
+   \hline
+\end{tabular}
+}
+\end{table}
+
+##Volatility
+```{r table3, eval=FALSE, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
 data <- cbind(Food[,c("Q1A","Q3A")],Food_u[,c("Q1A","Q3A")],
               Food_n[,c("Q1A","Q3A")],Food_2[,c("Q1A","Q3A")])
 V <- sapply(1:8,function(x) sd(data[,x], na.rm = TRUE))[1:8]
@@ -1264,8 +1322,8 @@ data <- cbind(Metals[,c("Q1A","Q3A")],Metals_u[,c("Q1A","Q3A")],
               Metals_n[,c("Q1A","Q3A")],Metals_2[,c("Q1A","Q3A")])
 V <- rbind(V,sapply(1:8,function(x) sd(data[,x], na.rm = TRUE))[1:8])
 
-data <- cbind(Elec_radio[,c("Q1A","Q3A")],Elec_radio_u[,c("Q1A","Q3A")],
-              Elec_radio_n[,c("Q1A","Q3A")],Elec_radio_2[,c("Q1A","Q3A")])
+data <- cbind(Electrical[,c("Q1A","Q3A")],Electrical_u[,c("Q1A","Q3A")],
+              Electrical_n[,c("Q1A","Q3A")],Electrical_2[,c("Q1A","Q3A")])
 V <- rbind(V,sapply(1:8,function(x) sd(data[,x], na.rm = TRUE))[1:8])
 
 data <- cbind(Transport[,c("Q1A","Q3A")],Transport_u[,c("Q1A","Q3A")],
@@ -1279,8 +1337,312 @@ V <- rbind(V,sapply(1:8,function(x) sd(data[,x], na.rm = TRUE))[1:8])
 colnames(V) <- c("Q1A","Q3A","Q1A_U","Q3A_U","Q1A_New","Q3A_New","Q1A_2s","Q3A_2s")
 row.names(V) <- c("Food","Textiles","Wood","Chemicals","Glass","Metals","Elec_radio","Transport","Furniture")
 
-xt <- xtable(V)
+V <- as.data.frame(V)
+V <- V[,c(1,3,5,7,2,4,6,8)]
+xt <- xtable(V, caption="Volatility of the sectoral series")
 print(xt, "latex",comment=FALSE,scalebox = 0.6)
-
 ```
+
+\begin{table}[ht]
+\centering
+\caption{Volatility of the sectoral series} 
+\scalebox{0.6}{
+\begin{tabular}{|r|rrrr|rrrr|}
+  \hline
+ & Q1A & Q1A\_U & Q1A\_New & Q1A\_2s & Q3A & Q3A\_U & Q3A\_New & Q3A\_2s \\ 
+  \hline
+Food & 35.81 & 22.77 & 24.00 & 26.79 & 35.76 & 20.65 & 23.21 & 25.05 \\ 
+  Textiles & 36.12 & 26.12 & 26.96 & 27.43 & 36.62 & 26.24 & 27.25 & 28.45 \\ 
+  Wood & 36.86 & 25.63 & 25.96 & 27.93 & 33.28 & 24.45 & 24.67 & 26.01 \\ 
+  Chemicals & 32.16 & 23.39 & 24.16 & 24.75 & 30.83 & 22.37 & 22.59 & 23.04 \\ 
+  Glass & 46.02 & 31.72 & 36.53 & 34.94 & 43.94 & 28.72 & 32.03 & 31.08 \\ 
+  Metals & 37.79 & 28.06 & 29.60 & 30.59 & 34.96 & 27.29 & 28.18 & 29.36 \\ 
+  Elec\_radio & 50.29 & 33.03 & 48.84 & 48.98 & 49.30 & 33.03 & 49.23 & 50.63 \\ 
+  Transport & 55.88 & 32.70 & 38.78 & 43.61 & 52.29 & 32.52 & 38.30 & 41.92 \\ 
+  Furniture & 44.71 & 31.50 & 35.29 & 35.01 & 43.07 & 30.42 & 34.10 & 33.45 \\ 
+   \hline
+\end{tabular}
+}
+\end{table}
+
+#Exports
+
+##New Export Series: Q2A
+```{r figure17, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
+indicator_plot <- cbind(Manufacturing[,c("Datum","Q2A")],
+                        Manufacturing_ne[,c("Q2A")],Manufacturing_2e[,c("Q2A")])
+colnames(indicator_plot) <- c("Date","Microdata","Exp Weight","Exp Weight: 2-step")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Indicator") + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) 
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+```
+
+##Export Reference Series: Q2A
+There is unrealistic decrease in the reference series in 1994 (not echoed in the sub-sectors)
+
+```{r figure18, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4, fig.width=7.5}
+indicator_plot <- cbind(Manufacturing_ne[,c("Datum","Q2A")],Manufacturing_2e[,c("Q2A")],ref_me[,c("Manu_Rval","Manu_Dvol")])
+colnames(indicator_plot) <- c("Date","Exp Weight","2-step","Rand Value","Dollar volume")
+indicator_plot[,-1] <- scale(indicator_plot[,-1])
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g <- g + geom_line()
+g <- g + ylab("Indicator") + xlab("")
+g <- g + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g <- g + theme(legend.title=element_blank()) 
+g <- g + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g <- g + theme(legend.position="bottom")
+g
+```
+
+
+##Export Sectors & Reference Series: Q2A
+The sectoral reference series also have unrealistic spikes
+
+```{r figure19, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
+#Sectors
+indicator_plot <- cbind(Food[,c("Datum","Q2A")],Food_ne[,c("Q2A")],ref_me[,c("Food_Rval","Food_Dvol")])
+indicator_plot[,-1] <- scale(indicator_plot[,-1])
+colnames(indicator_plot) <- c("Date","Microdata","New Weights","Rand value","Dollar volume")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g1 <- g1 + geom_line()
+g1 <- g1 + ylab("Indicator") + xlab("")
+g1 <- g1 + theme(legend.title=element_blank())
+g1 <- g1 + ggtitle("Food") + theme(plot.title = element_text(hjust = 0.5))
+g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g1 <- g1 + theme(legend.title=element_blank()) 
+g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g1 <- g1 + theme(legend.position="none")
+
+indicator_plot <- cbind(Textiles[,c("Datum","Q2A")],Textiles_ne[,c("Q2A")],ref_me[,c("Text_Rval","Text_Dvol")])
+indicator_plot[,-1] <- scale(indicator_plot[,-1])
+colnames(indicator_plot) <- c("Date","Microdata","New Weights","Rand value","Dollar volume")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g2 <- g2 + geom_line()
+g2 <- g2 + ylab("") + xlab("")
+g2 <- g2 + theme(legend.title=element_blank())
+g2 <- g2 + ggtitle("Textiles") + theme(plot.title = element_text(hjust = 0.5))
+g2 <- g2 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g2 <- g2 + theme(legend.title=element_blank()) 
+g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g2 <- g2 + theme(legend.position="none")
+
+indicator_plot <- cbind(Wood[,c("Datum","Q2A")],Wood_ne[,c("Q2A")],ref_me[,c("Wood_Rval","Wood_Dvol")])
+indicator_plot[,-1] <- scale(indicator_plot[,-1])
+colnames(indicator_plot) <- c("Date","Microdata","New Weights","Rand value","Dollar volume")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g3 <- g3 + geom_line()
+g3 <- g3 + ylab("Indicator") + xlab("")
+g3 <- g3 + theme(legend.title=element_blank())
+g3 <- g3 + ggtitle("Wood") + theme(plot.title = element_text(hjust = 0.5))
+g3 <- g3 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g3 <- g3 + theme(legend.title=element_blank()) 
+g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g3 <- g3 + theme(legend.position="bottom")
+
+indicator_plot <- cbind(Chemicals[,c("Datum","Q2A")],Chemicals_ne[,c("Q2A")],ref_me[,c("Chem_Rval","Chem_Dvol")])
+indicator_plot[,-1] <- scale(indicator_plot[,-1])
+colnames(indicator_plot) <- c("Date","Microdata","New Weights","Rand value","Dollar volume")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g4 <- g4 + geom_line()
+g4 <- g4 + ylab("") + xlab("")
+g4 <- g4 + theme(legend.title=element_blank())
+g4 <- g4 + ggtitle("Chemicals") + theme(plot.title = element_text(hjust = 0.5))
+g4 <- g4 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g4 <- g4 + theme(legend.title=element_blank()) 
+g4 <- g4 + theme(legend.position="bottom")
+g4 <- g4 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+
+library(gridExtra)
+library(grid)
+
+grid_arrange_shared_legend <- function(...) {
+    plots <- list(...)
+    g <- ggplotGrob(plots[[1]] + theme(legend.position="bottom"))$grobs
+    legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
+    lheight <- sum(legend$height)
+    grid.arrange(
+        do.call(arrangeGrob, lapply(plots, function(x)
+            x + theme(legend.position="none"))),
+        legend,
+        ncol = 1,
+        heights = unit.c(unit(1, "npc") - lheight, lheight))
+}
+grid_arrange_shared_legend(g1, g2, g3, g4, ncol=2, nrow =2)
+```
+
+
+##Export Sectors and Reference Series: Q2A
+```{r figure20, echo=FALSE, warning=FALSE, message=FALSE, cache = TRUE, fig.height=4.5, fig.width=7.5}
+indicator_plot <- cbind(Glass[,c("Datum","Q2A")],Glass_ne[,c("Q2A")],ref_me[,c("Glass_Rval","Glass_Dvol")])
+indicator_plot[,-1] <- scale(indicator_plot[,-1])
+colnames(indicator_plot) <- c("Date","Microdata","New Weights","Rand value","Dollar volume")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g1 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g1 <- g1 + geom_line()
+g1 <- g1 + ylab("Indicator") + xlab("")
+g1 <- g1 + theme(legend.title=element_blank())
+g1 <- g1 + ggtitle("Glass") + theme(plot.title = element_text(hjust = 0.5))
+g1 <- g1 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g1 <- g1 + theme(legend.title=element_blank()) 
+g1 <- g1 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g1 <- g1 + theme(legend.position="none")
+
+indicator_plot <- cbind(Metals[,c("Datum","Q2A")],Metals_ne[,c("Q2A")],ref_me[,c("Metals_Rval","Metals_Dvol")])
+indicator_plot[,-1] <- scale(indicator_plot[,-1])
+colnames(indicator_plot) <- c("Date","Microdata","New Weights","Rand value","Dollar volume")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g2 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g2 <- g2 + geom_line()
+g2 <- g2 + ylab("") + xlab("")
+g2 <- g2 + theme(legend.title=element_blank())
+g2 <- g2 + ggtitle("Metals") + theme(plot.title = element_text(hjust = 0.5))
+g2 <- g2 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g2 <- g2 + theme(legend.title=element_blank()) 
+g2 <- g2 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g2 <- g2 + theme(legend.position="none")
+
+
+indicator_plot <- cbind(Electrical[,c("Datum","Q2A")],Electrical_ne[,c("Q2A")],ref_me[,c("Elec_Radio_Rval","Elec_Radio_Dvol")])
+indicator_plot[,-1] <- scale(indicator_plot[,-1])
+colnames(indicator_plot) <- c("Date","Microdata","New Weights","Rand value","Dollar volume")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g3 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g3 <- g3 + geom_line()
+g3 <- g3 + ylab("Indicator") + xlab("")
+g3 <- g3 + theme(legend.title=element_blank())
+g3 <- g3 + ggtitle("Elec_Radio") + theme(plot.title = element_text(hjust = 0.5))
+g3 <- g3 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g3 <- g3 + theme(legend.title=element_blank()) 
+g3 <- g3 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+g3 <- g3 + theme(legend.position="bottom")
+
+indicator_plot <- cbind(Transport[,c("Datum","Q2A")],Transport_ne[,c("Q2A")],ref_me[,c("Motor_Rval","Motor_Dvol")])
+indicator_plot[,-1] <- scale(indicator_plot[,-1])
+colnames(indicator_plot) <- c("Date","Microdata","New Weights","Rand value","Dollar volume")
+indicator_plot <- melt(indicator_plot, id="Date")  # convert to long format
+g4 <- ggplot(data=indicator_plot,aes(x=Date, y=value, group=variable, colour=variable)) 
+g4 <- g4 + geom_line()
+g4 <- g4 + ylab("") + xlab("")
+g4 <- g4 + theme(legend.title=element_blank())
+g4 <- g4 + ggtitle("Transport") + theme(plot.title = element_text(hjust = 0.5))
+g4 <- g4 + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+g4 <- g4 + theme(legend.title=element_blank()) 
+g4 <- g4 + theme(legend.position="bottom")
+g4 <- g4 + scale_x_date(labels = date_format("%Y"),breaks = date_breaks("year"))
+
+library(gridExtra)
+library(grid)
+
+grid_arrange_shared_legend <- function(...) {
+    plots <- list(...)
+    g <- ggplotGrob(plots[[1]] + theme(legend.position="bottom"))$grobs
+    legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
+    lheight <- sum(legend$height)
+    grid.arrange(
+        do.call(arrangeGrob, lapply(plots, function(x)
+            x + theme(legend.position="none"))),
+        legend,
+        ncol = 1,
+        heights = unit.c(unit(1, "npc") - lheight, lheight))
+}
+grid_arrange_shared_legend(g1, g2, g3, g4, ncol=2, nrow =2)
+```
+
+
+##Correlations with reference series
+```{r table4, eval=FALSE, echo=FALSE, results='asis', warning=FALSE, message=FALSE, cache = TRUE}
+source("corstarsl.R")
+
+x1 <- corstarsl(cbind(Food[,c("Datum","Q2A","Q5A")],ref_me[,c("Food_Rval","Food_Dvol")])[,-1])[3:4,1:2]
+x2 <- corstarsl(cbind(Textiles[,c("Datum","Q2A","Q5A")],ref_me[,c("Text_Rval","Text_Dvol")])[,-1])[3:4,1:2]
+x3 <- corstarsl(cbind(Wood[,c("Datum","Q2A","Q5A")],ref_me[,c("Wood_Rval","Wood_Dvol")])[,-1])[3:4,1:2]
+x4 <- corstarsl(cbind(Chemicals[,c("Datum","Q2A","Q5A")],ref_me[,c("Chem_Rval","Chem_Dvol")])[,-1])[3:4,1:2]
+x5 <- corstarsl(cbind(Glass[,c("Datum","Q2A","Q5A")],ref_me[,c("Glass_Rval","Glass_Dvol")])[,-1])[3:4,1:2]
+x6 <- corstarsl(cbind(Metals[,c("Datum","Q2A","Q5A")],ref_me[,c("Metals_Rval","Metals_Dvol")])[,-1])[3:4,1:2]
+x7 <- corstarsl(cbind(Electrical[,c("Datum","Q2A","Q5A")],ref_me[,c("Elec_Radio_Rval","Elec_Radio_Dvol")])[,-1])[3:4,1:2]
+x8 <- corstarsl(cbind(Transport[,c("Datum","Q2A","Q5A")],ref_me[,c("Motor_Rval","Motor_Dvol")])[,-1])[3:4,1:2]
+x9 <- corstarsl(cbind(Furniture[,c("Datum","Q2A","Q5A")],ref_me[,c("Furn_Rval","Furn_Dvol")])[,-1])[3:4,1:2]
+x_1 <- rbind(x1,x2,x3,x4,x5,x6,x7,x8,x9)
+r <- row.names(x_1)
+
+x1 <- corstarsl(cbind(Food_ne[,c("Datum","Q2A","Q5A")],ref_me[,c("Food_Rval","Food_Dvol")])[,-1])[3:4,1:2]
+x2 <- corstarsl(cbind(Textiles_ne[,c("Datum","Q2A","Q5A")],ref_me[,c("Text_Rval","Text_Dvol")])[,-1])[3:4,1:2]
+x3 <- corstarsl(cbind(Wood_ne[,c("Datum","Q2A","Q5A")],ref_me[,c("Wood_Rval","Wood_Dvol")])[,-1])[3:4,1:2]
+x4 <- corstarsl(cbind(Chemicals_ne[,c("Datum","Q2A","Q5A")],ref_me[,c("Chem_Rval","Chem_Dvol")])[,-1])[3:4,1:2]
+x5 <- corstarsl(cbind(Glass_ne[,c("Datum","Q2A","Q5A")],ref_me[,c("Glass_Rval","Glass_Dvol")])[,-1])[3:4,1:2]
+x6 <- corstarsl(cbind(Metals_ne[,c("Datum","Q2A","Q5A")],ref_me[,c("Metals_Rval","Metals_Dvol")])[,-1])[3:4,1:2]
+x7 <- corstarsl(cbind(Electrical_ne[,c("Datum","Q2A","Q5A")],ref_me[,c("Elec_Radio_Rval","Elec_Radio_Dvol")])[,-1])[3:4,1:2]
+x8 <- corstarsl(cbind(Transport_ne[,c("Datum","Q2A","Q5A")],ref_me[,c("Motor_Rval","Motor_Dvol")])[,-1])[3:4,1:2]
+x9 <- corstarsl(cbind(Furniture_ne[,c("Datum","Q2A","Q5A")],ref_me[,c("Furn_Rval","Furn_Dvol")])[,-1])[3:4,1:2]
+x_2 <- rbind(x1,x2,x3,x4,x5,x6,x7,x8,x9)
+
+x1 <- corstarsl(cbind(Food_2e[,c("Datum","Q2A","Q5A")],ref_me[,c("Food_Rval","Food_Dvol")])[,-1])[3:4,1:2]
+x2 <- corstarsl(cbind(Textiles_2e[,c("Datum","Q2A","Q5A")],ref_me[,c("Text_Rval","Text_Dvol")])[,-1])[3:4,1:2]
+x3 <- corstarsl(cbind(Wood_2e[,c("Datum","Q2A","Q5A")],ref_me[,c("Wood_Rval","Wood_Dvol")])[,-1])[3:4,1:2]
+x4 <- corstarsl(cbind(Chemicals_2e[,c("Datum","Q2A","Q5A")],ref_me[,c("Chem_Rval","Chem_Dvol")])[,-1])[3:4,1:2]
+x5 <- corstarsl(cbind(Glass_2e[,c("Datum","Q2A","Q5A")],ref_me[,c("Glass_Rval","Glass_Dvol")])[,-1])[3:4,1:2]
+x6 <- corstarsl(cbind(Metals_2e[,c("Datum","Q2A","Q5A")],ref_me[,c("Metals_Rval","Metals_Dvol")])[,-1])[3:4,1:2]
+x7 <- corstarsl(cbind(Electrical_2e[,c("Datum","Q2A","Q5A")],ref_me[,c("Elec_Radio_Rval","Elec_Radio_Dvol")])[,-1])[3:4,1:2]
+x8 <- corstarsl(cbind(Transport_2e[,c("Datum","Q2A","Q5A")],ref_me[,c("Motor_Rval","Motor_Dvol")])[,-1])[3:4,1:2]
+x9 <- corstarsl(cbind(Furniture_2e[,c("Datum","Q2A","Q5A")],ref_me[,c("Furn_Rval","Furn_Dvol")])[,-1])[3:4,1:2]
+x_3 <- rbind(x1,x2,x3,x4,x5,x6,x7,x8,x9)
+
+x <- cbind(x_1,x_2,x_3)
+colnames(x) <- c("Q2A","Q5A","Q2A_NExp","Q5A_NExp","Q2A_2Exp","Q5A_2Exp")
+row.names(x) <- r
+
+xt <- xtable(x, caption="Correlations between the sectoral and reference series")
+xt <- xt[,c(1,3,5,2,4,6)]
+print(xt, "latex",comment=FALSE, scalebox = 0.6)
+```
+
+Correlations still improve marginally
+
+\begin{table}[ht]
+\centering
+\caption{Correlations between the sectoral and reference series} 
+\scalebox{0.5}{
+\begin{tabular}{|l|lll|lll|}
+  \hline
+ & Q2A & Q2A\_NExp & Q2A\_2Exp & Q5A & Q5A\_NExp & Q5A\_2Exp \\ 
+  \hline
+  Total\_Rval &  0.13 &  0.16 &  0.22** &  0.17* &  0.20* &  0.25** \\
+  Total\_Dvol &  -0.16 &  -0.12 &  -0.09 &  -0.10 &  -0.06 &  -0.02 \\
+Food\_Rval &  0.30*** &  0.36*** &  0.30*** &  0.31*** &  0.36*** &  0.31*** \\ 
+  Food\_Dvol &  0.07  &  0.05  & -0.01  &  0.09  &  0.08  &  0.04  \\ 
+  Text\_Rval &  0.10  &  0.18*  &  0.16  &  0.10  &  0.16  &  0.14  \\ 
+  Text\_Dvol & -0.06  & -0.02  & -0.05  & -0.08  & -0.03  & -0.06  \\ 
+  Wood\_Rval &  0.06  &  0.18*  &  0.17*  &  0.08  &  0.20**  &  0.21**  \\ 
+  Wood\_Dvol &  0.05  &  0.10  &  0.08  &  0.11  &  0.15  &  0.16  \\ 
+  Chem\_Rval &  0.33*** &  0.37*** &  0.42*** &  0.36*** &  0.39*** &  0.46*** \\ 
+  Chem\_Dvol &  0.14  &  0.12  &  0.15  &  0.12  &  0.15  &  0.18*  \\ 
+  Glass\_Rval &  0.11  &  0.05  &  0.13  &  0.08  &  0.03  &  0.08  \\ 
+  Glass\_Dvol & -0.02  & -0.13  & -0.02  & -0.02  & -0.12  & -0.04  \\ 
+  Metals\_Rval &  0.31*** &  0.32*** &  0.37*** &  0.41*** &  0.42*** &  0.44*** \\ 
+  Metals\_Dvol & -0.04  &  0.00  &  0.04  &  0.11  &  0.11  &  0.14  \\ 
+  Elec\_Radio\_Rval &  0.19*  &  0.29*** &  0.23**  &  0.16  &  0.26*** &  0.21**  \\ 
+  Elec\_Radio\_Dvol & -0.05  &  0.12  &  0.11  & -0.01  &  0.15  &  0.15  \\ 
+  Motor\_Rval &  0.05  &  0.14  &  0.15  &  0.02  &  0.09  &  0.11  \\ 
+  Motor\_Dvol &  0.07  &  0.13  &  0.12  &  0.06  &  0.10  &  0.08  \\ 
+  Furn\_Rval &  0.20**  &  0.18*  &  0.19*  &  0.18*  &  0.12  &  0.12  \\ 
+  Furn\_Dvol &  0.03  & -0.01  & -0.01  &  0.02  & -0.05  & -0.05  \\ 
+   \hline
+\end{tabular}
+}
+\end{table}
+
+
+
+
 

@@ -267,6 +267,312 @@ RGDP Growth does not Granger-cause Uncertainty (Combined) & 1.35                
 \end{table}
 
 
+Formally, one can define a $k$-period-ahead expectations measure of confidence $(C_t^k)$ at time $t$ as: $C _t^k = E_t f(\Delta^h Y_{t+k})$, where $Y_{t+k}$ is a measure of real activity (usually output) at time $t+k$ and $\Delta^h Y_{t+k} = Y_{t+k} - Y_{t+k-h}$. A common definition of $f(\Delta^h Y_{t+k})$ relies on an up, unchanged, or down classification (e.g. Q2A in the BER survey): 
+$$ f(\Delta^h Y_{t+k}) = \begin{cases} -1,& \text{if } \Delta^h Y_{t+k} < 0\\ 0,& \text{if } \Delta^h Y_{t+k} = 0\\ 1,& \text{if } \Delta^h Y_{t+k} > 0\\ \end{cases} $$
+
+An alternative would be to use a binary classification in levels (e.g. Q1 in the BER survey): $$ f(Y_{t+k}) = \begin{cases} -1,& \text{if } Y_{t+k} < a\\ 1,& \text{if } Y_{t+k} \geq a\\ \end{cases} $$ where $a$ is determined by the preferences of the agent. In this case $a$ is the subjective benchmark or threshold that determines when conditions are 'satisfactory', and the measure of confidence simplifies to: $C _t^k = E_t f(Y_{t+k})$. 
+
+
+\begin{table}[]
+\centering
+\caption{Factor loadings for the first principal component}
+\label{my-label}
+\scalebox{0.8}{
+\begin{tabular}{|l|r|}
+\hline
+\textbf{Indicator}  & \multicolumn{1}{l|}{\textbf{Loadings}} \\ \hline
+Dispersion          & 0.55                                   \\ 
+Idiosyncratic error & 0.00                                   \\ 
+Aggregate error     & 0.46                                   \\ 
+EPU                 & 0.56                                   \\ 
+SAVI                & 0.41                                   \\ \hline
+\end{tabular}}
+\end{table}
+
+
+
+
+
+
+\begin{table}[ht]
+\centering
+\caption{Sample characteristics} 
+\scalebox{0.8}{
+\begin{tabular}{|p{3cm}|r|r|r|r|r|}
+  \hline
+Sector & Sample & Total Obs & Obs/Quarter & Response Rate & Missing Quarters \\ 
+  \hline
+Manufacturing & 1992Q1-2016Q3 & 36915 & 384.53 & 0.38 & 1997Q4,2000Q1,2005Q4 \\ 
+  Construction & 1993Q2-2016Q3 & 28139 & 312.66 & 0.22 & 1993Q4,1998Q3,2000Q2,2005Q4 \\ 
+  Trade & 1992Q2-2016Q3 & 40480 & 426.11 & 0.30 & 1992Q4,1993Q3,2005Q4 \\ 
+  Services & 2005Q2-2016Q3 & 13904 & 308.98 & 0.31 & 2005Q4 \\ 
+  Total & 1992Q1-2016Q3 & 119438 & 1218.76 & 0.25 & 2005Q4 \\ 
+   \hline
+\end{tabular}}
+\end{table}
+
+
+
+
+\begin{table}[ht]
+\centering
+\caption{Correlations between confidence indicators and real GDP growth} 
+\scalebox{0.8}{
+\begin{tabular}{|r|llll|}
+  \hline
+ & Confidence (Current) & Confidence (Expected) & BER BCI & SACCI Growth \\ 
+  \hline
+Confidence (Current) &  &  &  &  \\ 
+  Confidence (Expected) &  0.92*** &  &  &  \\ 
+  BER BCI &  0.93*** &  0.82*** &  &  \\ 
+  SACCI Growth &  0.35*** &  0.48*** &  0.30*** &  \\ \hline
+  Real GDP Growth &  0.78*** &  0.70*** &  0.75*** &  0.24**  \\ 
+   \hline
+\end{tabular}}
+\end{table}
+
+
+
+
+
+\begin{table}[ht]
+\centering
+\caption{Correlations between sectoral confidence and real sectoral GDP growth} 
+\scalebox{0.8}{
+\begin{tabular}{|r|lll|lll|}
+  \hline
+ &   & Manufacturing &   &   & Construction &   \\ 
+  \hline
+  & Confidence (Cur) & Confidence (Exp) & BER BCI & Confidence (Cur) & Confidence (Exp) & BER BCI \\ \hline
+  Confidence (Exp) &  0.94*** &  &  &  0.89*** &  &  \\ 
+  BER BCI &  0.92*** &  0.85*** &  &  0.94*** &  0.75*** &  \\ 
+  RGDP Growth &  0.68*** &  0.68*** &  0.61*** &  0.74*** &  0.56*** &  0.76*** \\    \hline
+  \hline
+ &   & Trade &   &   & Services &   \\ 
+  \hline
+  & Confidence (Cur) & Confidence (Exp) & BER BCI & Confidence (Cur) & Confidence (Exp) & BER BCI \\ \hline
+  Confidence (Exp) &  0.87*** &  &  &  0.76*** &  &  \\ 
+  BER BCI &  0.90*** &  0.72*** &  &  &  &  \\ 
+  RGDP Growth &  0.61*** &  0.59*** &  0.56*** &  0.76*** &  0.57*** &  \\ 
+   \hline
+\end{tabular}}
+\end{table}
+
+
+
+
+\begin{table}[ht]
+\centering
+\caption{Correlations between the uncertainty indicators} 
+\scalebox{0.8}{
+\begin{tabular}{|r|lllll|l|}
+  \hline
+ & Dispersion & Idiosyncratic\_error & Aggregate\_error & EPU & SAVI & Combined \\   \hline
+  Idiosyncratic\_error & -0.15  &  &  &  &  &  \\ 
+  Aggregate\_error &  0.20*  &  0.18*  &  &  &  &  \\ 
+  EPU &  0.14  &  0.08  &  0.09  &  &  &  \\ 
+  SAVI &  0.06  & -0.24**  &  0.07  &  0.28**  &  &  \\ 
+  Combined &  0.64*** & -0.10  &  0.54*** &  0.65*** &  0.56*** &  \\ \hline
+  RGDP\_Growth & -0.44*** &  0.17*  & -0.11  & -0.30*** & -0.11  & -0.43*** \\ 
+   \hline
+\end{tabular}}
+\end{table}
+
+
+
+
+
+\begin{table}[ht]
+\centering
+\caption{Correlations between the sectoral uncertainty indicators and real GDP growth} 
+\scalebox{0.8}{
+\begin{tabular}{|r|llll|llll|}
+  \hline
+ &   &   & Manufacturing &   &   &   & Construction &   \\ 
+  \hline
+  & Dispersion & Aggregate & Idiosyncratic & Combined & Dispersion & Aggregate & Idiosyncratic & Combined \\ \hline
+  Aggregate &  0.17*  &  &  &  &  0.39*** &  &  &  \\ 
+  Idiosyncratic & -0.28*** & -0.02  &  &  & -0.26**  &  0.17  &  &  \\ 
+  Combined &  0.81*** &  0.46*** & -0.69*** &  &  0.89*** &  0.73*** & -0.27*** &  \\ 
+  RGDP & -0.30*** &  0.04  &  0.10  & -0.22**  & -0.18*  & -0.17  & -0.05  & -0.19*  \\   \hline
+  \hline
+ &   &   & Trade &   &   &   & Services &   \\ 
+  \hline
+  & Dispersion & Aggregate & Idiosyncratic & Combined & Dispersion & Aggregate & Idiosyncratic & Combined \\ \hline
+  Aggregate & -0.01  &  &  &  & -0.08  &  &  &  \\ 
+  Idiosyncratic & -0.22**  &  0.18*  &  &  & -0.01  &  0.18  &  &  \\ 
+  Combined &  0.58*** & -0.56*** & -0.81*** &  &  0.35**  & -0.77*** & -0.70*** &  \\ 
+  RGDP & -0.28*** & -0.09  &  0.23**  & -0.23**  & -0.05  & -0.19  &  0.29*  & -0.06  \\    \hline
+\end{tabular}}
+\end{table}
+
+
+
+
+
+\begin{table}[]
+\centering
+\caption{Concordance statistics with the SARB business cycle}
+\label{my-label}
+\scalebox{0.8}{
+\begin{tabular}{|r|l|l|l|l|}
+\hline
+\textbf{}  & \textbf{\begin{tabular}[c]{@{}l@{}}Confidence \\ (Current)\end{tabular}} & \textbf{\begin{tabular}[c]{@{}l@{}}Confidence \\ (Expected)\end{tabular}} & \textbf{BER BCI} & \textbf{\begin{tabular}[c]{@{}l@{}}SACCI \\ BCI Growth\end{tabular}} \\ \hline
+lead=3    & 0.60                          & 0.62*                         & 0.47              & 0.72**                 \\
+lead=2    & 0.65*                         & 0.67**                        & 0.54              & 0.75***                \\
+lead=1    & 0.68**                       & 0.70***                        & 0.59*             & 0.76***                \\
+lead=0    & 0.71***                      & 0.73***                       & 0.62**            & 0.75***                \\
+lag=1      & 0.72***                      & 0.74***                       & 0.63***           & 0.70***                 \\
+lag=2      & 0.73***                      & 0.69***                       & 0.64***           & 0.65***                \\
+lag=3      & 0.72***                      & 0.64***                       & 0.63***           & 0.6**                  \\ \hline
+\end{tabular}}
+\end{table}
+
+
+
+
+\begin{table}[ht]
+\centering
+\caption{Sample characteristics} 
+\scalebox{0.8}{
+\begin{tabular}{p{3cm}rrrrr}
+  \hline
+\multicolumn{1}{|l}{Sector} & \multicolumn{1}{|l}{Sample} & \multicolumn{1}{|l}{Total Obs} & \multicolumn{1}{|l}{Obs/Quarter} & \multicolumn{1}{|l}{Response Rate} & \multicolumn{1}{|l|}{Missing Quarters} \\ 
+  \hline
+\multicolumn{1}{|l}{Manufacturing} & \multicolumn{1}{|r}{1992Q1-2016Q3} & \multicolumn{1}{|r}{36915} & \multicolumn{1}{|r}{384.53} & \multicolumn{1}{|r}{0.38} & \multicolumn{1}{|l|}{1997Q4,2000Q1,2005Q4} \\ 
+\multicolumn{1}{|l}{Construction} & \multicolumn{1}{|r}{1993Q2-2016Q3} & \multicolumn{1}{|r}{28139} & \multicolumn{1}{|r}{312.66} & \multicolumn{1}{|r}{0.33} & \multicolumn{1}{|l|}{1993Q4,1998Q3,2000Q2,2005Q4} \\ 
+\multicolumn{1}{|l}{Trade} & \multicolumn{1}{|r}{1992Q2-2016Q3} & \multicolumn{1}{|r}{40480} & \multicolumn{1}{|r}{426.11} & \multicolumn{1}{|r}{0.30} & \multicolumn{1}{|l|}{1992Q4,1993Q3,2005Q4} \\ 
+\multicolumn{1}{|l}{Services} & \multicolumn{1}{|r}{2005Q2-2016Q3} & \multicolumn{1}{|r}{13904} & \multicolumn{1}{|r}{308.98} & \multicolumn{1}{|r}{0.31} & \multicolumn{1}{|l|}{2005Q4} \\  
+\multicolumn{1}{|l}{Total} & \multicolumn{1}{|r}{1992Q1-2016Q3} & \multicolumn{1}{|r}{119438} & \multicolumn{1}{|r}{1218.76} & \multicolumn{1}{|r}{0.33} & \multicolumn{1}{|l|}{2005Q4} \\ 
+   \hline
+\end{tabular}}
+\end{table}
+
+
+
+
+
+\begin{table}[]
+\centering
+\caption{Comparing sample characteristics in terms of firm size}
+\scalebox{0.8}{
+\begin{tabular}{|r|r|r|r|r|}
+\hline
+\multicolumn{1}{|c|}{Firm Size} & \multicolumn{2}{c|}{Full Sample}                         & \multicolumn{2}{c|}{Forecast Error Sample}                            \\ \cline{2-5} 
+\multicolumn{1}{|c|}{Category} & \multicolumn{1}{c|}{Observations} & \multicolumn{1}{c|}{Percentage of sample} & \multicolumn{1}{c|}{Observations} & \multicolumn{1}{c|}{Percentage of sample} \\ \hline
+1 & 25,587 & 21.43\% & 14,537 & 20.88\% \\ 
+2 & 15,288 & 12.80\% & 9,079 & 13.04\% \\ 
+3 & 18,554 & 15.54\% & 10,936 & 15.71\% \\ 
+4 & 13,717 & 11.49\% & 8,094 & 11.63\% \\ 
+5 & 14,676 & 12.29\% & 8,748 & 12.57\% \\ 
+6 & 9,140 & 7.65\% & 5,331 & 7.66\% \\ 
+7 & 6,899 & 5.78\% & 3,980 & 5.72\% \\ 
+8 & 6,894 & 5.77\% & 3,739 & 5.37\% \\ 
+9 & 8,667 & 7.26\% & 5,166 & 7.42\% \\ \hline
+\end{tabular}}
+\end{table}
+
+
+
+\begin{table}[]
+\centering
+\caption{Correlations between indicators based on the full sample and the stable sample}
+\scalebox{0.8}{
+\begin{tabular}{|l|r|r|}
+\hline
+\textbf{Indicator} &\textbf{Full-Stable Sample} & \textbf{RGDP Growth} \\ \hline
+Confidence (Current) & 0.99*** & 0.76*** \\ 
+Confidence (Expected) & 0.99*** & 0.68*** \\ 
+Dispersion & 0.91*** & -0.44*** \\ 
+Uncertainty (Combined) & 0.96*** &  -0.31*** \\  \hline
+\end{tabular}}
+\end{table}
+
+
+
+
+
+
+\begin{table}[]
+\centering
+\caption{Comparing sample characteristics in terms of firm size}
+\scalebox{0.8}{
+\begin{tabular}{|r|r|r|r|r|r|r|}
+\hline
+\multicolumn{1}{|c|}{Firm Size} & \multicolumn{2}{c|}{Full Sample} & \multicolumn{2}{c|}{Greater than 50\% sample}  & \multicolumn{2}{c|}{Greater than 75\% sample}  \\ \cline{2-7} 
+\multicolumn{1}{|c|}{Category} & \multicolumn{1}{c|}{Observations} & \multicolumn{1}{c|}{Percentage} & \multicolumn{1}{c|}{Observations} & \multicolumn{1}{c|}{Percentage} & \multicolumn{1}{c|}{Observations} & \multicolumn{1}{c|}{Percentage} \\ \hline
+1 & 25,587 & 21.43\% & 5,504 & 18.67\% & 1,169 & 14.06\%   \\ 
+2 & 15,288 & 12.80\% & 3,843 & 13.04\% & 1,232 & 14.82\% \\ 
+3 & 18,554 & 15.54\% & 4,328 & 14.68\% & 917 & 11.03\% \\ 
+4 & 13,717 & 11.49\% & 2,993 & 10.15\% & 724 & 8.71\% \\ 
+5 & 14,676 & 12.29\% & 4,888 & 16.58\% & 1,565 & 18.82\% \\ 
+6 & 9,140 & 7.65\% & 2,578 & 8.74\% & 867 & 10.43\% \\ 
+7 & 6,899 & 5.78\% & 1,819 & 6.17\% & 577 & 6.94\% \\ 
+8 & 6,894 & 5.77\% & 1,474 & 5.00\% & 491 & 5.90\% \\ 
+9 & 8,667 & 7.26\% & 2,053 & 6.96\% & 773 & 9.30\% \\ \hline
+\end{tabular}}
+\end{table}
+
+
+
+
+
+\begin{table}[ht]
+\centering
+\caption{Correlations between the sectoral and reference series} 
+\scalebox{0.6}{
+\begin{tabular}{|l|lll|lll|}
+  \hline
+ & Q2A & Q2A\_NExp & Q2A\_2Exp & Q5A & Q5A\_NExp & Q5A\_2Exp \\ 
+  \hline
+Food\_Rval &  0.30*** &  0.36*** &  0.30*** &  0.31*** &  0.36*** &  0.31*** \\ 
+  Food\_Dvol &  0.07  &  0.05  & -0.01  &  0.09  &  0.08  &  0.04  \\ 
+  Text\_Rval &  0.10  &  0.18*  &  0.16  &  0.10  &  0.16  &  0.14  \\ 
+  Text\_Dvol & -0.06  & -0.02  & -0.05  & -0.08  & -0.03  & -0.06  \\ 
+  Wood\_Rval &  0.06  &  0.18*  &  0.17*  &  0.08  &  0.20**  &  0.21**  \\ 
+  Wood\_Dvol &  0.05  &  0.10  &  0.08  &  0.11  &  0.15  &  0.16  \\ 
+  Chem\_Rval &  0.33*** &  0.37*** &  0.42*** &  0.36*** &  0.39*** &  0.46*** \\ 
+  Chem\_Dvol &  0.14  &  0.12  &  0.15  &  0.12  &  0.15  &  0.18*  \\ 
+  Glass\_Rval &  0.11  &  0.05  &  0.13  &  0.08  &  0.03  &  0.08  \\ 
+  Glass\_Dvol & -0.02  & -0.13  & -0.02  & -0.02  & -0.12  & -0.04  \\ 
+  Metals\_Rval &  0.31*** &  0.32*** &  0.37*** &  0.41*** &  0.42*** &  0.44*** \\ 
+  Metals\_Dvol & -0.04  &  0.00  &  0.04  &  0.11  &  0.11  &  0.14  \\ 
+  Elec\_Radio\_Rval &  0.19*  &  0.29*** &  0.23**  &  0.16  &  0.26*** &  0.21**  \\ 
+  Elec\_Radio\_Dvol & -0.05  &  0.12  &  0.11  & -0.01  &  0.15  &  0.15  \\ 
+  Motor\_Rval &  0.05  &  0.14  &  0.15  &  0.02  &  0.09  &  0.11  \\ 
+  Motor\_Dvol &  0.07  &  0.13  &  0.12  &  0.06  &  0.10  &  0.08  \\ 
+  Furn\_Rval &  0.20**  &  0.18*  &  0.19*  &  0.18*  &  0.12  &  0.12  \\ 
+  Furn\_Dvol &  0.03  & -0.01  & -0.01  &  0.02  & -0.05  & -0.05  \\ 
+   \hline
+\end{tabular}
+}
+\end{table}
+
+
+
+
+\begin{table}[ht]
+\centering
+\caption{Volatility of the sectoral series} 
+\scalebox{0.6}{
+\begin{tabular}{|r|rrrr|rrrr|}
+  \hline
+ & Q1A & Q1A\_U & Q1A\_New & Q1A\_2s & Q3A & Q3A\_U & Q3A\_New & Q3A\_2s \\ 
+  \hline
+Food & 35.81 & 22.77 & 24.00 & 26.79 & 35.76 & 20.65 & 23.21 & 25.05 \\ 
+  Textiles & 36.12 & 26.12 & 26.96 & 27.43 & 36.62 & 26.24 & 27.25 & 28.45 \\ 
+  Wood & 36.86 & 25.63 & 25.96 & 27.93 & 33.28 & 24.45 & 24.67 & 26.01 \\ 
+  Chemicals & 32.16 & 23.39 & 24.16 & 24.75 & 30.83 & 22.37 & 22.59 & 23.04 \\ 
+  Glass & 46.02 & 31.72 & 36.53 & 34.94 & 43.94 & 28.72 & 32.03 & 31.08 \\ 
+  Metals & 37.79 & 28.06 & 29.60 & 30.59 & 34.96 & 27.29 & 28.18 & 29.36 \\ 
+  Elec\_radio & 50.29 & 33.03 & 48.84 & 48.98 & 49.30 & 33.03 & 49.23 & 50.63 \\ 
+  Transport & 55.88 & 32.70 & 38.78 & 43.61 & 52.29 & 32.52 & 38.30 & 41.92 \\ 
+  Furniture & 44.71 & 31.50 & 35.29 & 35.01 & 43.07 & 30.42 & 34.10 & 33.45 \\ 
+   \hline
+\end{tabular}
+}
+\end{table}
+
 
 
 

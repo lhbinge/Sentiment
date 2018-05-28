@@ -2812,16 +2812,23 @@ plot(irf.y1,plot.type = c("single"), main="Response from Uncertainty", xlab="Hor
 par(new = TRUE)
 plot(irf.y2,plot.type = c("single"), main="Response from RGDP Growth", xlab="Horizon in quarters")
 
-
+png(filename = "fevd_var3.png", width = 600, height = 360)
 source("plot_varfevd.R")
 par(mfrow=c(1,2))
-plot.varfevd(fevd(var6, n.ahead = 10 ),plot.type = "single")
+plot.varfevd(fevd(var6, n.ahead = 10 ),plot.type = "single", xlab="Horizon in quarters", 
+             ylab="Proportion of variance explained")
+dev.off()
+
+library(png)
+library(grid)
+grid.raster(readPNG("fevd_var3.png"))
+
 
 
 vardat <- cbind(manufac2[,5],manufac2[,6])
-vardat <- cbind(construct2[,5],construct2[,6])
-vardat <- cbind(trade2[,5],trade2[,6])
-vardat <- cbind(services2[,5],services2[,6])
+#vardat <- cbind(construct2[,5],construct2[,6])
+#vardat <- cbind(trade2[,5],trade2[,6])
+#vardat <- cbind(services2[,5],services2[,6])
 
 colnames(vardat) <- c("Uncertainty","RGDP_Growth")
 infocrit <- VARselect(vardat, lag.max = 12, type = "const")
@@ -2843,9 +2850,16 @@ par(new = TRUE)
 plot(irf.y2,plot.type = c("single"), main="Response from RGDP Growth", xlab="Horizon in quarters")
 
 
+png(filename = "fevd_var4.png", width = 600, height = 360)
 source("plot_varfevd.R")
 par(mfrow=c(1,2), new = FALSE)
-plot.varfevd(fevd(varm, n.ahead = 10 ),plot.type = "single")
+plot.varfevd(fevd(varm, n.ahead = 10 ),plot.type = "single", xlab="Horizon in quarters", 
+             ylab="Proportion of variance explained")
+dev.off()
+
+library(png)
+library(grid)
+grid.raster(readPNG("fevd_var4.png"))
 
 
 
@@ -2904,7 +2918,7 @@ k_aic <- infocrit$selection[1]
 k_hq  <- infocrit$selection[2]
 k_sic <- infocrit$selection[3]
 k <- min(k_aic,k_sic,k_hq)
-var_3 <- VAR(vardat,p=4,type="const")
+var_3 <- VAR(vardat,p=2,type="const")
 
 
 irf.y1 <- irf(var_3,impulse = c("Confidence_Current","Uncertainty_Combined"), response = "RGDP_Growth", n.ahead = 12,runs = 1000, seed=12345) 
@@ -2912,9 +2926,16 @@ par(mfrow=c(1,2),mar=c(5,4,4,2), cex=0.6)
 plot(irf.y1,plot.type = c("single"))
 
 
+png(filename = "fevd_var5.png", width = 600, height = 360)
 source("plot_varfevd.R")
 par(mfrow=c(1,3))
-plot.varfevd(fevd(var_3, n.ahead = 10 ),plot.type = "single")
+plot.varfevd(fevd(var_3, n.ahead = 10 ),plot.type = "single", xlab="Horizon in quarters", 
+             ylab="Proportion of variance explained")
+dev.off()
+
+library(png)
+library(grid)
+grid.raster(readPNG("fevd_var5.png"))
 
 
 JSE <- GDPgrowth4$RJSE
@@ -3030,13 +3051,62 @@ plot(stability(p1ct), nc = 2)
 
 
 
+##Unit root test results
+adf.test(conf_indices[,c(2)])
+adf.test(conf_indices[,c(3)])
+adf.test(conf_indices[,c(6)])
 
 
 
+df <- ur.df(conf_indices[,c(2)],type="none",selectlags = "AIC")@teststat
+df <- rbind(df,ur.df(conf_indices[,c(3)],type="none",selectlags = "AIC")@teststat)
+df <- rbind(df,ur.df(uncert_indices[-99,c(2)],type="none",selectlags = "AIC")@teststat)
+df <- rbind(df,ur.df(uncert_indices[-99,c(3)],type="none",selectlags = "AIC")@teststat)
+df <- rbind(df,ur.df(uncert_indices[-99,c(4)],type="none",selectlags = "AIC")@teststat)
+df <- rbind(df,ur.df(uncert_indices[,c(7)],type="none",selectlags = "AIC")@teststat)
+df <- rbind(df,ur.df(conf_indices[,c(6)],type="none",selectlags = "AIC")@teststat)
 
+df1 <- ur.df(manufac[,c(2)],type="none",selectlags = "AIC")@teststat
+df1 <- rbind(df1,ur.df(manufac[,c(3)],type="none",selectlags = "AIC")@teststat)
+df1 <- rbind(df1,ur.df(manufac2[,c(2)],type="none",selectlags = "AIC")@teststat)
+df1 <- rbind(df1,ur.df(manufac2[,c(3)],type="none",selectlags = "AIC")@teststat)
+df1 <- rbind(df1,ur.df(manufac2[,c(4)],type="none",selectlags = "AIC")@teststat)
+df1 <- rbind(df1,ur.df(manufac2[,c(5)],type="none",selectlags = "AIC")@teststat)
+df1 <- rbind(df1,ur.df(manufac[,c(5)],type="none",selectlags = "AIC")@teststat)
 
+df2 <- ur.df(construct[-1:-5,c(2)],type="none",selectlags = "AIC")@teststat
+df2 <- rbind(df2,ur.df(construct[-1:-5,c(3)],type="none",selectlags = "AIC")@teststat)
+df2 <- rbind(df2,ur.df(construct2[,c(2)],type="none",selectlags = "AIC")@teststat)
+df2 <- rbind(df2,ur.df(construct2[,c(3)],type="none",selectlags = "AIC")@teststat)
+df2 <- rbind(df2,ur.df(construct2[,c(4)],type="none",selectlags = "AIC")@teststat)
+df2 <- rbind(df2,ur.df(construct2[,c(5)],type="none",selectlags = "AIC")@teststat)
+df2 <- rbind(df2,ur.df(construct[-1:-5,c(5)],type="none",selectlags = "AIC")@teststat)
 
+df3 <- ur.df(trade[-1,c(2)],type="none",selectlags = "AIC")@teststat
+df3 <- rbind(df3,ur.df(trade[-1,c(3)],type="none",selectlags = "AIC")@teststat)
+df3 <- rbind(df3,ur.df(trade2[,c(2)],type="none",selectlags = "AIC")@teststat)
+df3 <- rbind(df3,ur.df(trade2[,c(3)],type="none",selectlags = "AIC")@teststat)
+df3 <- rbind(df3,ur.df(trade2[,c(4)],type="none",selectlags = "AIC")@teststat)
+df3 <- rbind(df3,ur.df(trade2[,c(5)],type="none",selectlags = "AIC")@teststat)
+df3 <- rbind(df3,ur.df(trade[,c(5)],type="none",selectlags = "AIC")@teststat)
 
+df4 <- ur.df(services[-1:-53,c(2)],type="none",selectlags = "AIC")@teststat
+df4 <- rbind(df4,ur.df(services[-1:-53,c(3)],type="none",selectlags = "AIC")@teststat)
+df4 <- rbind(df4,ur.df(services2[-99,c(2)],type="none",selectlags = "AIC")@teststat)
+df4 <- rbind(df4,ur.df(services2[-99,c(3)],type="none",selectlags = "AIC")@teststat)
+df4 <- rbind(df4,ur.df(services2[-99,c(4)],type="none",selectlags = "AIC")@teststat)
+df4 <- rbind(df4,ur.df(services2[,c(5)],type="none",selectlags = "AIC")@teststat)
+df4 <- rbind(df4,ur.df(services2[,c(5)],type="none",selectlags = "AIC")@teststat)
 
+#summary(df1)
+df <- cbind(df,df1,df2,df3,df4)
 
+mystars <- ifelse(df < -2.6, "***", ifelse(df < -1.95, "** ", ifelse(df < -1.61, "* ", " ")))
+df <- round(df,2)
+for(i in 1:5) {df[,i] <- paste(df[,i], mystars[,i], sep="") }
+
+colnames(df) <- c("Total","Manufacturing","Construction","Trade","Services")
+row.names(df) <- c("Confidence (Current)", "Confidence (Expected)","Dispersion",
+                   "Aggregate error","Idiosyncratic error","Uncertainty (combined)",
+                   "Real GDP Growth")
 
